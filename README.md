@@ -50,6 +50,8 @@ videos through a tiny player page hosted on GitHub Pages, which gives YouTube a 
 | `platforms/webos/` | LG webOS app settings (`appinfo.json`) |
 | `tools/install.ps1` | Build, sign, install and launch on a Samsung TV |
 | `tools/build_android.ps1` | Build the Android APK into `dist\` |
+| `tools/build_wgt.py` | Unsigned Samsung `.wgt` for Apps2Samsung into `dist\` |
+| `tools/make_store_listings.py` | LG Homebrew Channel manifest + our repository (`docs/lg/apps.json`) |
 | `tools/build_webos.ps1`, `pack_ipk.py` | Build the LG `.ipk` package into `dist\` |
 | `tools/tvdebug.py` | Inspect the app running on the TV (Chrome DevTools protocol) |
 | `tools/sdb*.py` | Small TV developer-connection helpers |
@@ -64,7 +66,19 @@ python -m http.server 8765 --directory app
 Open http://localhost:8765 — arrow keys, Enter, Esc (Back), Space (play/pause), R/G/Y/B for the colour keys.
 Choose **Try demo** for sample content. (IPTV TS/HLS streams only play on the TV.)
 
-## Samsung TV — easy install (recommended)
+## Samsung TV — with Apps2Samsung (easiest)
+[Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung) is a free installer for Windows, Mac, Linux, Android
+and iPhone that makes the Samsung certificate for your TV and signs apps for it automatically.
+1. **On the TV:** Apps → press `1 2 3 4 5` → Developer Mode **On** → Host PC IP = the address of the device running
+   Apps2Samsung → restart the TV.
+2. In Apps2Samsung open **Settings → Installing → Your sources** and add **`github.com/mdluex/mdluex-iptv`**.
+3. **Mdluex IPTV** now shows in its catalog: install it (the first time it asks you to sign in to your Samsung
+   account to make the certificate). Updates appear there when a new release is published.
+
+Every release includes an unsigned **`MdluexIPTV-vX.X.X.wgt`** for installers like this one (build it with
+`python tools/build_wgt.py`).
+
+## Samsung TV — one-click installer for Windows
 1. **On the TV:** Apps → press `1 2 3 4 5` → Developer Mode **On** → Host PC IP = your PC's IP address → restart the TV.
 2. **On a Windows PC** (same network): download **`MdluexIPTV-vX.X.X.zip`** from the
    **[latest release](https://github.com/mdluex/mdluex-iptv/releases/latest)**, extract it and double-click
@@ -106,7 +120,17 @@ debugging on). Build it yourself with `powershell -ExecutionPolicy Bypass -File 
 (needs the Android SDK and JDK 17+).
 
 ## LG TV (webOS)
-LG TVs install apps outside the LG store only through LG's **Developer Mode** app:
+**Easiest: Homebrew Channel.** Once the TV is in Developer Mode (step 1 below) install the free
+[Homebrew Channel](https://www.webosbrew.org/devmode/) (e.g. with *webOS Dev Manager*). Then in Homebrew Channel open
+**Settings → Add repository**, enter
+
+```
+https://mdluex.github.io/mdluex-iptv/lg/apps.json
+```
+
+and install **Mdluex IPTV** from its app list. New versions show up there as updates.
+
+**Or install the package yourself.** LG TVs install apps outside the LG store only through LG's **Developer Mode** app:
 1. Create a free account on [webostv.developer.lge.com](https://webostv.developer.lge.com), then on the TV install
    **Developer Mode** from the LG Content Store, sign in with that account and turn **Dev Mode Status** on
    (the TV restarts). Keep the app's passphrase screen open for the next step.
