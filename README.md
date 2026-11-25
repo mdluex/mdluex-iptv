@@ -88,5 +88,15 @@ IP*, restart the TV, and pass the TV's current address with `-TvIp`.
 Tested on a 2021 Samsung TV (Tizen 6.0, Chrome 76 engine). Older engines lack some CSS (`inset`, flex `gap`);
 the app includes fallbacks.
 
+## License
+**Personal use only** — see [LICENSE](LICENSE).
+
+- ✅ Use, install and modify it for yourself and your household, and share it **for free** (keep the license and credit).
+- ❌ **Not allowed without my written permission:** selling it, charging for access, running **paid subscriptions /
+  an IPTV business / reseller panels** with it, putting it in a commercial product, or publishing it on an app store.
+
+Want to use it commercially? **Contact me first** through [GitHub](https://github.com/mdluex) or the
+[Mdluex Industries YouTube channel](https://www.youtube.com/@Mdlu3x).
+
 ## Author
 **Mahmoud Salah** — [Mdluex Industries on YouTube](https://www.youtube.com/@Mdlu3x)

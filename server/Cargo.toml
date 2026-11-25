@@ -4,7 +4,7 @@ version = "1.1.0"
 edition = "2021"
 authors = ["Mahmoud Salah"]
 description = "Self-hosted IPTV media server with an Xtream Codes compatible API and a web admin panel"
-license = "MIT"
+license-file = "../LICENSE"
 
 [[bin]]
 name = "mdluex-server"

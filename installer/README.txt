@@ -25,4 +25,7 @@ Why not USB? Samsung TVs from 2017 on only install apps from the Samsung store o
 Developer Mode, and every app must be signed for the specific TV. This installer does that for you.
 
 Mdluex IPTV is only a player: it includes no channels or videos. Use it with your own IPTV subscription.
+
+LICENSE: personal use only. Selling it or using it for paid subscriptions / an IPTV business needs
+written permission from the author first - see https://github.com/mdluex/mdluex-iptv/blob/main/LICENSE
 https://github.com/mdluex/mdluex-iptv  -  by Mahmoud Salah / Mdluex Industries

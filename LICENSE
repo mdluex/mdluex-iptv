@@ -1,0 +1,39 @@
+Mdluex Personal Use License
+
+Copyright (c) 2026 Mahmoud Salah (Mdluex Industries). All rights reserved, except as granted below.
+
+This license covers Mdluex IPTV (the Samsung TV app), Mdluex IPTV Server, the installer, the tools and
+all other files in this repository (together, "the Software").
+
+1. PERSONAL USE - ALLOWED
+   You may download, install, use, copy and modify the Software for your own personal, non-commercial use,
+   for example on your own TVs and for your household.
+
+2. SHARING - ALLOWED, FOR FREE
+   You may share the Software, or your modified version, with others free of charge, as long as you keep
+   this license, the copyright notice and a link to https://github.com/mdluex/mdluex-iptv, and you clearly
+   say when your version is modified.
+
+3. NOT ALLOWED WITHOUT WRITTEN PERMISSION FROM THE AUTHOR
+   Unless you first contact Mahmoud Salah and receive written permission, you may NOT:
+   a) sell the Software or any version or part of it, or charge money for access to it;
+   b) use the Software (including Mdluex IPTV Server and its reseller, credit and package features) to run
+      paid subscriptions, a paid IPTV service, reseller panels or any other business;
+   c) include the Software in a commercial product, device or service, or pre-install it on devices you sell;
+   d) publish the Software, or an app based on it, on the Samsung TV store or any other app store;
+   e) remove or hide the author's name, the Mdluex Industries name, logo or this license.
+
+4. CONTACT FOR PERMISSION
+   For commercial use or anything in section 3, contact the author through
+   https://github.com/mdluex or the Mdluex Industries YouTube channel (https://www.youtube.com/@Mdlu3x)
+   before you start.
+
+5. NO CONTENT INCLUDED
+   The Software contains no channels, movies, series or other content. You are responsible for only using
+   it with media and streams you have the right to watch and share.
+
+6. NO WARRANTY
+   The Software is provided "as is", without warranty of any kind. The author is not liable for any claim,
+   damage or other liability arising from its use.
+
+Third-party parts keep their own licenses (for example fonts, libraries and Rust crates).

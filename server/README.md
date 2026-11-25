@@ -6,6 +6,9 @@ web admin panel in the Mdluex style. It speaks the standard **Xtream Codes API**
 
 > Use it only with media and streams you have the right to share. It contains no content.
 
+> **License: personal use only** ([LICENSE](../LICENSE)). Running paid subscriptions, an IPTV business or
+> reseller sales with this server, or selling it, needs the author's written permission first.
+
 ## Features
 - **Accounts (lines)** – username/password, expiry date (+1 month / +3 / +6 / +1 year buttons), max
   simultaneous screens, trial flag, enable/disable, notes, one-click M3U link.
