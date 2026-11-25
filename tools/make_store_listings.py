@@ -57,7 +57,7 @@ def main():
             "pool": "non-free",
             "shortDescription": "Netflix-style IPTV player for your own Xtream Codes subscription, plus the "
                                 "Mdluex Industries YouTube channel. Contains no channels. Personal use only.",
-            "requirements": {"webosRelease": ">=4.0"},
+            "requirements": {"webosRelease": ">=6.0"},
         }],
     }
     with open(os.path.join(lg, "apps.json"), "w", encoding="utf-8") as f:

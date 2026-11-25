@@ -7,6 +7,18 @@ built for Xtream Codes servers — plus the
 > Mdluex IPTV is only a player. It contains no channels, movies or series: you sign in with the IPTV
 > subscription you already have.
 
+## Install — the quick way
+| TV | Easiest way | Details |
+|---|---|---|
+| **Samsung** (2017+) | [Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung): add the source `github.com/mdluex/mdluex-iptv` — it signs the app for your TV | [Samsung](#samsung-tv--with-apps2samsung-easiest) |
+| **Android TV / Google TV** | Install `MdluexIPTV-vX.X.X-android.apk` from the [latest release](https://github.com/mdluex/mdluex-iptv/releases/latest) | [Android](#android-tv--google-tv) |
+| **LG** (webOS 6+, 2021+) | [Homebrew Channel](https://www.webosbrew.org/devmode/): add the repository `https://mdluex.github.io/mdluex-iptv/lg/apps.json` | [LG](#lg-tv-webos) |
+
+Mdluex IPTV has also been submitted to the community catalogs of
+[Apps2Samsung](https://github.com/Apps2Samsung/tizen-community-packages/pull/306) and the
+[webOS Homebrew Channel](https://github.com/webosbrew/apps-repo/pull/383). Once they're accepted, the app shows up in
+those apps' own lists without adding anything.
+
 ## Demo
 [![Mdluex IPTV demo – click to watch the full video](docs/demo-preview.gif)](docs/demo.mp4)
 
@@ -75,6 +87,9 @@ and iPhone that makes the Samsung certificate for your TV and signs apps for it 
 3. **Mdluex IPTV** now shows in its catalog: install it (the first time it asks you to sign in to your Samsung
    account to make the certificate). Updates appear there when a new release is published.
 
+Once the [catalog submission](https://github.com/Apps2Samsung/tizen-community-packages/pull/306) is accepted, step 2
+isn't needed: Mdluex IPTV will already be in Apps2Samsung's (and TV-Store's) community catalog.
+
 Every release includes an unsigned **`MdluexIPTV-vX.X.X.wgt`** for installers like this one (build it with
 `python tools/build_wgt.py`).
 
@@ -128,7 +143,9 @@ debugging on). Build it yourself with `powershell -ExecutionPolicy Bypass -File 
 https://mdluex.github.io/mdluex-iptv/lg/apps.json
 ```
 
-and install **Mdluex IPTV** from its app list. New versions show up there as updates.
+and install **Mdluex IPTV** from its app list. New versions show up there as updates. Once the
+[submission to the official Homebrew repository](https://github.com/webosbrew/apps-repo/pull/383) is accepted, it
+will be in Homebrew Channel's default list too. Needs webOS 6.0 or newer (LG TVs from 2021 on).
 
 **Or install the package yourself.** LG TVs install apps outside the LG store only through LG's **Developer Mode** app:
 1. Create a free account on [webostv.developer.lge.com](https://webostv.developer.lge.com), then on the TV install
@@ -143,6 +160,22 @@ ares-install --device tv MdluexIPTV-vX.X.X-lg-webos.ipk
 LG's Developer Mode session lasts 1000 hours; extend it in the Developer Mode app so the app keeps working. On LG
 TVs live channels use the HLS (`m3u8`) format by default, which webOS plays natively. Build the package yourself
 with `powershell -ExecutionPolicy Bypass -File tools\build_webos.ps1`.
+
+## Making a release
+Everything the installers download comes from the **latest GitHub release**, so every release must carry all of
+these files (built into `dist\`):
+
+| File | Built by | Used by |
+|---|---|---|
+| `MdluexIPTV-vX.X.X.zip` | the app + `installer\` + `LICENSE` | the Windows one-click Samsung installer |
+| `MdluexIPTV-vX.X.X.wgt` | `python tools/build_wgt.py` | Apps2Samsung / TV-Store |
+| `MdluexIPTV-vX.X.X-android.apk` | `tools\build_android.ps1` | Android TV |
+| `MdluexIPTV-vX.X.X-lg-webos.ipk` | `tools\build_webos.ps1` | LG (Homebrew Channel, `ares-install`) |
+| `com.mdluex.iptv.manifest.json` | `python tools/make_store_listings.py` | LG Homebrew Channel |
+
+Steps: bump `version` in `app/config.xml`, run the builds above, run `python tools/make_store_listings.py` (it also
+updates `docs/lg/apps.json`), commit and push, then create the release with `vX.X.X` as the tag and upload all five
+files. The Android release key and `keystore.properties` stay outside the repository.
 
 ## Compatibility
 Tested on a 2021 Samsung TV (Tizen 6.0, Chrome 76 engine) and Android TV (Android 16 emulator, 1080p). The LG
