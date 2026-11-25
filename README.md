@@ -6,6 +6,12 @@ A fast, Netflix-style IPTV player for **Samsung Smart TVs (Tizen)**, built for X
 > Mdluex IPTV is only a player. It contains no channels, movies or series: you sign in with the IPTV
 > subscription you already have.
 
+## Demo
+[![Mdluex IPTV demo – click to watch the full video](docs/demo-preview.gif)](docs/demo.mp4)
+
+▶ **[Watch the full demo video (1:42)](docs/demo.mp4)** — recorded on a 2021 Samsung TV: home screen with trailer
+previews, movies, series, the Mdluex Industries channel and the player.
+
 ![Mdluex IPTV – the Mdluex Industries channel, Videos tab](docs/channel-videos-tab.png)
 *The Mdluex Industries channel (Videos tab): the banner follows the focused video and plays a muted preview.*
 
