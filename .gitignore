@@ -1,0 +1,21 @@
+# Signing certificates and passwords - never publish
+*.p12
+*.pwd
+*.pri
+*.crt
+*.csr
+*.pem
+*.key
+device-profile.xml
+
+# Build output
+.buildResult/
+*.wgt
+
+# Local tooling
+.claude/
+__pycache__/
+*.pyc
+
+# The YouTube player page lives in its own repo: github.com/mdluex/mdluex-tv-player
+yt-player/
