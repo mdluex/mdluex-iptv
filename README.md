@@ -156,6 +156,11 @@ the app includes fallbacks.
 - ❌ **Not allowed without my written permission:** selling it, charging for access, running **paid subscriptions /
   an IPTV business / reseller panels** with it, putting it in a commercial product, or publishing it on an app store.
 
+**Community installers — permission granted:** the free catalogs of
+[Apps2Samsung / TV-Store](https://github.com/Apps2Samsung/tizen-community-packages) and the
+[webOS Homebrew Channel](https://github.com/webosbrew/apps-repo) may list Mdluex IPTV and redistribute the unmodified
+official releases from this repository.
+
 Want to use it commercially? **Contact me first** through [GitHub](https://github.com/mdluex) or the
 [Mdluex Industries YouTube channel](https://www.youtube.com/@Mdlu3x).
 
