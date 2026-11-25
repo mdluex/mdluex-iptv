@@ -33,6 +33,9 @@ var Focus = (function () {
       // under a fixed banner: snap the focused row to the top of the scrolling area
       var rowsBox = el.closest('.billboard-layout > .rows'), rowEl = el.closest('.row');
       if (rowsBox && rowEl) rowsBox.scrollTop = Math.max(0, rowEl.offsetTop - 6);
+      // back on the first item of a scrolling page: show the page from the very top (headings included)
+      var page = el.closest('.scroll-y');
+      if (page && !rowsBox && page.querySelector('.focusable') === el) page.scrollTop = 0;
     }
     if (el._onFocus) el._onFocus(el);
   }
@@ -68,7 +71,8 @@ var Focus = (function () {
     // look inside the current row/column first (cheap); only measure the rest of the screen if needed
     var best = z ? pick(cur, candidates(z).filter(function (e) { return e !== current && zoneOf(e) === z; }), dir) : null;
     if (!best) {
-      best = pick(cur, candidates(r).filter(function (e) { return e !== current && zoneOf(e) !== z; }), dir);
+      // (when the current item has no zone, e.g. a form in a pop-up, every other item is a candidate)
+      best = pick(cur, candidates(r).filter(function (e) { return e !== current && (!z || zoneOf(e) !== z); }), dir);
       if (best) best = restoreZone(zoneOf(best), best);
     }
     if (best) { set(best); return true; }

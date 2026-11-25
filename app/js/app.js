@@ -276,7 +276,7 @@ var App = (function () {
     sb.innerHTML = '';
     sb.appendChild(h('div', { class: 'logo' }, [h('div', { class: 'mark' }), h('div', { class: 'word', text: 'Mdluex IPTV' })]));
     NAV.forEach(function (n) {
-      if (n.spacer) { sb.appendChild(h('div', { class: 'nav-spacer' })); return; }
+      if (n.spacer) { sb.appendChild(h('div', { class: 'nav-spacer' })); sb.appendChild(profileItem()); return; }
       var el = h('div', { class: 'nav-item', data: { nav: n.id } });
       el.innerHTML = ICON[n.icon];
       el.appendChild(h('span', { text: n.label }));
@@ -285,7 +285,44 @@ var App = (function () {
       el._onBlur = function () { setTimeout(function () { var c = Focus.current; if (!c || !c.closest('#sidebar')) closeSidebar(); }, 0); };
       sb.appendChild(el);
     });
+    updateProfile();
   }
+  /* Profile circle above Settings: initials of the playlist in use; OK = switch playlist quickly. */
+  function initials(name) {
+    var w = String(name || '?').trim().split(/\s+/);
+    return ((w[0] || '?').charAt(0) + (w[1] ? w[1].charAt(0) : (w[0] || '').charAt(1) || '')).toUpperCase();
+  }
+  function profileItem() {
+    var el = h('div', { class: 'nav-item profile', data: { nav: 'profile' } }, [h('div', { class: 'avatar' }), h('span', { class: 'pname' })]);
+    Focus.make(el, function () { closeSidebar(); switchPlaylist(); }, function () { openSidebar(); });
+    el._right = function () { closeSidebar(); return focusView(); };
+    el._onBlur = function () { setTimeout(function () { var c = Focus.current; if (!c || !c.closest('#sidebar')) closeSidebar(); }, 0); };
+    return el;
+  }
+  function updateProfile() {
+    var el = document.querySelector('#sidebar .profile');
+    if (!el) return;
+    var pl = Store.active();
+    el.querySelector('.avatar').textContent = pl ? initials(pl.name) : '+';
+    el.querySelector('.pname').textContent = pl ? pl.name : 'Add playlist';
+  }
+  function switchPlaylist() {
+    var list = Store.playlists(), cur = Store.active();
+    if (!list.length) { if (App.playlistForm) App.playlistForm(); return; }
+    var items = list.map(function (p) { return { label: p.name + (p.demo ? ' (demo)' : ''), value: p.demo ? '' : Api.normalizeServer(p.server).replace(/^https?:\/\//, ''), pl: p, checked: cur && cur.id === p.id }; });
+    items.push({ label: '+ Add playlist', a: 'add' });
+    items.push({ label: 'Manage playlists', a: 'manage' });
+    menu('Switch playlist', items).then(function (it) {
+      if (!it) return;
+      if (it.a === 'add') { if (App.playlistForm) App.playlistForm(); return; }
+      if (it.a === 'manage') { go('settings', {}, { reset: true }); return; }
+      if (cur && it.pl.id === cur.id) return;
+      usePlaylist(it.pl);
+      toast('Switched to ' + it.pl.name);
+      go('home', {}, { reset: true });
+    });
+  }
+
   function openSidebar() {
     var sb = document.getElementById('sidebar');
     sb.classList.add('open');
@@ -446,6 +483,7 @@ var App = (function () {
     if (cached && !pl.demo) account = { loading: false, info: cached.info, error: null, checkedAt: cached.checkedAt, fromCache: true };
     unlocked = {};
     renderAccountChip();
+    updateProfile();
     refreshAccount();
   }
 

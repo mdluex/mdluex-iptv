@@ -20,6 +20,14 @@ A fast, Netflix-style IPTV player for **Samsung Smart TVs (Tizen)**, built for X
 - **Search** across channels, movies, series and channel videos.
 - **Arabic / RTL** content shown right-to-left, parental PIN lock (default `0000`), multiple playlists, demo mode.
 
+## Mdluex IPTV Server
+Host your own movies, series and live channels: [`server/`](server/README.md) is a self-hosted IPTV server
+(Rust, single executable, web admin panel in the same style) with an Xtream Codes compatible API —
+accounts with expiry and screen limits, *Watching now*, library scanning with TMDB posters & trailers,
+live TV with M3U import and XMLTV guide, **resellers & credits, packages, load-balancing edge servers,
+transcoding profiles and catch-up/timeshift**. Download `MdluexIPTV-Server-…-windows.zip` from the
+[latest release](https://github.com/mdluex/mdluex-iptv/releases/latest).
+
 ## How YouTube playback works
 YouTube refuses players embedded directly in TV apps (they load from local files — *error 153*). The app plays
 videos through a tiny player page hosted on GitHub Pages, which gives YouTube a real web address:

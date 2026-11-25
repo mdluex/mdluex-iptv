@@ -22,3 +22,10 @@ yt-player/
 
 # Release builds
 dist/
+
+# Rust build output and server data
+server/target/
+mdluex-data/
+*.db
+
+server/target-dist/

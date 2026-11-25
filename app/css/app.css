@@ -91,6 +91,14 @@ body { font-family: "SamsungOne", "SamsungOneArabic", "Segoe UI", Tahoma, "Noto 
 .nav-item.focused { background: var(--text); color: #111; }
 .nav-item.focused svg { color: #111; }
 .nav-spacer { flex: 1; }
+/* profile circle (playlist switcher) */
+.nav-item.profile { padding-left: 15px; }
+.nav-item.profile .avatar {
+  width: 46px; height: 46px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center;
+  background: var(--accent); color: #fff; font-size: 19px; font-weight: 800; letter-spacing: .5px; box-shadow: 0 0 0 3px rgba(255,255,255,.12);
+}
+.nav-item.profile span.pname { margin-left: 18px; }
+.nav-item.profile.focused .avatar { box-shadow: 0 0 0 3px #111; }
 
 /* ---------- Top bar ---------- */
 #topbar {
@@ -311,6 +319,9 @@ body { font-family: "SamsungOne", "SamsungOneArabic", "Segoe UI", Tahoma, "Noto 
 .modal .field { margin-bottom: 18px; }
 .modal .field label { display: block; font-size: 20px; color: var(--muted); margin-bottom: 8px; }
 .modal .btn-row { margin-top: 26px; }
+.pw-row { display: flex; align-items: center; }
+.pw-row .input { flex: 1; }
+.pw-row .pw-toggle { flex: none; margin-left: 14px; min-width: 110px; justify-content: center; }
 .modal .menu { max-height: 680px; overflow: hidden; }
 .menu-item { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-radius: 8px; font-size: 25px; scroll-margin: 40px; }
 .menu-item .v { color: var(--muted); font-size: 21px; }

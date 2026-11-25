@@ -919,7 +919,16 @@
         var inp = h('input', { class: 'input', type: f[0] === 'password' ? 'password' : 'text', placeholder: f[2], value: pl[f[0]] || '' });
         Focus.make(inp);
         fields[f[0]] = inp;
-        box.appendChild(h('div', { class: 'field' }, [h('label', { text: f[1] }), inp]));
+        if (f[0] === 'password') {
+          // "Show" button next to the password: OK toggles between hidden and visible
+          var eye = h('div', { class: 'btn small pw-toggle', text: 'Show' });
+          Focus.make(eye, function () {
+            var show = inp.type === 'password';
+            inp.type = show ? 'text' : 'password';
+            eye.textContent = show ? 'Hide' : 'Show';
+          });
+          box.appendChild(h('div', { class: 'field' }, [h('label', { text: f[1] }), h('div', { class: 'pw-row' }, [inp, eye])]));
+        } else box.appendChild(h('div', { class: 'field' }, [h('label', { text: f[1] }), inp]));
       });
       fields.name.setAttribute('data-autofocus', '1');
       var note = h('div', { class: 'note' });

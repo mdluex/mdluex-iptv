@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mdluex IPTV Server</title>
+<link rel="icon" href="icon.png">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="login" class="hidden">
+  <form id="login-form">
+    <img src="logo.svg" alt="">
+    <h1>Mdluex IPTV Server</h1>
+    <label class="f"><input class="input" name="username" placeholder="Username" value="admin" autocomplete="username"></label>
+    <label class="f"><input class="input" name="password" type="password" placeholder="Password" autocomplete="current-password" autofocus></label>
+    <button class="btn primary" type="submit">Sign in</button>
+    <div class="note" id="login-msg">First start? The password is shown in the server window.</div>
+  </form>
+</div>
+<div id="app" class="hidden">
+  <aside id="side"></aside>
+  <main id="main"></main>
+</div>
+<div id="modal" class="hidden"></div>
+<div id="toast"></div>
+<script src="admin.js"></script>
+</body>
+</html>
