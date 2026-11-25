@@ -42,8 +42,9 @@ def ar(members):
 def main(src, dest):
     info = json.load(open(os.path.join(src, "appinfo.json"), encoding="utf-8"))
     app_id, version = info["id"], info["version"]
-    base = f"./usr/palm/applications/{app_id}"
-    entries = [("./", None), ("./usr", None), ("./usr/palm", None), ("./usr/palm/applications", None), (base, None)]
+    base = f"usr/palm/applications/{app_id}"
+    # member names without a leading "./" (what ares-package writes and what installers/checkers look up)
+    entries = [("usr", None), ("usr/palm", None), ("usr/palm/applications", None), (base, None)]
     size = 0
     for root, dirs, files in os.walk(src):
         dirs.sort()
@@ -56,13 +57,13 @@ def main(src, dest):
             entries.append((f"{base}/{f}" if rel == "." else f"{base}/{rel}/{f}", data))
     pkginfo = {"app": app_id, "id": app_id, "loc_name": info.get("title", app_id), "package_format_version": 2,
                "vendor": info.get("vendor", ""), "version": version}
-    entries += [("./usr/palm/packages", None), (f"./usr/palm/packages/{app_id}", None),
-                (f"./usr/palm/packages/{app_id}/packageinfo.json", json.dumps(pkginfo, indent=2).encode())]
+    entries += [("usr/palm/packages", None), (f"usr/palm/packages/{app_id}", None),
+                (f"usr/palm/packages/{app_id}/packageinfo.json", json.dumps(pkginfo, indent=2).encode())]
     control = (f"Package: {app_id}\nVersion: {version}\nSection: misc\nPriority: optional\nArchitecture: all\n"
                f"Installed-Size: {max(1, size // 1024)}\nMaintainer: {info.get('vendor', 'N/A')}\n"
                f"Description: {info.get('title', app_id)}\nwebOS-Package-Format-Version: 2\nwebOS-Packager-Version: x.y.x\n")
     ipk = ar([("debian-binary", b"2.0\n"),
-              ("control.tar.gz", tar_gz([("./", None), ("./control", control.encode())])),
+              ("control.tar.gz", tar_gz([("control", control.encode())])),
               ("data.tar.gz", tar_gz(entries))])
     os.makedirs(dest, exist_ok=True)
     path = os.path.join(dest, f"{app_id}_{version}_all.ipk")

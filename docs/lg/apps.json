@@ -24,9 +24,9 @@
         "rootRequired": false,
         "ipkUrl": "https://github.com/mdluex/mdluex-iptv/releases/download/v1.2.0/MdluexIPTV-v1.2.0-lg-webos.ipk",
         "ipkHash": {
-          "sha256": "e072bbdc8f2b1a163525e101ecd8d786a1bde8a6a62011ea9acfe4d0d8f00fcd"
+          "sha256": "76d3a0f2c1367000798cb71349a5459210fa4c768657c52930c1f876cf08f508"
         },
-        "ipkSize": 179612
+        "ipkSize": 179552
       },
       "pool": "non-free",
       "shortDescription": "Netflix-style IPTV player for your own Xtream Codes subscription, plus the Mdluex Industries YouTube channel. Contains no channels. Personal use only.",
