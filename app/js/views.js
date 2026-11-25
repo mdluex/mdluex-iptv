@@ -1030,7 +1030,17 @@
       }));
 
       s.appendChild(h('h2', { text: 'General' }));
-      s.appendChild(setRow('Clock format', set.clock24 ? '24-hour' : '12-hour', function () { Store.setSetting('clock24', !set.clock24); redraw(); }));
+      s.appendChild(setRow('Clock format', set.clock24 ? '24-hour (17:30)' : '12-hour (5:30 PM)', function () {
+        App.menu('Clock format', [
+          { label: '24-hour', value: '17:30', v: true, checked: set.clock24 },
+          { label: '12-hour', value: '5:30 PM', v: false, checked: !set.clock24 }
+        ]).then(function (it) {
+          if (!it) return;
+          Store.setSetting('clock24', it.v);
+          document.getElementById('clock').textContent = fmtClock();   // update the clock right away
+          redraw();
+        });
+      }));
       s.appendChild(setRow('Clear watch history', '', function () {
         App.confirm('Clear watch history?', 'Continue Watching and resume points will be removed for this playlist.', 'Clear').then(function (ok) { if (ok) { Store.clearProgress(); App.toast('History cleared'); } });
       }));
