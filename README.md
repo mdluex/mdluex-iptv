@@ -6,6 +6,9 @@ A fast, Netflix-style IPTV player for **Samsung Smart TVs (Tizen)**, built for X
 > Mdluex IPTV is only a player. It contains no channels, movies or series: you sign in with the IPTV
 > subscription you already have.
 
+![Mdluex IPTV – the Mdluex Industries channel, Videos tab](docs/channel-videos.png)
+*The Mdluex Industries channel (Videos tab): the banner follows the focused video and plays a muted preview.*
+
 ## Features
 - **Resume anywhere** – movies, episodes and YouTube videos remember where you stopped. *Continue Watching* on Home and in every section; press **Red** on a card to remove it.
 - **Account that never locks you out** – the expiry date is fetched with retries; if the server is slow or down, the last known info is shown instead of a blank screen. Clear messages for wrong login, expired/banned accounts and full connection limits.
@@ -31,6 +34,7 @@ videos through a tiny player page hosted on GitHub Pages, which gives YouTube a 
 | `tools/tvdebug.py` | Inspect the app running on the TV (Chrome DevTools protocol) |
 | `tools/sdb*.py` | Small TV developer-connection helpers |
 | `tools/fix_old_tv_css.py`, `bump_version.py` | Compatibility and cache-busting helpers |
+| `tools/screenshot.py` | Full-HD screenshots of the app (headless Edge), e.g. for this README |
 | `iptv_check.py` | Check an IPTV server's account replies from a PC |
 
 ## Preview on a PC
