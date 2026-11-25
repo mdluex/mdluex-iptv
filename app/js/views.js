@@ -18,7 +18,7 @@
   function short(item) { return { id: item.id, name: item.name, icon: item.icon, ext: item.ext, num: item.num }; }
 
   function card(o) {
-    var c = h('div', { class: 'card ' + (o.kind || 'poster'), data: { key: o.key || '' } });
+    var c = h('div', { class: 'card ' + (o.kind || 'poster') + (o.progress != null ? ' has-prog' : ''), data: { key: o.key || '' } });
     var showsCaption = o.kind !== 'poster' || o.caption;
     c.appendChild(h('div', { class: 'ph', text: showsCaption ? '' : (o.title || ''), style: { background: grad(o.title) }, dir: 'auto' }));
     if (o.img) {
@@ -116,11 +116,11 @@
   }
   function movieCard(m, follow) {
     return card({ kind: 'poster', key: 'mv:' + m.id, title: m.name, img: m.icon, fav: Store.isFav('movie', m.id), progress: progressOf('movie:' + m.id),
-      caption: !m.icon, onSelect: function () { openMovie(m); },
+      caption: true, sub: m.year ? String(m.year).slice(0, 4) : null, onSelect: function () { openMovie(m); },
       onFocus: typeof follow === 'function' ? function () { follow(function () { return heroForMovie(m); }); } : null });
   }
   function seriesCard(s, follow) {
-    return card({ kind: 'poster', key: 'sr:' + s.id, title: s.name, img: s.icon, fav: Store.isFav('series', s.id), caption: !s.icon, onSelect: function () { openSeries(s); },
+    return card({ kind: 'poster', key: 'sr:' + s.id, title: s.name, img: s.icon, fav: Store.isFav('series', s.id), caption: true, sub: s.year ? String(s.year).slice(0, 4) : null, onSelect: function () { openSeries(s); },
       onFocus: typeof follow === 'function' ? function () { follow(function () { return heroForSeries(s); }); } : null });
   }
   var RTL_RE = /[֐-ࣿיִ-﷿ﹰ-﻿]/;

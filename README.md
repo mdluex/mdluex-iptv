@@ -6,7 +6,7 @@ A fast, Netflix-style IPTV player for **Samsung Smart TVs (Tizen)**, built for X
 > Mdluex IPTV is only a player. It contains no channels, movies or series: you sign in with the IPTV
 > subscription you already have.
 
-![Mdluex IPTV – the Mdluex Industries channel, Videos tab](docs/channel-videos.png)
+![Mdluex IPTV – the Mdluex Industries channel, Videos tab](docs/channel-videos-tab.png)
 *The Mdluex Industries channel (Videos tab): the banner follows the focused video and plays a muted preview.*
 
 ## Features
@@ -44,7 +44,19 @@ python -m http.server 8765 --directory app
 Open http://localhost:8765 — arrow keys, Enter, Esc (Back), Space (play/pause), R/G/Y/B for the colour keys.
 Choose **Try demo** for sample content. (IPTV TS/HLS streams only play on the TV.)
 
-## Install on your TV
+## Easy install (recommended)
+1. **On the TV:** Apps → press `1 2 3 4 5` → Developer Mode **On** → Host PC IP = your PC's IP address → restart the TV.
+2. **On a Windows PC** (same network): download **`MdluexIPTV-vX.X.X.zip`** from the
+   **[latest release](https://github.com/mdluex/mdluex-iptv/releases/latest)**, extract it and double-click
+   **`Install-MdluexIPTV.cmd`**.
+3. The installer finds your TV, installs Samsung's free Tizen tools if needed, helps you create your Samsung
+   certificate (you sign in with your own Samsung account — required by Samsung, once per TV), then signs,
+   installs and opens the app. Run it again any time to update.
+
+> Why not USB? Samsung TVs from 2017 onward only install apps from the Samsung store or through Developer
+> Mode, and each app must be signed for the specific TV — the installer handles that for you.
+
+## Install on your TV (manual)
 1. **TV:** Apps → press `1 2 3 4 5` → Developer Mode **On**, Host PC IP = your PC's address → restart the TV.
 2. Install **Tizen Studio** (CLI is enough) into `C:\tizen-studio`, then in its Package Manager add
    **Samsung Certificate Extension** and **TV Extensions**.

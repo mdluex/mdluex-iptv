@@ -110,7 +110,8 @@ var Api = (function () {
     var words = title.split(' '), lines = [], line = '';
     words.forEach(function (wd) { if ((line + ' ' + wd).trim().length > (w > h ? 18 : 11)) { lines.push(line.trim()); line = wd; } else line += ' ' + wd; });
     lines.push(line.trim());
-    var fs = w > h ? 34 : 30, y0 = h - 30 - (lines.length - 1) * (fs + 4);
+    // demo artwork: title painted near the top (the app shows its own name label at the bottom)
+    var fs = w > h ? 34 : 30, y0 = (sub ? 80 : 50) + fs * 0.5;
     var txt = lines.map(function (l, i) {
       return '<text x="20" y="' + (y0 + i * (fs + 4)) + '" font-family="Arial" font-weight="900" font-size="' + fs + '" fill="#fff">' +
         l.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</text>';
