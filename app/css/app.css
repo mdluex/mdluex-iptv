@@ -346,6 +346,9 @@ body { font-family: "SamsungOne", "SamsungOneArabic", "Segoe UI", Tahoma, "Noto 
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---------- Player ---------- */
+/* Android TV: the native video plays behind the page, so the page is see-through while it plays */
+html.native-video, html.native-video body, html.native-video #stage, html.native-video #player-layer { background: transparent !important; }
+html.native-video #app-root { visibility: hidden; }
 #player-layer { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 50; background: #000; }
 #av-player, #html5-player { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
 #html5-player { display: none; background: #000; object-fit: contain; }

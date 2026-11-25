@@ -16,7 +16,7 @@ var Store = (function () {
     lockAdult: true,
     autoNext: true,
     clock24: true,
-    liveFormat: 'ts',
+    liveFormat: typeof Platform !== 'undefined' ? Platform.defaultLiveFormat : 'ts',
     hideEmpty: true
   };
 

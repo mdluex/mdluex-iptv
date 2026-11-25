@@ -134,13 +134,60 @@ var Player = (function () {
     setAspect: function () {}
   };
 
+  /* ---------- Android TV: native ExoPlayer behind the (transparent) app page ---------- */
+  function hasNative() { return typeof MdxNative !== 'undefined'; }
+  window.__mdxNative = function (ev, v) {
+    if (ev === 'time') emit('time', Number(v));
+    else if (ev === 'buffering') emit('buffering', v === true || v === 'true');
+    else emit(ev, v);
+  };
+  var NATIVE = {
+    open: function (url, startMs, opts) {
+      document.documentElement.classList.add('native-video');
+      emit('buffering', true);
+      MdxNative.play(url, Math.floor(startMs || 0), !!(opts && opts.live));
+    },
+    paused: function () { try { return MdxNative.isPaused(); } catch (e) { return false; } },
+    play: function () { MdxNative.resume(); },
+    pause: function () { MdxNative.pause(); },
+    seek: function (ms) { MdxNative.seek(Math.max(0, Math.floor(ms))); },
+    time: function () { try { return MdxNative.getTime(); } catch (e) { return 0; } },
+    duration: function () { try { return MdxNative.getDuration(); } catch (e) { return 0; } },
+    stop: function () { try { MdxNative.stop(); } catch (e) {} document.documentElement.classList.remove('native-video'); },
+    tracks: function () { try { return JSON.parse(MdxNative.tracks()); } catch (e) { return { audio: [], text: [] }; } },
+    selectTrack: function (type, index) { try { MdxNative.selectTrack(type, index); if (type === 'TEXT' && index < 0) emit('subtitle', ''); } catch (e) {} },
+    setAspect: function (mode) { try { MdxNative.setAspect(mode); } catch (e) {} }
+  };
+
+  /* LG webOS / browsers: audio + subtitle tracks of the HTML5 player when the stream offers them */
+  H5.tracks = function () {
+    var out = { audio: [], text: [] };
+    if (!video) return out;
+    var at = video.audioTracks, tt = video.textTracks, i;
+    if (at) for (i = 0; i < at.length; i++) {
+      out.audio.push({ index: i, label: (at[i].language || at[i].label || 'Track ' + (i + 1)).toUpperCase() });
+      if (at[i].enabled) out.audioCurrent = i;
+    }
+    if (tt) for (i = 0; i < tt.length; i++) {
+      out.text.push({ index: i, label: (tt[i].language || tt[i].label || 'Subtitle ' + (i + 1)).toUpperCase() });
+      if (tt[i].mode === 'showing') out.textCurrent = i;
+    }
+    return out;
+  };
+  H5.selectTrack = function (type, index) {
+    if (!video) return;
+    var i;
+    if (type === 'AUDIO' && video.audioTracks) for (i = 0; i < video.audioTracks.length; i++) video.audioTracks[i].enabled = i === index;
+    if (type === 'TEXT' && video.textTracks) for (i = 0; i < video.textTracks.length; i++) video.textTracks[i].mode = i === index ? 'showing' : 'disabled';
+  };
+
   var impl = null;
   return {
     on: function (handlers) { cb = handlers || {}; },
     open: function (url, opts) {
       opts = opts || {};
       if (impl) impl.stop();
-      impl = /^demo:/.test(url) ? SIM : (hasAV() ? AV : H5);
+      impl = /^demo:/.test(url) ? SIM : hasAV() ? AV : hasNative() ? NATIVE : H5;
       impl.open(url, opts.startMs || 0, opts);
     },
     paused: function () { return impl ? impl.paused() : true; },

@@ -1,6 +1,7 @@
 # Mdluex IPTV
 
-A fast, Netflix-style IPTV player for **Samsung Smart TVs (Tizen)**, built for Xtream Codes servers — plus the
+A fast, Netflix-style IPTV player for **Samsung (Tizen)**, **Android TV / Google TV** and **LG (webOS)** smart TVs,
+built for Xtream Codes servers — plus the
 **Mdluex Industries** YouTube channel, watchable without any IPTV account.
 
 > Mdluex IPTV is only a player. It contains no channels, movies or series: you sign in with the IPTV
@@ -44,7 +45,12 @@ videos through a tiny player page hosted on GitHub Pages, which gives YouTube a 
 |---|---|
 | `app/` | The TV app (HTML / CSS / JavaScript) |
 | `app/js/channel_snapshot.js` | Offline copy of the channel – refresh with `python tools/update_channel.py` |
-| `tools/install.ps1` | Build, sign, install and launch on the TV |
+| `app/js/platform.js` | The only TV-specific part: keys, exit, YouTube app, video player per TV system |
+| `platforms/android/` | Android TV app: a full-screen WebView with the shared app + a native ExoPlayer for streams |
+| `platforms/webos/` | LG webOS app settings (`appinfo.json`) |
+| `tools/install.ps1` | Build, sign, install and launch on a Samsung TV |
+| `tools/build_android.ps1` | Build the Android APK into `dist\` |
+| `tools/build_webos.ps1`, `pack_ipk.py` | Build the LG `.ipk` package into `dist\` |
 | `tools/tvdebug.py` | Inspect the app running on the TV (Chrome DevTools protocol) |
 | `tools/sdb*.py` | Small TV developer-connection helpers |
 | `tools/fix_old_tv_css.py`, `bump_version.py` | Compatibility and cache-busting helpers |
@@ -58,7 +64,7 @@ python -m http.server 8765 --directory app
 Open http://localhost:8765 — arrow keys, Enter, Esc (Back), Space (play/pause), R/G/Y/B for the colour keys.
 Choose **Try demo** for sample content. (IPTV TS/HLS streams only play on the TV.)
 
-## Easy install (recommended)
+## Samsung TV — easy install (recommended)
 1. **On the TV:** Apps → press `1 2 3 4 5` → Developer Mode **On** → Host PC IP = your PC's IP address → restart the TV.
 2. **On a Windows PC** (same network): download **`MdluexIPTV-vX.X.X.zip`** from the
    **[latest release](https://github.com/mdluex/mdluex-iptv/releases/latest)**, extract it and double-click
@@ -70,7 +76,7 @@ Choose **Try demo** for sample content. (IPTV TS/HLS streams only play on the TV
 > Why not USB? Samsung TVs from 2017 onward only install apps from the Samsung store or through Developer
 > Mode, and each app must be signed for the specific TV — the installer handles that for you.
 
-## Install on your TV (manual)
+## Samsung TV — manual install
 1. **TV:** Apps → press `1 2 3 4 5` → Developer Mode **On**, Host PC IP = your PC's address → restart the TV.
 2. Install **Tizen Studio** (CLI is enough) into `C:\tizen-studio`, then in its Package Manager add
    **Samsung Certificate Extension** and **TV Extensions**.
@@ -84,8 +90,39 @@ powershell -ExecutionPolicy Bypass -File tools\install.ps1 -TvIp 192.168.1.20 -C
 **Can't connect?** Routers sometimes give the TV or PC a new address — update the TV's Developer Mode *Host PC
 IP*, restart the TV, and pass the TV's current address with `-TvIp`.
 
+## Android TV / Google TV
+Works on Android TV boxes and TVs (Android 7 or newer), e.g. Chromecast with Google TV, Nvidia Shield, Xiaomi
+Mi Box, Sony / TCL / Hisense Android TVs. Same app and screens as on Samsung; streams play with Android's
+built-in video player (ExoPlayer), so live TS and HLS channels work.
+
+1. Download **`MdluexIPTV-vX.X.X-android.apk`** from the **[latest release](https://github.com/mdluex/mdluex-iptv/releases/latest)**.
+2. Put it on a USB stick and open it on the TV with a file manager, or send it with an app like *Send Files to TV*
+   or *Downloader*.
+3. Allow **Install unknown apps** for that app when Android asks (Settings → Apps → Security & restrictions).
+4. Open **Mdluex IPTV** from the apps row. The TV remote's Back, Play/Pause, channel and colour keys all work.
+
+You can also install it from a PC with `adb install MdluexIPTV-vX.X.X-android.apk` (Developer options → USB/network
+debugging on). Build it yourself with `powershell -ExecutionPolicy Bypass -File tools\build_android.ps1`
+(needs the Android SDK and JDK 17+).
+
+## LG TV (webOS)
+LG TVs install apps outside the LG store only through LG's **Developer Mode** app:
+1. Create a free account on [webostv.developer.lge.com](https://webostv.developer.lge.com), then on the TV install
+   **Developer Mode** from the LG Content Store, sign in with that account and turn **Dev Mode Status** on
+   (the TV restarts). Keep the app's passphrase screen open for the next step.
+2. On your PC install LG's **webOS TV CLI** (or *webOS Dev Manager*), add the TV with
+   `ares-setup-device`, then pair it with `ares-novacom --device tv --getkey` (enter the passphrase).
+3. Download **`MdluexIPTV-vX.X.X-lg-webos.ipk`** from the latest release and install it:
+```powershell
+ares-install --device tv MdluexIPTV-vX.X.X-lg-webos.ipk
+```
+LG's Developer Mode session lasts 1000 hours; extend it in the Developer Mode app so the app keeps working. On LG
+TVs live channels use the HLS (`m3u8`) format by default, which webOS plays natively. Build the package yourself
+with `powershell -ExecutionPolicy Bypass -File tools\build_webos.ps1`.
+
 ## Compatibility
-Tested on a 2021 Samsung TV (Tizen 6.0, Chrome 76 engine). Older engines lack some CSS (`inset`, flex `gap`);
+Tested on a 2021 Samsung TV (Tizen 6.0, Chrome 76 engine) and Android TV (Android 16 emulator, 1080p). The LG
+version is built from the same code but has not yet been tested on a real LG TV. Older engines lack some CSS (`inset`, flex `gap`);
 the app includes fallbacks.
 
 ## License

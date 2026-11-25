@@ -73,8 +73,13 @@ var App = (function () {
     var st = document.getElementById('stage');
     // On the TV the screen is always 1920x1080; the on-screen keyboard shrinks the window height,
     // so never rescale there (otherwise the whole app shrinks while typing).
-    if (typeof tizen !== 'undefined') { st.style.transform = 'none'; st.style.left = '0px'; st.style.top = '0px'; return; }
-    var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    if (Platform.name === 'tizen') { st.style.transform = 'none'; st.style.left = '0px'; st.style.top = '0px'; return; }
+    // LG / Android: scale the full-HD layout to the window width only (an on-screen keyboard must not shrink it)
+    var s = Platform.keepFullHD ? window.innerWidth / 1920 : Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    if (Platform.keepFullHD) {
+      st.style.transform = 'scale(' + s + ')'; st.style.left = '0px'; st.style.top = '0px';
+      return;
+    }
     st.style.transform = 'scale(' + s + ')';
     st.style.left = ((window.innerWidth - 1920 * s) / 2) + 'px';
     st.style.top = ((window.innerHeight - 1080 * s) / 2) + 'px';
@@ -209,7 +214,11 @@ var App = (function () {
   /* ---------- key handling ---------- */
   function addKeyHandler(fn) { keyHandlers.push(fn); }
   function removeKeyHandler(fn) { var i = keyHandlers.indexOf(fn); if (i >= 0) keyHandlers.splice(i, 1); }
-  function isBack(e) { return e.keyCode === K.BACK || e.keyCode === K.ESC || (e.keyCode === K.BKSP && document.activeElement.tagName !== 'INPUT'); }
+  function isBack(e) { return Platform.isBackKey(e.keyCode) || (e.keyCode === K.BKSP && document.activeElement.tagName !== 'INPUT'); }
+  /* Remote keys sent by the Android app (Back, media and colour keys arrive this way). */
+  function injectKey(code) {
+    onKeyDown({ keyCode: code, key: '', repeat: false, preventDefault: function () {} });
+  }
 
   function normalize(e) {
     // browser-preview shortcuts for TV-only keys
@@ -390,7 +399,7 @@ var App = (function () {
     if (stack.length && stack[0].name !== 'home' && Store.active()) { go('home', {}, { reset: true }); return; }
     confirm('Exit Mdluex IPTV?', null, 'Exit', 'Stay').then(function (ok) {
       if (!ok) return;
-      try { tizen.application.getCurrentApplication().exit(); } catch (e) { toast('Exit works on the TV'); }
+      if (!Platform.exit()) toast('Exit works on the TV');
     });
   }
   /* Re-render the current screen (e.g. after playback) keeping focus on the same item. */
@@ -504,7 +513,7 @@ var App = (function () {
     detectFlexGap();
     fit();
     window.addEventListener('resize', fit);
-    registerTVKeys();
+    Platform.registerKeys();
     buildSidebar();
     document.addEventListener('keydown', onKeyDown);
     // mouse / pointer support (PC preview, TV pointer remotes)
@@ -529,7 +538,7 @@ var App = (function () {
     addKeyHandler: addKeyHandler, removeKeyHandler: removeKeyHandler, isBack: isBack, setHints: setHints,
     openSidebar: openSidebar, closeSidebar: closeSidebar, focusView: focusView,
     usePlaylist: usePlaylist, refreshAccount: refreshAccount, describeAccount: describeAccount, renderAccountChip: renderAccountChip,
-    showError: showError, refresh: refresh, remember: remember,
+    showError: showError, refresh: refresh, remember: remember, key: injectKey,
     get api() { return api; },
     get account() { return account; },
     get view() { return currentView; }

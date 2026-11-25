@@ -15,7 +15,8 @@ KEYS = {"Left": 37, "Up": 38, "Right": 39, "Down": 40, "Enter": 13, "Back": 1000
 
 def connect():
     pages = json.load(urllib.request.urlopen("http://127.0.0.1:9222/json", timeout=5))
-    return websocket.create_connection(pages[0]["webSocketDebuggerUrl"], timeout=90)
+    # no Origin header: newer Android WebViews reject debugger connections that send one
+    return websocket.create_connection(pages[0]["webSocketDebuggerUrl"], timeout=90, suppress_origin=True)
 
 _id = 0
 def call(ws, method, params=None):

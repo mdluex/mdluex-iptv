@@ -29,3 +29,16 @@ mdluex-data/
 *.db
 
 server/target-dist/
+
+# Android / webOS builds and signing (keys stay outside the repo)
+build/
+platforms/android/.gradle/
+platforms/android/.kotlin/
+platforms/android/build/
+platforms/android/app/build/
+platforms/android/local.properties
+platforms/android/keystore.properties
+*.jks
+*.keystore
+*.apk
+*.ipk

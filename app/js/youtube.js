@@ -131,15 +131,7 @@ var Channel = (function () {
 
   /* Launch the TV's own YouTube app on this video (fallback). */
   function openInYouTubeApp(id) {
-    try {
-      var data = new tizen.ApplicationControlData('PAYLOAD', [JSON.stringify({ values: 'v=' + id })]);
-      var ctrl = new tizen.ApplicationControl('http://tizen.org/appcontrol/operation/view', null, null, null, [data]);
-      tizen.application.launchAppControl(ctrl, '111299001912', function () {}, function () { App.toast('Could not open the YouTube app'); });
-      return true;
-    } catch (e) {
-      window.open('https://www.youtube.com/watch?v=' + id, '_blank');
-      return false;
-    }
+    return Platform.openYouTube(id);   // Samsung, LG and Android each launch their own YouTube app
   }
 
   /* ---------- Banner preview: smooth slideshow of real frames from the video ----------
