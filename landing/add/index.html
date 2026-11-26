@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add a playlist — Mdluex IPTV</title>
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#d11515">
+  <link rel="icon" href="../img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../style.css">
+  <script>
+    (function () {
+      var d = document.documentElement, lang = null, theme = null;
+      try { lang = localStorage.getItem('mdx-lang'); theme = localStorage.getItem('mdx-theme'); } catch (e) {}
+      if (!lang) lang = /^ar/i.test(navigator.language || '') ? 'ar' : 'en';
+      if (!theme && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark';
+      d.lang = lang; d.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      d.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
+    })();
+  </script>
+  <style>
+    body { background: var(--bg); color: var(--text); margin: 0; }
+    .add { max-width: 520px; margin: 0 auto; padding: 20px 16px 40px; }
+    .add-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .add-top .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--text); text-decoration: none; }
+    .add-top .brand img { height: 32px; width: auto; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 18px; }
+    h1 { font-size: 24px; margin: 0 0 6px; }
+    .lead { color: var(--muted); margin: 0 0 18px; font-size: 15px; line-height: 1.5; }
+    label { display: block; font-size: 14px; font-weight: 700; margin: 14px 0 6px; }
+    .hint { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    input { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg2); color: var(--text); }
+    input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+    input[dir=ltr] { text-align: left; }
+    .pw { display: flex; gap: 8px; }
+    .pw input { flex: 1; }
+    .pw button { flex: none; }
+    .or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; margin: 20px 0 4px; }
+    .or:before, .or:after { content: ''; flex: 1; height: 1px; background: var(--line); }
+    button { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--line); background: var(--panel2); color: var(--text); padding: 12px 14px; font-size: 15px; font-weight: 700; }
+    .send { width: 100%; margin-top: 22px; background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-size: 17px; padding: 15px; }
+    .send[disabled] { opacity: .6; }
+    .msg { margin-top: 16px; font-size: 15px; line-height: 1.5; min-height: 1em; }
+    .msg.ok { color: var(--ok); font-weight: 700; }
+    .msg.bad { color: var(--bad); font-weight: 700; }
+    .safe { margin-top: 18px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .done { text-align: center; padding: 26px 8px; }
+    .done .big { font-size: 56px; line-height: 1; }
+    .hide { display: none !important; }
+  </style>
+</head>
+<body>
+  <main class="add">
+    <div class="add-top">
+      <a class="brand" href="../">
+        <img class="logo logo-dark" src="../img/logo.svg" alt="" width="21" height="32">
+        <img class="logo logo-light" src="../img/logo-light.svg" alt="" width="21" height="32">
+        <span>Mdluex IPTV</span>
+      </a>
+      <button class="tool" id="langBtn" type="button" data-t="lang">العربية</button>
+    </div>
+
+    <div class="card" id="noCode">
+      <h1 data-t="nocode.h">Scan the code on your TV</h1>
+      <p class="lead" data-t="nocode.p">On your TV, open Mdluex IPTV and choose Add playlist. Scan the QR code it shows with your phone camera to open this page.</p>
+    </div>
+
+    <form class="card hide" id="form" autocomplete="off" novalidate>
+      <h1 data-t="h">Add a playlist to your TV</h1>
+      <p class="lead" data-t="lead">Type the login your IPTV provider gave you, then press Send. It appears on your TV by itself.</p>
+
+      <label for="m3u" data-t="m3u">Have an M3U link? Paste it here</label>
+      <input id="m3u" type="url" dir="ltr" inputmode="url" placeholder="http://example.com:8080/get.php?username=…&amp;password=…">
+      <div class="hint" data-t="m3u.hint">We take the server, username and password from it.</div>
+
+      <div class="or"><span data-t="or">or type them</span></div>
+
+      <label for="name" data-t="name">Name (anything you like)</label>
+      <input id="name" type="text" dir="auto" placeholder="My IPTV" maxlength="60">
+      <label for="server" data-t="server">Server address</label>
+      <input id="server" type="url" dir="ltr" inputmode="url" placeholder="http://example.com:8080" autocapitalize="off" spellcheck="false">
+      <label for="user" data-t="user">Username</label>
+      <input id="user" type="text" dir="ltr" autocapitalize="off" spellcheck="false">
+      <label for="pass" data-t="pass">Password</label>
+      <div class="pw"><input id="pass" type="password" dir="ltr" autocapitalize="off" spellcheck="false"><button type="button" id="eye" data-t="show">Show</button></div>
+
+      <button class="send" type="submit" id="send" data-t="send">Send to my TV</button>
+      <div class="msg" id="msg" role="status"></div>
+      <div class="safe" data-t="safe">🔒 Encrypted on this phone with a key that only your TV has (it was inside the QR code). Nothing is stored.</div>
+    </form>
+
+    <div class="card done hide" id="done">
+      <div class="big">✓</div>
+      <h1 id="doneH" data-t="done.h">Sent!</h1>
+      <p class="lead" id="doneP" data-t="done.wait">Look at your TV. If it doesn't show up within a few seconds, check that the TV is connected to the internet.</p>
+    </div>
+  </main>
+  <script src="link.js"></script>
+</body>
+</html>

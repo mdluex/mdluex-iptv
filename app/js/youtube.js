@@ -255,6 +255,8 @@ var Channel = (function () {
   function pvSuspend(on) { suspended = !!on; if (on) pvDestroy(); }
   function previewPlay(el, id, random) {
     if (suspended) return;
+    // very old TV engines (Chrome < 50, e.g. LG webOS 3) can't run YouTube, and the slideshow costs too much there
+    var cv = /Chrome\/(\d+)/.exec(navigator.userAgent); if (cv && +cv[1] < 50) return;
     pvDestroy();
     var token = pv.token;
     pv.host = el;

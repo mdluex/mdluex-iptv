@@ -70,13 +70,28 @@ var App = (function () {
   var account = { loading: false, info: null, error: null, checkedAt: 0, fromCache: false };
 
   /* ---------- scaling for browser preview ---------- */
+  var phoneFit = null;
   function fit() {
     var st = document.getElementById('stage');
+    /* Phone: a smaller canvas (720 high, as wide as the screen's shape) so everything is drawn ~1.5x bigger and
+       fills the wide screen. The on-screen keyboard only shrinks the height: keep the size then. */
+    if (Platform.phone) {
+      var pw = window.innerWidth, ph = window.innerHeight;
+      if (phoneFit && phoneFit.w === pw && ph < phoneFit.h) ph = phoneFit.h;
+      phoneFit = { w: pw, h: ph };
+      var H = 720, W = Math.max(1100, Math.round(H * pw / ph)), ps = ph / H;
+      st.style.width = W + 'px'; st.style.height = H + 'px';
+      st.style.transform = 'scale(' + ps + ')'; st.style.left = ((pw - W * ps) / 2) + 'px'; st.style.top = '0px';
+      return;
+    }
     // On the TV the screen is always 1920x1080; the on-screen keyboard shrinks the window height,
     // so never rescale there (otherwise the whole app shrinks while typing).
     if (Platform.name === 'tizen') { st.style.transform = 'none'; st.style.left = '0px'; st.style.top = '0px'; return; }
     // LG / Android: scale the full-HD layout to the window width only (an on-screen keyboard must not shrink it)
-    var s = Platform.keepFullHD ? window.innerWidth / 1920 : Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    // old LG TVs with a 1280x720 app screen report a 1920-wide window: use the real screen width then
+    var w = window.innerWidth;
+    if (Platform.name === 'webos' && window.screen && screen.width && w > screen.width) w = screen.width;
+    var s = Platform.keepFullHD ? w / 1920 : Math.min(w / 1920, window.innerHeight / 1080);
     if (Platform.keepFullHD) {
       st.style.transform = 'scale(' + s + ')'; st.style.left = '0px'; st.style.top = '0px';
       return;
@@ -514,6 +529,33 @@ var App = (function () {
     if (!ok || /[?&]oldtv=1/.test(location.search)) document.documentElement.classList.add('no-flex-gap');
   }
 
+  /* touch: a long press on an item opens its options (like the remote's INFO / Hold OK) */
+  var longPressed = false;
+  function touchExtras() {
+    var timer = null, x0 = 0, y0 = 0;
+    document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    document.addEventListener('touchstart', function (e) {
+      clearTimeout(timer); longPressed = false;
+      if (e.touches.length !== 1) return;
+      var el = e.target.closest && e.target.closest('.focusable');
+      if (!el || !Focus.root().contains(el) || el.tagName === 'INPUT') return;
+      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+      timer = setTimeout(function () {
+        if (!el.isConnected) return;
+        longPressed = true;
+        if (navigator.vibrate) try { navigator.vibrate(25); } catch (er) {}
+        Focus.set(el, { noScroll: true });
+        injectKey(K.INFO);
+      }, 550);
+    }, { passive: true });
+    document.addEventListener('touchmove', function (e) {
+      var t = e.touches[0];
+      if (t && (Math.abs(t.clientX - x0) > 12 || Math.abs(t.clientY - y0) > 12)) clearTimeout(timer);
+    }, { passive: true });
+    document.addEventListener('touchend', function () { clearTimeout(timer); setTimeout(function () { longPressed = false; }, 400); }, { passive: true });
+    document.addEventListener('touchcancel', function () { clearTimeout(timer); }, { passive: true });
+  }
+
   function start() {
     detectFlexGap();
     fit();
@@ -523,11 +565,16 @@ var App = (function () {
     document.addEventListener('keydown', onKeyDown);
     // mouse / pointer support (PC preview, TV pointer remotes)
     document.addEventListener('click', function (e) {
+      if (longPressed) { longPressed = false; return; }
       var el = e.target.closest && e.target.closest('.focusable');
       if (!el || !Focus.root().contains(el)) return;
+      var wasCurrent = Focus.current === el;
       Focus.set(el, { noScroll: true });
+      // touch: on items marked data-tap2 (Live TV channels) the first tap only previews, the second plays
+      if (Platform.touch && el.hasAttribute('data-tap2') && !wasCurrent) return;
       Focus.select();
     });
+    if (Platform.touch) touchExtras();
     document.addEventListener('visibilitychange', function () { if (document.hidden && App.onHide) App.onHide(); });
     function tick() { document.getElementById('clock').textContent = fmtClock(); var oc = document.querySelector('.osd-top .clock'); if (oc) oc.textContent = fmtClock(); }
     tick(); setInterval(tick, 10000);

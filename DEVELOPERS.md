@@ -8,6 +8,8 @@ Building, testing and releasing the app. For installing and using it, see the [R
 | `app/` | The TV app (HTML / CSS / JavaScript), shared by every TV system |
 | `app/js/platform.js` | The only TV-specific part: keys, exit, YouTube app, remote type (colour keys or not) |
 | `app/js/i18n.js` | English / Arabic texts and right-to-left layout; follows the TV's language |
+| `app/js/legacy.js` | Loaded first: adds the JavaScript features older TV engines lack (Tizen 4 / Chrome 56, webOS 3.5 / Chrome 38), only where missing |
+| `app/js/phonelink.js`, `app/js/qrcode.js` | Add a playlist from the phone: QR code (qrcode-generator, MIT) → `landing/add/` → ChaCha20-encrypted message through the ntfy.sh relay → the TV. The key is only in the QR code's `#` part |
 | `app/js/quran.js` | Quran: surah list, mushaf-style reader, recitation with word-by-word highlighting (Quran.com API) |
 | `app/fonts/` | Bundled fonts (Cairo, Amiri Quran, Scheherazade New), SIL Open Font License |
 | `app/js/channel_snapshot.js` | Offline copy of the channel – refresh with `python tools/update_channel.py` |
@@ -16,6 +18,8 @@ Building, testing and releasing the app. For installing and using it, see the [R
 | `server/` | [Mdluex IPTV Server](server/README.md), the self-hosted Xtream Codes compatible server (Rust) |
 | `installer/` | The Windows one-click Samsung installer |
 | `landing/` | The install website https://iptv.mdluex.com (deployed on Vercel, root directory `landing`, redeploys on every push): English/Arabic, light/dark, download buttons that read the newest release |
+| `landing/add/` | The phone page the TV's QR code opens (`iptv.mdluex.com/add/`) |
+| `tools/webos_prepare.py` | LG build step: drops Samsung's `webapis.js` and writes CSS variables out as values for older LG engines |
 | `tools/make_landing_art.py` | Draws the website's step illustrations (`landing/img/`) |
 | `docs/` | GitHub Pages: screenshots, the LG Homebrew repository (`lg/`), the Fire TV short link (`apk/`) |
 | `tools/install.ps1` | Build, sign, install and launch on a Samsung TV |
@@ -99,6 +103,14 @@ After every release: check that Apps2Samsung's catalog and the LG Homebrew Chann
 read the latest release), and that the website (landing page, on Vercel) shows it — Vercel redeploys it on every push.
 
 ## Compatibility
+Phones are detected by the Android app (touchscreen, not a TV); they get touch controls and a 720-high canvas so
+everything is drawn bigger (`html.phone`). Preview it on a PC with `?touch=1&phone=1` in a phone-shaped window.
+
 Tested and working on a 2021 Samsung TV (Tizen 6.0, Chrome 76 engine) and on a real LG TV (webOS), and on Android
 (Android 16 emulator, 1080p). The Fire TV version is built from the same Android app but has not yet been tested on
 a real Fire TV. Older engines lack some CSS (`inset`, flex `gap`); the app includes fallbacks.
+
+## Thanks
+- **[@Kerolosashraf7](https://github.com/Kerolosashraf7)** — support for older LG TVs, the LG live-channel preview, more
+  reliable movie/series streams (issue #1), and the previous/next episode buttons, episode list and resume between
+  episodes (issue #3). Tested on a real LG TV.

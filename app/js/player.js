@@ -100,6 +100,51 @@ var Player = (function () {
     setAspect: function (mode) { if (video) video.className = mode === 'fill' ? 'fill' : (mode === 'auto' ? 'cover' : ''); }
   };
 
+  /* Some providers' main server only redirects /movie/ and /series/ to the real video server, and often hangs for
+     ~20 s; every seek asks it again. So resolve the final address once (with quick retries) and play that; if it
+     expires later, resolve again and resume at the same spot (at most once a minute).
+     From Kerolosashraf7 (github.com/mdluex/mdluex-iptv/issues/1), tested on an LG TV. */
+  (function () {
+    var realOpen = H5.open, realStop = H5.stop, tok = 0;
+    function resolveFinal(url, done) {
+      var attempts = 0;
+      (function tryOnce() {
+        var x = new XMLHttpRequest(), finished = false;
+        function finish(f) { if (finished) return; finished = true; clearTimeout(to); try { x.abort(); } catch (e) {} done(f); }
+        function again() { if (finished) return; finished = true; clearTimeout(to); try { x.abort(); } catch (e) {} if (++attempts < 4) tryOnce(); else done(null); }
+        var to = setTimeout(again, 4000);
+        x.onreadystatechange = function () {
+          if (x.readyState >= 2) { var f = x.responseURL; finish(f && f !== url && x.status >= 200 && x.status < 400 ? f : null); }
+        };
+        x.onerror = again;
+        try { x.open('GET', url, true); x.send(); } catch (e) { again(); }
+      })();
+    }
+    H5.open = function (url, startMs, opts) {
+      var my = ++tok;
+      if (!/\/(movie|series)\//.test(url)) return realOpen(url, startMs, opts);
+      emit('buffering', true);
+      var lastRetry = 0;
+      function start(src, at) {
+        realOpen(src, at, opts);
+        var v = document.getElementById('html5-player'), origErr = v.onerror;
+        v.onerror = function () {
+          if (my !== tok) return;
+          if (Date.now() - lastRetry > 60000) {   // address expired or dropped: get a fresh one and continue
+            lastRetry = Date.now();
+            var t = (v.currentTime || 0) * 1000 || at;
+            emit('buffering', true);
+            resolveFinal(url, function (f2) { if (my === tok) start(f2 || url, t); });
+            return;
+          }
+          if (origErr) origErr.apply(this, arguments);
+        };
+      }
+      resolveFinal(url, function (fin) { if (my === tok) start(fin || url, startMs); });
+    };
+    H5.stop = function () { tok++; return realStop.apply(this, arguments); };
+  })();
+
   /* ---------- Simulated (demo) ---------- */
   var sim = { t: 0, dur: 0, paused: false, timer: null, live: false };
   var SIM = {

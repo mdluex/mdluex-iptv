@@ -14,6 +14,8 @@ New-Item -ItemType Directory -Force $stage, $out | Out-Null
 # shared app (everything except Samsung-only files)
 Copy-Item (Join-Path $root 'app\*') $stage -Recurse -Exclude 'config.xml', '.buildResult', '.sign', '*.wgt'
 Copy-Item (Join-Path $root 'platforms\webos\appinfo.json') $stage
+# LG-only: drop the Samsung script, write CSS variables out for older LG engines
+python -I (Join-Path $PSScriptRoot 'webos_prepare.py') $stage
 # the version follows the shared app
 $version = ([xml](Get-Content (Join-Path $root 'app\config.xml') -Raw)).widget.version
 $info = Get-Content (Join-Path $stage 'appinfo.json') -Raw | ConvertFrom-Json

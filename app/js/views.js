@@ -473,12 +473,14 @@
             { category_id: '_cont', category_name: T('Continue Watching') }, { category_id: '_fav', category_name: T('My List') },
             { category_id: '_new', category_name: T('Recently Added') }, { category_id: '_all', category_name: T(isMovie ? 'All Movies' : 'All Series') }];
           var hasCont = Store.continueWatching().some(function (x) { return isMovie ? x.type === 'movie' : x.type === 'episode'; });
-          var col = catColumn(specials.concat(cats), loadCat, params.cat || (hasCont ? '_cont' : '_new'));
+          // "Recently Added" needs the whole catalog: only open on it when that is already downloaded
+          var col = catColumn(specials.concat(cats), loadCat, params.cat || (hasCont ? '_cont' : (groupedNow(kind) || !cats.length ? '_new' : cats[0].category_id)));
           lay.appendChild(col); lay.appendChild(gridCol);
           var contN = Store.continueWatching().filter(function (x) { return isMovie ? x.type === 'movie' : x.type === 'episode'; }).length;
           var favN = Store.favs()[type].length;
           col.setCounts(function (id) { return id === '_cont' ? contN : id === '_fav' ? favN : null; });
-          grouped(kind).then(function (g) {
+          // category counts come from the whole catalog: show them only when it is already downloaded (it can be 10 MB)
+          (groupedNow(kind) ? Promise.resolve(groupedNow(kind)) : Promise.reject()).then(function (g) {
             col.setCounts(function (id) {
               if (id === '_cont') return contN;
               if (id === '_fav') return favN;
@@ -543,6 +545,7 @@
   /* ================= Live TV ================= */
   V.live = {
     title: 'Live TV', nav: 'live',
+    leave: function () { if (this.__pvStop) this.__pvStop(); },   // stop the channel preview when leaving
     render: function (main, params) {
       if (needPlaylist(main)) return;
       var api = App.api, self = this;
@@ -555,10 +558,40 @@
       main.appendChild(lay);
       App.setHints([{ key: 'OK', label: 'Watch' }, colorHint('Y', 'yellow', 'Favorite'), { key: Platform.colorKeys ? 'CH ▲▼' : '▲▼', label: 'Zap while watching' }]);
       var token = 0, current = [], epgTimer;
+      /* LG: the focused channel plays inside the preview card after the focus rests on it for a moment.
+         Fully stopped before full screen, because many subscriptions allow only one stream at a time.
+         Samsung (one AVPlay) and Android (native player behind the page) can't show a second video.
+         From Kerolosashraf7 (github.com/mdluex/mdluex-iptv/issues/1), tested on an LG TV. */
+      var pvVideo = null, pvTimer = null, pvOn = Platform.name === 'webos';
+      function pvStop() {
+        clearTimeout(pvTimer);
+        if (!pvVideo) return;
+        try { pvVideo.pause(); } catch (e) {}
+        pvVideo.onplaying = pvVideo.onerror = null;
+        pvVideo.removeAttribute('src'); try { pvVideo.load(); } catch (e) {}
+        if (pvVideo.parentNode) { pvVideo.parentNode.classList.remove('pv-playing'); pvVideo.parentNode.classList.remove('pv-loading'); pvVideo.parentNode.removeChild(pvVideo); }
+      }
+      function pvStart(ch, box) {
+        pvStop();
+        if (!pvOn) return;
+        pvTimer = setTimeout(function () {
+          if (!box.isConnected) return;
+          if (!pvVideo) { pvVideo = document.createElement('video'); pvVideo.className = 'live-pv'; }
+          box.classList.add('pv-loading');
+          pvVideo.onplaying = function () { box.classList.remove('pv-loading'); box.classList.add('pv-playing'); };
+          pvVideo.onerror = function () { box.classList.remove('pv-loading'); box.classList.remove('pv-playing'); };
+          box.appendChild(pvVideo);
+          pvVideo.src = api.liveUrl({ stream_id: ch.id }, Store.settings().liveFormat);
+          pvVideo.play();
+        }, 1200);
+      }
+      self.__pvStop = pvStop;
 
       function showPreview(ch) {
         preview.innerHTML = '';
-        preview.appendChild(h('div', { class: 'big-logo', style: { backgroundImage: ch.icon ? 'url("' + ch.icon + '")' : grad(ch.name) } }));
+        var logoBox = h('div', { class: 'big-logo', style: { backgroundImage: ch.icon ? 'url("' + ch.icon + '")' : grad(ch.name) } });
+        preview.appendChild(logoBox);
+        pvStart(ch, logoBox);
         preview.appendChild(h('h3', { text: (ch.num ? ch.num + '  ' : '') + ch.name, dir: 'auto' }));
         var epg = h('div');
         preview.appendChild(epg);
@@ -587,7 +620,8 @@
           h('div', { class: 'name', text: ch.name, dir: 'auto' }),
           h('div', { class: 'star', text: Store.isFav('live', ch.id) ? '★' : '' })]);
         el._item = ch;
-        return Focus.make(el, function () { App.remember('ch:' + ch.id); PlayerUI.playLive(ch, current); }, function () { showPreview(ch); });
+        if (Platform.touch) el.setAttribute('data-tap2', '1');   // phone: first tap previews, second tap plays
+        return Focus.make(el, function () { pvStop(); App.remember('ch:' + ch.id); PlayerUI.playLive(ch, current); }, function () { showPreview(ch); });
       }
       function loadCat(cat) {
         params.cat = cat.category_id;
@@ -625,7 +659,7 @@
         lay.appendChild(col); lay.appendChild(chCol); lay.appendChild(prevCol);
         var favN = Store.favs().live.length, recN = Store.recentChannels().length;
         col.setCounts(function (id) { return id === '_fav' ? favN : id === '_recent' ? recN : null; });
-        grouped('live').then(function (g) {
+        (groupedNow('live') ? Promise.resolve(groupedNow('live')) : Promise.reject()).then(function (g) {
           var locked = 0;
           cats.forEach(function (c) { if (App.isLocked(c)) locked += (g.by[String(c.category_id)] || []).length; });
           col.setCounts(function (id) {
@@ -1066,8 +1100,14 @@
   /* ================= Settings ================= */
   function playlistForm(existing) {
     var pl = Object.assign({ name: '', server: '', username: '', password: '' }, existing || {});
-    App.modal(function (box, m) {
-      box.style.width = '1100px';
+    App.modal(function (outer, m) {
+      var box = outer, qrSide = null;
+      if (!existing && !Platform.phone && window.PhoneLink && window.crypto && window.crypto.getRandomValues) {
+        /* new playlist: the QR code on the right lets the user type it on their phone instead */
+        outer.style.width = '1560px'; outer.style.maxWidth = '1560px';
+        box = h('div', { class: 'pl-form' }); qrSide = h('div', { class: 'pl-qr' });
+        outer.appendChild(h('div', { class: 'pl-cols' }, [box, qrSide]));
+      } else outer.style.width = '1100px';
       box.appendChild(h('h2', { text: T(existing ? 'Edit playlist' : 'Add IPTV playlist') }));
       box.appendChild(h('p', { text: T('Enter the Xtream login your IPTV provider gave you. Press OK on a box to type.') }));
       var fields = {};
@@ -1104,7 +1144,7 @@
         }).catch(function (e) { note.style.color = ''; note.className = 'note bad'; note.textContent = '✗ ' + e.message; return false; });
       }
       var rowEl = h('div', { class: 'btn-row' });
-      rowEl.appendChild(Focus.make(h('div', { class: 'btn primary', text: T('Save') }), function () {
+      var saveBtn = Focus.make(h('div', { class: 'btn primary', text: T('Save') }), function () {
         var d = read();
         if (!d.server || !d.username) { note.className = 'note bad'; note.textContent = T('Server address and username are required.'); return; }
         test(d).then(function (ok) {
@@ -1113,10 +1153,30 @@
           var saved = Store.savePlaylist(d);
           m.close(); App.usePlaylist(saved); App.go('home', {}, { reset: true });
         });
-      }));
+      });
+      rowEl.appendChild(saveBtn);
       rowEl.appendChild(Focus.make(h('div', { class: 'btn', text: T('Test connection') }), function () { var d = read(); if (d.server) test(d); }));
       rowEl.appendChild(Focus.make(h('div', { class: 'btn', text: T('Cancel') }), function () { m.close(); }));
       box.appendChild(rowEl);
+      if (qrSide) {
+        var qrStatus = h('div', { class: 'qr-status', text: T('Waiting for your phone…') });
+        var link = PhoneLink.start(function (d) {
+          fields.name.value = d.name; fields.server.value = d.server; fields.username.value = d.username; fields.password.value = d.password;
+          qrStatus.className = 'qr-status ok'; qrStatus.textContent = T('✓ Received from your phone');
+          Focus.set(saveBtn);
+          var dd = read();
+          if (dd.server && dd.username) test(dd).then(function (ok) {   // it works: save it straight away
+            if (ok && outer.isConnected) { var saved = Store.savePlaylist(dd); m.close(); App.usePlaylist(saved); App.go('home', {}, { reset: true }); }
+          });
+        }, function () { return outer.isConnected; }, function () {
+          qrStatus.className = 'qr-status bad'; qrStatus.textContent = T('This code has expired. Close this window and open it again for a new one.');
+        });
+        qrSide.appendChild(h('h3', { text: T('Easier: use your phone') }));
+        qrSide.appendChild(h('p', { text: T('Scan this code with your phone camera, type the login there and press Send. It appears here by itself.') }));
+        qrSide.appendChild(h('div', { class: 'qr-box' }, [link.canvas(420)]));
+        qrSide.appendChild(qrStatus);
+        qrSide.appendChild(h('div', { class: 'qr-safe', text: T('🔒 Sent encrypted. Only this TV can read it.') }));
+      }
     });
   }
   App.playlistForm = playlistForm;

@@ -407,6 +407,20 @@ var Quran = (function () {
             hints.appendChild(b);
           });
           root.addEventListener('click', function (e) { if (!(e.target.closest && e.target.closest('.focusable'))) showBar(); });
+          /* swipes: right / left = next / previous surah (pages turn right-to-left, as in a printed mushaf),
+             up / down = next / previous verse */
+          var sx = 0, sy = 0, st0 = 0;
+          root.addEventListener('touchstart', function (e) { if (e.touches.length === 1) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; st0 = Date.now(); } }, { passive: true });
+          root.addEventListener('touchend', function (e) {
+            var t = e.changedTouches[0]; if (!t || Date.now() - st0 > 800) return;
+            if (e.target.closest && e.target.closest('.quran-bar')) return;
+            var dx = t.clientX - sx, dy = t.clientY - sy, ax = Math.abs(dx), ay = Math.abs(dy);
+            if (Math.max(ax, ay) < 50) return;
+            if (ax > ay * 1.3) self._turn(dx > 0 ? 1 : -1);
+            else if (ay > ax * 1.3) self._goAyah(dy < 0 ? 1 : -1);
+            else return;
+            self._showBar();
+          }, { passive: true });
         }
         root.appendChild(barEl);
         var hideT;

@@ -131,6 +131,10 @@ LG only allows apps from outside its store through its **Developer Mode** app, p
    - **Username** and **Password**
 3. Save. Your channels, movies and series load, and your subscription's expiry date shows at the top.
 
+**Easier: type it on your phone.** The *Add playlist* window also shows a **QR code**. Scan it with your phone's
+camera, type the login there (or paste your M3U link — it fills in the rest), and press **Send**. It appears on the TV
+and is saved by itself. It's sent encrypted, with a key that only your TV has.
+
 Just want to look around first? Choose **Try demo** for sample content, or **Watch Mdluex Channel**.
 You can add more than one subscription and switch between them in **Settings**.
 
@@ -154,7 +158,8 @@ The bottom of the screen always shows which buttons do what on the screen you're
 - **Continue where you stopped** — movies, episodes and videos remember your spot.
 - **Live TV** with channel logos, a TV guide (what's on now and next), favourites and recently watched channels.
 - **Movies and series** with posters, *Recently Added*, *My List*, seasons and episodes, and the next episode
-  playing by itself.
+  playing by itself. In the player, press ▼ for **Previous / All episodes / Next** (or CH ▲▼): switching episodes
+  resumes where you stopped, and *All episodes* lists the season beside the video.
 - **Search** across channels, movies, series and Mdluex videos.
 - **Choose audio language and subtitles**, change the picture size, and set a **sleep timer**.
 - **Parental lock** for adult categories with a PIN (the starting PIN is **0000** — change it in Settings).
@@ -168,6 +173,10 @@ The bottom of the screen always shows which buttons do what on the screen you're
 - **Quran** — choose a surah and a reciter, and listen while you read: the page looks like a printed mushaf and the
   verse and the word being recited light up as you listen. 12 famous reciters, repeat a verse, continue to the next
   surah, and it remembers where you stopped. ▲▼ move between verses, ◀▶ between surahs.
+- **Android phones** — a bigger layout made for the phone screen, and touch everywhere: scroll with your finger,
+  tap to open, long-press for options, drag the timeline to seek, swipe in the Quran, and in Live TV the first tap
+  previews a channel and the second plays it.
+- **Older TVs too** — Samsung from 2018 (Tizen 4) and older LG TVs (webOS 3.5 and newer).
 
 <a id="updating"></a>
 ## Updating
@@ -192,6 +201,10 @@ Your subscription allows a limited number of screens at once. Stop watching on a
 **Samsung: Apps2Samsung can't find or connect to my TV.**
 Make sure the phone/computer and the TV are on the same Wi-Fi. Routers sometimes change addresses: check the
 address of your phone/computer again, put it in the TV's **Developer Mode → Host PC IP**, and restart the TV.
+
+**Samsung: the one-click installer says `install failed[118012]`.**
+The TV won't accept the app's signature. Run the installer again — it now gives the TV permission and removes an
+old copy signed by someone else, then retries. If it still fails, use **Apps2Samsung** instead.
 
 **LG: the app stopped opening after a few weeks.**
 LG's Developer Mode ran out. Open the **Developer Mode** app on the TV, sign in, and turn it on again (or press

@@ -59,7 +59,8 @@ var PlayerUI = (function () {
   // a tap on the video (not on a button) shows or hides the controls
   if (Platform.touch) document.addEventListener('click', function (e) {
     if (!S || !layer || layer.classList.contains('hidden') || !layer.contains(e.target)) return;
-    if (e.target.closest && e.target.closest('.focusable, .osd-bar, .zap-list')) return;
+    if (e.target.closest && e.target.closest('.focusable, .osd-bar, .zap-list, .ep-panel')) return;
+    if (S.epPanel) { closeEpPanel(); return; }   // a tap beside the episode list closes it
     if (osd.classList.contains('off')) showOsd(); else if (!S.paused()) osd.classList.add('off');
   });
 
@@ -97,9 +98,27 @@ var PlayerUI = (function () {
     var tCur = h('span'), tLeft = h('span');
     var hints = h('div', { class: 'osd-hints' });
     var list = [['OK', 'Play / Pause'], ['◀ ▶', 'Seek'], ['▲', 'Audio · Subtitles · More'], ['BACK', 'Exit']];
-    if (S.kind === 'episode' && S.nextEp && Platform.colorKeys) list.splice(3, 0, ['▶▶|', 'Blue: Next episode']);
+    if (S.kind === 'episode') { list.splice(3, 0, ['▼', 'Episodes']); if (Platform.colorKeys) list.splice(4, 0, ['CH ▲▼', 'Next / previous episode']); }
     list.forEach(function (x) { hints.appendChild(h('div', { class: 'hint' }, [h('span', { class: 'key', text: x[0] }), h('span', { text: T(x[1]) })])); });
     var bottom = h('div', { class: 'osd-bottom' }, [bar, h('div', { class: 'osd-times' }, [tCur, tLeft]), hints]);
+    /* episodes: [Previous] [All episodes] [Next] (▼ to reach them). From Kerolosashraf7 (issue #3). */
+    S.epBtns = null; S.epSel = null;
+    if (S.kind === 'episode') {
+      var epLabel = function (x) { return T('S{0}:E{1}', x.season, x.ep.episode_num || '') + (x.ep.title ? ' · ' + x.ep.title : ''); };
+      var mk = function (which, x, action) {
+        var b = h('div', { class: 'ep-btn ' + which + (x ? '' : ' disabled') }, [
+          h('span', { class: 'ico', text: which === 'prev' ? '⏮' : '⏭' }),
+          h('span', { class: 'txt' }, [h('span', { class: 'lab', text: T(which === 'prev' ? 'Previous episode' : 'Next episode') }),
+            h('span', { class: 'name', text: x ? epLabel(x) : T('None'), dir: 'auto' })])]);
+        if (x) Focus.make(b, action);   // tappable on touchscreens
+        return b;
+      };
+      var listBtn = Focus.make(h('div', { class: 'ep-btn list' }, [h('span', { class: 'ico', text: '☰' }),
+        h('span', { class: 'txt' }, [h('span', { class: 'lab', text: T('All episodes') }), h('span', { class: 'name', text: T('Season {0}', (S.meta && S.meta.season) || '') })])]),
+        function () { openEpPanel(); });
+      S.epBtns = { prev: mk('prev', S.prevEp, function () { playPrev(); }), list: listBtn, next: mk('next', S.nextEp, function () { playNext(); }) };
+      bottom.appendChild(h('div', { class: 'osd-eps' }, [S.epBtns.prev, S.epBtns.list, S.epBtns.next]));
+    }
     var center = h('div', { class: 'osd-center hidden' });
     osd.appendChild(top); osd.appendChild(center); osd.appendChild(bottom);
     if (Platform.touch) {
@@ -108,6 +127,20 @@ var PlayerUI = (function () {
       bar.addEventListener('click', function (e) {   // tap the timeline to jump there
         var r = bar.getBoundingClientRect(), d = curDur();
         if (d && r.width) { seekTo(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * d); showOsd(); }
+      });
+      /* drag along the timeline: the time follows the finger, the jump happens on release */
+      var dragAt = function (e) {
+        var t = e.touches[0] || e.changedTouches[0], r = bar.getBoundingClientRect(), d = curDur();
+        if (!t || !d || !r.width) return;
+        S.seekPending = Math.max(0, Math.min(1, (t.clientX - r.left) / r.width)) * d;
+        updateBar(); showOsd(0);
+      };
+      bar.addEventListener('touchstart', dragAt, { passive: true });
+      bar.addEventListener('touchmove', function (e) { e.preventDefault(); dragAt(e); }, { passive: false });
+      bar.addEventListener('touchend', function (e) {
+        if (S.seekPending == null) return;
+        e.preventDefault();   // no extra click: this jump is the one
+        var to = S.seekPending; S.seekPending = null; seekTo(to); showOsd();
       });
     }
     S.ui = { fill: fill, knob: knob, tip: tip, tCur: tCur, tLeft: tLeft, center: center };
@@ -222,12 +255,108 @@ var PlayerUI = (function () {
       if (left <= 0) { clearInterval(nextTimer); playNext(); }
     }, 1000);
   }
+  /* switching episodes resumes where you stopped (same rule as Resume / Continue Watching) */
+  function resumeAt(ep) { var p = Store.progress('episode:' + ep.id); return Store.inProgress(p) ? p.pos : 0; }
+  /* the season's episodes in a panel on the right, while the video keeps playing (Kerolosashraf7, issue #3) */
+  function seasonsOf() { var eps = (S.ctx && S.ctx.info && S.ctx.info.episodes) || {}; return Object.keys(eps).sort(function (a, b) { return a - b; }); }
+  function epDuration(e) {
+    var i = e.info || {}, s = Number(i.duration_secs) || 0;
+    if (!s && i.duration) { var p = String(i.duration).split(':').map(Number); s = p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : 0; }
+    return s ? T('{0} min', Math.round(s / 60)) : '';
+  }
+  function renderEpPanel(season) {
+    var box = S.epPanel, seasons = seasonsOf(), list = (S.ctx.info.episodes || {})[season] || [];
+    box.season = season;
+    box.innerHTML = '';
+    var si = seasons.indexOf(String(season));
+    box.appendChild(h('div', { class: 'ep-panel-head' }, [
+      h('div', { class: 'series', text: S.title, dir: 'auto' }),
+      h('div', { class: 'season' }, [seasonArrow(I18N.rtl ? '▶' : '◀', si - 1), h('span', { text: T('Season {0}', season) }), seasonArrow(I18N.rtl ? '◀' : '▶', si + 1)])]));
+    function seasonArrow(txt, to) {   // tappable on touchscreens
+      var a = h('span', { class: 'arr' + (to >= 0 && to < seasons.length ? '' : ' off'), text: txt });
+      if (to >= 0 && to < seasons.length) a.addEventListener('click', function (ev) { ev.stopPropagation(); renderEpPanel(seasons[to]); });
+      return a;
+    }
+    if (Platform.touch) box.appendChild(Focus.make(h('div', { class: 'ep-close', text: '✕' }), function () { closeEpPanel(); }));
+    var inner = h('div', { class: 'inner', 'data-zone': 'eplist' }), curEl = null;
+    list.forEach(function (e) {
+      var p = Store.progress('episode:' + e.id), isCur = S.meta && String(S.meta.id) === String(e.id);
+      var state = isCur ? h('span', { class: 'st now', text: '▶ ' + T('Playing') })
+        : Store.isWatched(p) ? h('span', { class: 'st done', text: '✓' })
+        : Store.inProgress(p) ? h('span', { class: 'st prog' }, [h('i', { style: { width: Math.round(p.pos / p.dur * 100) + '%' } })]) : null;
+      var el = h('div', { class: 'ep-row' + (isCur ? ' current' : '') }, [
+        h('span', { class: 'n', text: T('E{0}', e.episode_num || '') }),
+        h('span', { class: 't', text: e.title || T('Episode {0}', e.episode_num || ''), dir: 'auto' }),
+        h('span', { class: 'd', text: epDuration(e) }), state]);
+      Focus.make(el, function () {
+        if (isCur) { closeEpPanel(); return; }
+        clearInterval(nextTimer); save(true);
+        var ctx = S.ctx;
+        playEpisode({ series: ctx.series, info: ctx.info, season: season, epId: e.id, backdrop: ctx.backdrop }, resumeAt(e));
+      });
+      if (isCur) curEl = el;
+      inner.appendChild(el);
+    });
+    if (!list.length) inner.appendChild(h('div', { class: 'note', text: T('No episodes in this season.') }));
+    box.appendChild(inner);
+    box.appendChild(h('div', { class: 'ep-panel-hints', text: T('▲▼ Move   OK Play') + (seasons.length > 1 ? '   ' + T('◀▶ Season') : '') + '   ' + T('BACK Close') }));
+    var first = inner.querySelector('.focusable');
+    if (curEl || first) Focus.set(curEl || first);
+  }
+  function openEpPanel() {
+    if (!S || S.kind !== 'episode' || !S.ctx || !S.ctx.info) return;
+    closeEpPanel(true);
+    S.epPanel = h('div', { class: 'ep-panel' });
+    osd.appendChild(S.epPanel);
+    showOsd(0);
+    renderEpPanel(String((S.meta && S.meta.season) || seasonsOf()[0]));
+  }
+  function closeEpPanel(quiet) {
+    if (!S || !S.epPanel) return;
+    if (S.epPanel.parentNode) S.epPanel.parentNode.removeChild(S.epPanel);
+    S.epPanel = null;
+    if (!quiet) showOsd();
+  }
+  function epPanelKey(c) {
+    if (c === K.UP || c === K.DOWN) { Focus.move(c === K.UP ? 'up' : 'down'); return true; }
+    if (c === K.ENTER) { Focus.select(); return true; }
+    if (c === K.LEFT || c === K.RIGHT) {
+      var fwd = I18N.rtl ? K.LEFT : K.RIGHT;
+      var ss = seasonsOf(), i = ss.indexOf(String(S.epPanel.season)) + (c === fwd ? 1 : -1);
+      if (i >= 0 && i < ss.length) renderEpPanel(ss[i]);
+      return true;
+    }
+    return true;
+  }
+  function playPrev() {
+    if (!S || !S.prevEp) return;
+    clearInterval(nextTimer);
+    save(true);
+    var ctx = S.ctx, p = S.prevEp;
+    playEpisode({ series: ctx.series, info: ctx.info, season: p.season, epId: p.ep.id, backdrop: ctx.backdrop }, resumeAt(p.ep));
+  }
+  function epMode(sel) {
+    if (!S || !S.epBtns) return;
+    S.epSel = sel;
+    ['prev', 'list', 'next'].forEach(function (w) { S.epBtns[w].classList.toggle('sel', sel === w); });
+    if (sel) showOsd(0); else showOsd();
+  }
+  function epKey(c) {
+    var order = ['prev', 'list', 'next'].filter(function (w) { return w === 'list' || (w === 'prev' ? S.prevEp : S.nextEp); });
+    var at = order.indexOf(S.epSel);
+    if (I18N.rtl && (c === K.LEFT || c === K.RIGHT)) c = c === K.LEFT ? K.RIGHT : K.LEFT;   // the row runs right-to-left in Arabic
+    if (c === K.LEFT && at > 0) epMode(order[at - 1]);
+    else if (c === K.RIGHT && at < order.length - 1) epMode(order[at + 1]);
+    else if (c === K.ENTER) { var w = S.epSel; epMode(null); if (w === 'prev') playPrev(); else if (w === 'next') playNext(); else openEpPanel(); }
+    else if (c === K.UP) epMode(null);
+    return true;
+  }
   function playNext() {
     if (!S || !S.nextEp) return;
     clearInterval(nextTimer);
     if (!S.nextShown || S.nextShown === 'soon') markDone();
     var ctx = S.ctx, n = S.nextEp;
-    playEpisode({ series: ctx.series, info: ctx.info, season: n.season, epId: n.ep.id, backdrop: ctx.backdrop }, 0);
+    playEpisode({ series: ctx.series, info: ctx.info, season: n.season, epId: n.ep.id, backdrop: ctx.backdrop }, resumeAt(n.ep));
   }
 
   /* ---------- keys ---------- */
@@ -243,6 +372,8 @@ var PlayerUI = (function () {
       return true;
     }
     if (S.blocking && !App.isBack(e)) return true;
+    if (S.epPanel && App.isBack(e)) { closeEpPanel(); return true; }
+    if (S.epSel && App.isBack(e)) { epMode(null); return true; }
     if (App.isBack(e) || c === K.STOP) {
       if (S.zapOpen) { closeZap(); return true; }
       exit(); return true;
@@ -251,6 +382,8 @@ var PlayerUI = (function () {
   }
   function vodKey(e) {
     var c = e.keyCode;
+    if (S.epPanel) return epPanelKey(c);
+    if (S.epSel) return epKey(c);
     switch (c) {
       case K.ENTER: case K.PLAYPAUSE: togglePause(); return true;
       case K.PLAY: if (S.paused()) togglePause(); return true;
@@ -258,7 +391,10 @@ var PlayerUI = (function () {
       case K.LEFT: case K.RIGHT: stepSeek(c === K.RIGHT ? 1 : -1, e.repeat); return true;
       case K.FF: case K.RW: jump(c === K.FF ? 30000 : -30000); return true;
       case K.UP: case K.INFO: optionsMenu(); return true;
-      case K.DOWN: showOsd(); return true;
+      case K.DOWN: if (S.epBtns) epMode(S.nextEp ? 'next' : 'list'); else showOsd(); return true;
+      case K.CHUP: if (S.nextEp) playNext(); return true;
+      case K.CHDN: if (S.prevEp) playPrev(); return true;
+      case K.GREEN: if (S.prevEp) playPrev(); return true;
       case K.RED: seekTo(0); App.toast('Restarted from the beginning'); return true;
       case K.BLUE: if (S.nextEp) playNext(); return true;
     }
@@ -307,6 +443,8 @@ var PlayerUI = (function () {
     items.push({ head: 'More' });
     items.push({ label: 'Sleep timer', value: sleepTimer ? 'On' : 'Off', a: 'sleep' });
     items.push({ label: 'Restart from beginning', a: 'restart' });
+    if (S.kind === 'episode') items.push({ label: 'All episodes', a: 'eplist' });
+    if (S.prevEp) items.push({ label: 'Previous episode', a: 'prev' });
     if (S.nextEp) items.push({ label: 'Next episode', a: 'next' });
     App.menu(S.title, items).then(function (it) {
       if (!S) return;
@@ -317,6 +455,8 @@ var PlayerUI = (function () {
       if (it.a === 'sleep') sleepMenu();
       if (it.a === 'restart') seekTo(0);
       if (it.a === 'next') playNext();
+      if (it.a === 'prev') playPrev();
+      if (it.a === 'eplist') { openEpPanel(); return; }
       showOsd();
     });
   }
@@ -463,7 +603,7 @@ var PlayerUI = (function () {
     var eps = info.episodes || {}, seasons = Object.keys(eps).sort(function (a, b) { return a - b; }), flat = [];
     seasons.forEach(function (se) { (eps[se] || []).forEach(function (e) { flat.push({ season: se, ep: e }); }); });
     var i = flat.findIndex(function (x) { return String(x.ep.id) === String(epId); });
-    return { cur: flat[i], next: i >= 0 ? flat[i + 1] : null };
+    return { cur: flat[i], next: i >= 0 ? flat[i + 1] : null, prev: i > 0 ? flat[i - 1] : null };
   }
   function playEpisode(ctx, startMs) {
     var api = App.api, f = findEpisode(ctx.info, ctx.epId);
@@ -472,7 +612,7 @@ var PlayerUI = (function () {
     var title = ctx.series.name;
     common({ kind: 'episode', ctx: ctx, title: title, sub: T('S{0}:E{1}', f.cur.season, e.episode_num || '') + ' · ' + (e.title || ''),
       key: 'episode:' + e.id, url: api.episodeUrl(e.id, e.container_extension), durationHint: ei.duration_secs ? ei.duration_secs * 1000 : 0,
-      nextEp: f.next, nextShown: false,
+      nextEp: f.next, prevEp: f.prev, nextShown: false,
       meta: { type: 'episode', id: e.id, title: e.title, seriesId: ctx.series.id, seriesName: title, season: f.cur.season, epNum: e.episode_num,
         poster: ctx.series.icon, thumb: ei.movie_image || ctx.series.icon, backdrop: ctx.backdrop, ext: e.container_extension } });
     startStream(startMs);

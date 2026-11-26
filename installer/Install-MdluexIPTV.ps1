@@ -182,8 +182,34 @@ $tmp = Join-Path $env:TEMP 'mdluex.wgt'
 Copy-Item $wgt.FullName $tmp -Force
 $remote = '/home/owner/share/tmp/sdk_tools/tmp/mdluex.wgt'
 & $sdb -s "${tvIp}:26101" push $tmp $remote | Out-Null
-$res = (& $sdb -s "${tvIp}:26101" shell 0 vd_appinstall $pkgId $remote) -join "`n"
-if ($res -notmatch 'install completed') { Say $res; Fail 'The TV refused the install (see the message above).' }
+function Install-OnTv { (& $sdb -s "${tvIp}:26101" shell 0 vd_appinstall $pkgId $remote) -join "`n" }
+$res = Install-OnTv
+if ($res -notmatch 'install completed' -and $res -match '118') {
+  # 118012: some TVs (often Tizen 4/5) first need permission to install apps signed with this certificate
+  # (Tizen Studio's "Permit to install applications"). Give it, then try again.
+  Say 'The TV needs permission for your certificate first. Giving it...' Yellow
+  & $tizen install-permit -s "${tvIp}:26101" 2>&1 | Out-Null
+  & $sdb -s "${tvIp}:26101" push $tmp $remote | Out-Null
+  $res = Install-OnTv
+}
+if ($res -notmatch 'install completed' -and $res -match '118') {
+  # an older copy signed by a different certificate can't be replaced: remove it, then install fresh
+  $old = (& $sdb -s "${tvIp}:26101" shell 0 vd_applist 2>$null) -join "`n"
+  if ($old -match $pkgId) {
+    Say 'Removing an older copy of Mdluex IPTV that was signed differently...' Yellow
+    & $sdb -s "${tvIp}:26101" shell 0 vd_appuninstall $pkgId 2>&1 | Out-Null
+    & $sdb -s "${tvIp}:26101" push $tmp $remote | Out-Null
+    $res = Install-OnTv
+  }
+}
+if ($res -notmatch 'install completed') {
+  Say $res
+  if ($res -match '118') {
+    Fail ("The TV refused the app's signature (error 118012). Check that the certificate profile '$CertProfile' is a Samsung TV certificate " +
+          "(privilege level Public) made for this TV's DUID $duid. If it was made before for another TV, create a new one in the Certificate Manager and run this again.")
+  }
+  Fail 'The TV refused the install (see the message above).'
+}
 & $sdb -s "${tvIp}:26101" shell 0 was_execute $appId | Out-Null
 Remove-Item $work -Recurse -Force -ErrorAction SilentlyContinue
 

@@ -684,3 +684,86 @@ html.touch #hintbar { display: none; }
 }
 .quran-bar .qtbtn.focused { background: #fdf3e6; color: #8a1a13; }
 html.touch .osd-top { padding-left: 180px; }   /* room for the close button */
+
+/* LG: live preview of the focused channel inside the preview card */
+.preview-card .big-logo { position: relative; overflow: hidden; }
+.preview-card .big-logo .live-pv { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; object-fit: contain; opacity: 0; transition: opacity .4s; }
+.preview-card .big-logo.pv-playing .live-pv { opacity: 1; }
+.preview-card .big-logo.pv-loading:after { content: ''; position: absolute; right: 16px; bottom: 16px; width: 34px; height: 34px; border: 4px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; -webkit-animation: pvspin 1s linear infinite; animation: pvspin 1s linear infinite; }
+@-webkit-keyframes pvspin { to { -webkit-transform: rotate(360deg); } }
+@keyframes pvspin { to { transform: rotate(360deg); } }
+
+/* player: previous / all / next episode buttons, and the episode panel (Kerolosashraf7, issue #3) */
+.osd-eps { display: flex; justify-content: space-between; margin-top: 24px; }
+.osd-eps .ep-btn { display: flex; align-items: center; width: 37%; padding: 16px 24px; border-radius: 12px; background: rgba(255,255,255,.08); border: 3px solid transparent; transition: background .15s, border-color .15s; }
+.osd-eps .ep-btn.list { width: 22%; margin: 0 2%; justify-content: center; }
+.osd-eps .ep-btn.next { flex-direction: row-reverse; text-align: right; }
+.osd-eps .ep-btn .ico { font-size: 40px; line-height: 1; margin: 0 20px 0 0; }
+.osd-eps .ep-btn.next .ico { margin: 0 0 0 20px; }
+.osd-eps .ep-btn .txt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.osd-eps .ep-btn .lab { font-size: 20px; color: #9a9aa8; text-transform: uppercase; letter-spacing: .06em; }
+html.lang-ar .osd-eps .ep-btn .lab { text-transform: none; letter-spacing: 0; }
+.osd-eps .ep-btn .name { font-size: 28px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.osd-eps .ep-btn.sel, .osd-eps .ep-btn.focused { background: rgba(209,21,21,.9); border-color: #fff; }
+.osd-eps .ep-btn.sel .lab, .osd-eps .ep-btn.focused .lab { color: #fff; }
+.osd-eps .ep-btn.disabled { opacity: .35; }
+.ep-panel { position: absolute; right: 0; top: 0; bottom: 0; width: 760px; background: rgba(8,8,10,.95); padding: 56px 34px 40px; z-index: 7; display: flex; flex-direction: column; }
+.ep-panel-head { margin-bottom: 18px; }
+.ep-panel-head .series { font-size: 24px; color: #9a9aa8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ep-panel-head .season { font-size: 36px; font-weight: 800; margin-top: 6px; }
+.ep-panel-head .season span { margin-right: 18px; }
+.ep-panel-head .season .arr { color: #d11515; font-size: 28px; }
+.ep-panel-head .season .arr.off { color: #343434; }
+.ep-panel .inner { flex: 1; overflow: hidden; }
+html.touch .ep-panel .inner { overflow-y: auto; }
+.ep-row { display: flex; align-items: center; padding: 18px 20px; margin-bottom: 8px; border-radius: 10px; border: 3px solid transparent; font-size: 26px; }
+.ep-row .n { width: 76px; font-weight: 800; color: #9a9aa8; flex: none; }
+.ep-row .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ep-row .d { margin-left: 16px; color: #9a9aa8; font-size: 22px; flex: none; }
+.ep-row .st { margin-left: 16px; flex: none; font-size: 22px; }
+.ep-row .st.done { color: #2ecc71; font-weight: 800; }
+.ep-row .st.now { color: #d11515; font-weight: 800; }
+.ep-row .st.prog { width: 70px; height: 8px; background: rgba(255,255,255,.2); border-radius: 4px; overflow: hidden; }
+.ep-row .st.prog i { display: block; height: 100%; background: #d11515; }
+.ep-row.current .n, .ep-row.current .t { color: #ff4a4a; }
+.ep-row.focused { background: #252525; border-color: #fff; }
+.ep-panel-hints { margin-top: 16px; font-size: 20px; color: #9a9aa8; white-space: pre; }
+html.touch .ep-panel-hints { display: none; }
+
+/* Add playlist: form on the left, phone QR code on the right */
+.pl-cols { display: flex; align-items: stretch; }
+.pl-cols .pl-form { flex: 1; min-width: 0; }
+.pl-cols .pl-qr { width: 470px; flex: none; margin-left: 50px; padding-left: 50px; border-left: 1px solid var(--line); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+html[dir=rtl] .pl-cols .pl-qr { margin-left: 0; padding-left: 0; margin-right: 50px; padding-right: 50px; border-left: 0; border-right: 1px solid var(--line); }
+.pl-qr h3 { font-size: 32px; margin-bottom: 10px; }
+.pl-qr p { font-size: 22px; margin-bottom: 20px; }
+.pl-qr .qr-box { background: #fff; border-radius: 14px; padding: 8px; line-height: 0; }
+.pl-qr .qr-box canvas { width: 400px; height: 400px; }
+.pl-qr .qr-status { margin-top: 18px; font-size: 24px; color: var(--muted); }
+.pl-qr .qr-status.ok { color: var(--ok); font-weight: 700; }
+.pl-qr .qr-status.bad { color: #ff6b6b; }
+.pl-qr .qr-safe { margin-top: 10px; font-size: 19px; color: var(--muted); }
+html[dir=rtl] .ep-panel { right: auto; left: 0; }
+html[dir=rtl] .ep-panel-head .season span { margin-right: 0; margin-left: 18px; }
+html[dir=rtl] .ep-row .d, html[dir=rtl] .ep-row .st { margin-left: 0; margin-right: 16px; }
+html[dir=rtl] .osd-eps .ep-btn .ico { margin: 0 0 0 20px; }
+html[dir=rtl] .osd-eps .ep-btn.next .ico { margin: 0 20px 0 0; }
+html[dir=rtl] .osd-eps .ep-btn.next { text-align: left; }
+.ep-panel .ep-close { position: absolute; top: 40px; right: 34px; width: 64px; height: 64px; line-height: 64px; text-align: center; border-radius: 50%; background: rgba(255,255,255,.1); font-size: 30px; }
+html[dir=rtl] .ep-panel .ep-close { right: auto; left: 34px; }
+.ep-panel-head .season .arr { cursor: pointer; padding: 0 8px; }
+/* phone: bigger labels on the episode buttons and list */
+html.phone .osd-eps .ep-btn .lab { font-size: 24px; }
+html.phone .osd-eps .ep-btn .name { font-size: 30px; }
+html.phone .ep-panel { width: 820px; padding-top: 40px; }
+html.phone .ep-row { font-size: 30px; padding: 22px 20px; }
+html.phone .ep-panel-head .season { font-size: 40px; }
+html.phone .ep-panel-head .season .arr { font-size: 40px; padding: 0 22px; }
+/* phone: the 720-high canvas; windows scroll inside instead of running off the screen */
+html.phone .modal { max-height: 690px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 30px 40px; }
+html.phone .modal .menu { max-height: 520px; }
+html.phone .detail .hero { height: 720px; }
+html.phone #av-player, html.phone #html5-player { width: 100%; height: 100%; }
+/* touch: a taller invisible strip around the timeline so a finger can grab it */
+html.touch .osd-bar:before { content: ''; position: absolute; left: 0; right: 0; top: -26px; bottom: -26px; }
+html.phone .osd-bar { height: 14px; }

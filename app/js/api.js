@@ -50,10 +50,12 @@ var Api = (function () {
   };
   Xtream.prototype.call = function (params, opts) {
     opts = opts || {};
-    var self = this, key = JSON.stringify(params || {}), ttl = opts.ttl == null ? 10 * 60 * 1000 : opts.ttl;
+    var self = this, key = JSON.stringify(params || {}), ttl = opts.ttl == null ? 60 * 60 * 1000 : opts.ttl;
     var c = this.cache[key];
     if (c && Date.now() - c.t < ttl) return Promise.resolve(c.v);
     var retries = opts.retries == null ? 2 : opts.retries, timeout = opts.timeout || 15000;
+    // a whole catalog (no category) can be many MB: give it time instead of aborting and starting over
+    if (params && /^get_(vod_streams|series|live_streams)$/.test(params.action) && params.category_id == null) { timeout = Math.max(timeout, 90000); retries = Math.min(retries, 1); }
     var attempt = 0;
     function run() {
       return getJSON(self.url(params), timeout).catch(function (e) {

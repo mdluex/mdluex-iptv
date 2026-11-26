@@ -137,6 +137,14 @@ var I18N = (function () {
     '🔒 Locked. Press OK on the category and enter your PIN.': '🔒 مقفل. اضغط OK على القسم وأدخل الرقم السري.',
     '🔒 This category is locked. Press OK on it and enter your PIN.': '🔒 هذا القسم مقفل. اضغط OK عليه وأدخل الرقم السري.',
     'No results for "{0}".': 'لا توجد نتائج لـ "{0}".',
+    'Episodes': 'الحلقات', 'Next / previous episode': 'الحلقة التالية / السابقة', 'Previous episode': 'الحلقة السابقة', 'None': 'لا يوجد',
+    'All episodes': 'كل الحلقات', 'Playing': 'يُعرض الآن', 'No episodes in this season.': 'لا توجد حلقات في هذا الموسم.',
+    '▲▼ Move   OK Play': '▲▼ تنقّل   OK تشغيل', '◀▶ Season': '◀▶ الموسم', 'BACK Close': 'BACK إغلاق',
+    'Waiting for your phone…': 'في انتظار هاتفك…', '✓ Received from your phone': '✓ تم الاستلام من هاتفك',
+    'This code has expired. Close this window and open it again for a new one.': 'انتهت صلاحية هذا الرمز. أغلق هذه النافذة وافتحها مرة أخرى للحصول على رمز جديد.',
+    'Easier: use your phone': 'أسهل: استخدم هاتفك', 'Scan this code with your phone camera, type the login there and press Send. It appears here by itself.': 'امسح هذا الرمز بكاميرا هاتفك، واكتب بيانات الدخول هناك ثم اضغط إرسال. ستظهر هنا تلقائيًا.',
+    '🔒 Sent encrypted. Only this TV can read it.': '🔒 تُرسل مشفّرة. هذا التلفزيون فقط يستطيع قراءتها.',
+    'Long-press': 'الضغط المطوّل',
     'Could not open the stream ({0})':'تعذّر فتح البث ({0})', 'Could not start: {0}': 'تعذّر بدء التشغيل: {0}', 'Playback error: {0}': 'خطأ في التشغيل: {0}'
   };
   var MONTHS_AR = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
