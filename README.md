@@ -2,6 +2,9 @@
 
 # Mdluex IPTV
 
+### 👉 Install it on your TV: **[iptv.mdluex.com](https://iptv.mdluex.com)**
+Pick your TV and follow the pictures — with download buttons for the newest version (English and Arabic).
+
 Watch your IPTV subscription on your smart TV in a clean, Netflix-style app: live TV, movies and series, all in
 one place. It also includes the **Mdluex Industries** YouTube channel, which you can watch with no subscription at all.
 

@@ -15,7 +15,7 @@ Building, testing and releasing the app. For installing and using it, see the [R
 | `platforms/webos/` | LG webOS app settings (`appinfo.json`) |
 | `server/` | [Mdluex IPTV Server](server/README.md), the self-hosted Xtream Codes compatible server (Rust) |
 | `installer/` | The Windows one-click Samsung installer |
-| `landing/` | The install website (deployed on Vercel, root directory `landing`, redeploys on every push): English/Arabic, light/dark, download buttons that read the newest release |
+| `landing/` | The install website https://iptv.mdluex.com (deployed on Vercel, root directory `landing`, redeploys on every push): English/Arabic, light/dark, download buttons that read the newest release |
 | `tools/make_landing_art.py` | Draws the website's step illustrations (`landing/img/`) |
 | `docs/` | GitHub Pages: screenshots, the LG Homebrew repository (`lg/`), the Fire TV short link (`apk/`) |
 | `tools/install.ps1` | Build, sign, install and launch on a Samsung TV |
