@@ -15,8 +15,7 @@ Building, testing and releasing the app. For installing and using it, see the [R
 | `platforms/webos/` | LG webOS app settings (`appinfo.json`) |
 | `server/` | [Mdluex IPTV Server](server/README.md), the self-hosted Xtream Codes compatible server (Rust) |
 | `installer/` | The Windows one-click Samsung installer |
-| `landing/` | The install website (home page of GitHub Pages): English/Arabic, light/dark, live download buttons |
-| `.github/workflows/pages.yml` | Publishes `landing/` + `docs/` to GitHub Pages on every push to main and every release |
+| `landing/` | The install website (deployed on Vercel, root directory `landing`, redeploys on every push): English/Arabic, light/dark, download buttons that read the newest release |
 | `tools/make_landing_art.py` | Draws the website's step illustrations (`landing/img/`) |
 | `docs/` | GitHub Pages: screenshots, the LG Homebrew repository (`lg/`), the Fire TV short link (`apk/`) |
 | `tools/install.ps1` | Build, sign, install and launch on a Samsung TV |
@@ -97,7 +96,7 @@ updates `docs/lg/apps.json`), commit and push, then create the release with `vX.
 files. The Android release key and `keystore.properties` stay outside the repository.
 
 After every release: check that Apps2Samsung's catalog and the LG Homebrew Channel offer the new version (both
-read the latest release), and that the website (landing page) shows it — it is republished automatically.
+read the latest release), and that the website (landing page, on Vercel) shows it — Vercel redeploys it on every push.
 
 ## Compatibility
 Tested on a 2021 Samsung TV (Tizen 6.0, Chrome 76 engine) and Android (Android 16 emulator, 1080p). The LG and

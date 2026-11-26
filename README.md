@@ -11,9 +11,6 @@ Works on **Samsung**, **LG**, **Android TV / Google TV** and **Amazon Fire TV**.
 > with the IPTV subscription you already have (the *server address*, *username* and *password* your provider gave
 > you — often called an "Xtream Codes" login).
 
-> **The easiest way to install: [mdluex.github.io/mdluex-iptv](https://mdluex.github.io/mdluex-iptv/)** — pick your TV and follow
-> the pictures, with download buttons for the newest version (English and Arabic).
-
 ![Mdluex IPTV home screen](docs/screens/home.png)
 
 ## Contents
