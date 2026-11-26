@@ -1,7 +1,7 @@
-/* Mdluex Industries YouTube channel: live feed with built-in fallback, plus an embedded player. */
+/* YouTube channels: Mdluex Industries (always on, with a built-in offline copy) plus channels the viewer adds.
+   Each channel: latest uploads, Videos / Shorts / Playlists tabs and its featured video. */
 var Channel = (function () {
-  var CHANNEL_ID = 'UCPS4VJgphh0fNQAbhU6eY7w';
-  var cache = null;
+  var CHANNEL_ID = 'UCPS4VJgphh0fNQAbhU6eY7w';   // Mdluex Industries
 
   /* Player page hosted on GitHub Pages (github.com/mdluex/mdluex-tv-player): YouTube needs a real web address. */
   var PLAYER_URL = 'https://mdluex.github.io/mdluex-tv-player/';
@@ -17,28 +17,14 @@ var Channel = (function () {
   function parseFeed(xmlText) {
     var doc = new DOMParser().parseFromString(xmlText, 'application/xml');
     var entries = doc.getElementsByTagName('entry');
-    if (!entries.length) throw new Error('empty feed');
-    var name = (doc.getElementsByTagName('title')[0] || {}).textContent || 'Mdluex Industries';
+    var name = (doc.getElementsByTagName('title')[0] || {}).textContent || '';
     var videos = Array.prototype.map.call(entries, function (e) {
       function tag(t) { var n = e.getElementsByTagName(t)[0]; return n ? n.textContent : ''; }
-      return { id: tag('yt:videoId') || tag('videoId'), title: tag('title'), published: tag('published'), desc: tag('media:description').slice(0, 400) };
+      return { id: tag('yt:videoId') || tag('videoId'), title: tag('title'), published: tag('published'), desc: tag('media:description').slice(0, 400), ch: tag('name') };
     });
     return { name: name, videos: videos };
   }
 
-  function load() {
-    if (cache) return Promise.resolve(cache);
-    var snap = typeof CHANNEL_SNAPSHOT !== 'undefined' ? CHANNEL_SNAPSHOT : { name: 'Mdluex Industries', videos: [] };
-    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    var t = setTimeout(function () { if (ctl) ctl.abort(); }, 8000);
-    return fetch('https://www.youtube.com/feeds/videos.xml?channel_id=' + CHANNEL_ID, { signal: ctl ? ctl.signal : undefined })
-      .then(function (r) { if (!r.ok) throw new Error('feed ' + r.status); return r.text(); })
-      .then(parseFeed)
-      .catch(function () { return snap; })
-      .then(function (d) { clearTimeout(t); cache = d; return d; });
-  }
-
-  /* ---------- Channel tabs: Videos, Shorts, Playlists (like YouTube) ---------- */
   function fetchText(url, ms) {
     var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var t = setTimeout(function () { if (ctl) ctl.abort(); }, ms || 10000);
@@ -47,30 +33,9 @@ var Channel = (function () {
       .then(function (x) { clearTimeout(t); return x; }, function (e) { clearTimeout(t); throw e; });
   }
   function feedOf(query) { return fetchText('https://www.youtube.com/feeds/videos.xml?' + query).then(parseFeed); }
-  var tabsCache = null;
-  function tabs() {
-    if (tabsCache) return tabsCache;
-    var snap = typeof CHANNEL_SNAPSHOT !== 'undefined' ? CHANNEL_SNAPSHOT : {};
-    var up = CHANNEL_ID.slice(2);
-    var videos = feedOf('playlist_id=UULF' + up).then(function (d) { return d.videos; }).catch(function () { return snap.longVideos || []; });
-    var shorts = feedOf('playlist_id=UUSH' + up).then(function (d) { return d.videos; }).catch(function () { return snap.shorts || []; });
-    var playlists = fetchText('https://www.youtube.com/channel/' + CHANNEL_ID + '/playlists', 12000)
-      .then(function (html) {
-        var ids = [], re = /"playlistId":"(PL[\w-]+)"/g, m;
-        while ((m = re.exec(html))) if (ids.indexOf(m[1]) < 0) ids.push(m[1]);
-        if (!ids.length) throw new Error('no playlists');
-        return Promise.all(ids.slice(0, 20).map(function (id) {
-          return feedOf('playlist_id=' + id).then(function (d) { return { id: id, title: d.name, videos: d.videos }; }, function () { return null; });
-        }));
-      })
-      .then(function (list) { list = list.filter(function (p) { return p && p.videos.length; }); if (!list.length) throw new Error('empty'); return list; })
-      .catch(function () { return snap.playlists || []; });
-    tabsCache = Promise.all([videos, shorts, playlists]).then(function (r) {
-      r[1].forEach(function (v) { shortIds[v.id] = 1; });
-      return { videos: r[0], shorts: r[1], playlists: r[2] };
-    });
-    return tabsCache;
-  }
+  function unjson(s) { try { return JSON.parse('"' + s + '"'); } catch (e) { return s; } }
+  function fixUrl(u) { return u && u.indexOf('//') === 0 ? 'https:' + u : u; }
+
   // Shorts are vertical: they must be shown uncropped
   var shortIds = {};
   (function () { var s = typeof CHANNEL_SNAPSHOT !== 'undefined' && CHANNEL_SNAPSHOT.shorts; (s || []).forEach(function (v) { shortIds[v.id] = 1; }); })();
@@ -78,39 +43,160 @@ var Channel = (function () {
   // Shorts: the HD frame has the vertical picture in the middle; the card crops to it
   function shortThumb(id) { return 'https://i.ytimg.com/vi/' + id + '/hq720.jpg'; }
 
-  /* Featured video set on the channel page (changes on YouTube are picked up automatically).
-     Order: live channel page -> last value seen on this TV -> built-in snapshot -> latest upload. */
-  var featuredCache = null;
-  function featured() {
-    if (featuredCache) return Promise.resolve(featuredCache);
-    var saved = null;
-    try { saved = JSON.parse(localStorage.getItem('mdx_yt_featured') || 'null'); } catch (e) {}
-    var snap = (typeof CHANNEL_SNAPSHOT !== 'undefined' && CHANNEL_SNAPSHOT.featured) || null;
-    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    var t = setTimeout(function () { if (ctl) ctl.abort(); }, 10000);
-    return fetch('https://www.youtube.com/channel/' + CHANNEL_ID, { signal: ctl ? ctl.signal : undefined })
-      .then(function (r) { if (!r.ok) throw new Error('page ' + r.status); return r.text(); })
-      .then(function (html) {
-        var m = /"channelVideoPlayerRenderer":\{"videoId":"([\w-]{11})","title":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/.exec(html);
-        if (!m) throw new Error('no featured video');
-        var f = { id: m[1], title: JSON.parse('"' + m[2] + '"') };
-        var d = /"channelVideoPlayerRenderer":\{[\s\S]{0,4000}?"description":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/.exec(html);
-        if (d) { try { f.desc = JSON.parse('"' + d[1] + '"').slice(0, 400); } catch (e) {} }
-        try { localStorage.setItem('mdx_yt_featured', JSON.stringify(f)); } catch (e) {}
-        return f;
-      })
-      .catch(function () { return saved || snap; })
-      .then(function (f) {
-        clearTimeout(t);
-        return load().then(function (ch) {
-          if (!f) f = ch.videos[0] || null;
-          // use the feed's description if this video is among the latest uploads
-          var inFeed = f && ch.videos.find(function (v) { return v.id === f.id; });
-          if (inFeed) f = Object.assign({}, inFeed, f, { desc: f.desc || inFeed.desc });
-          featuredCache = f;
-          return f;
+  /* One channel. Only Mdluex Industries has a built-in snapshot to fall back on when offline. */
+  var channels = {};
+  function of(id, knownName) {
+    id = id || CHANNEL_ID;
+    if (channels[id]) return channels[id];
+    var isMdluex = id === CHANNEL_ID;
+    var snap = isMdluex && typeof CHANNEL_SNAPSHOT !== 'undefined' ? CHANNEL_SNAPSHOT : {};
+    var cache = null, tabsCache = null, featuredCache = null;
+
+    function load() {
+      if (cache) return Promise.resolve(cache);
+      var fallback = { name: snap.name || knownName || '', videos: snap.videos || [] };
+      return feedOf('channel_id=' + id)
+        .then(function (d) { if (!d.videos.length && fallback.videos.length) throw new Error('empty'); return d; })
+        .catch(function () { return fallback; })
+        .then(function (d) {
+          if (!d.name) d.name = knownName || 'YouTube';
+          d.videos.forEach(function (v) { if (!v.ch) v.ch = d.name; });
+          cache = d; return d;
         });
+    }
+
+    /* Channel tabs: Videos, Shorts, Playlists (like YouTube) */
+    function tabs() {
+      if (tabsCache) return tabsCache;
+      var up = id.slice(2);
+      var videos = feedOf('playlist_id=UULF' + up).then(function (d) { return d.videos; }).catch(function () { return snap.longVideos || null; });
+      var shorts = feedOf('playlist_id=UUSH' + up).then(function (d) { return d.videos; }).catch(function () { return snap.shorts || []; });
+      var playlists = fetchText('https://www.youtube.com/channel/' + id + '/playlists', 12000)
+        .then(function (html) {
+          var ids = [], re = /"playlistId":"(PL[\w-]+)"/g, m;
+          while ((m = re.exec(html))) if (ids.indexOf(m[1]) < 0) ids.push(m[1]);
+          if (!ids.length) throw new Error('no playlists');
+          return Promise.all(ids.slice(0, 20).map(function (pid) {
+            return feedOf('playlist_id=' + pid).then(function (d) { return { id: pid, title: d.name, videos: d.videos }; }, function () { return null; });
+          }));
+        })
+        .then(function (list) { list = list.filter(function (p) { return p && p.videos.length; }); if (!list.length) throw new Error('empty'); return list; })
+        .catch(function () { return snap.playlists || []; });
+      tabsCache = Promise.all([videos, shorts, playlists, load()]).then(function (r) {
+        r[1].forEach(function (v) { shortIds[v.id] = 1; });
+        // channels without the "long videos" list: use the latest uploads that are not Shorts
+        var vids = r[0] || r[3].videos.filter(function (v) { return !shortIds[v.id]; });
+        [vids, r[1]].forEach(function (l) { l.forEach(function (v) { if (!v.ch) v.ch = r[3].name; }); });
+        return { videos: vids, shorts: r[1], playlists: r[2] };
       });
+      return tabsCache;
+    }
+
+    /* Featured video set on the channel page (changes on YouTube are picked up automatically).
+       Order: live channel page -> last value seen on this TV -> built-in snapshot -> latest upload. */
+    function featured() {
+      if (featuredCache) return Promise.resolve(featuredCache);
+      var key = isMdluex ? 'mdx_yt_featured' : 'mdx_yt_featured_' + id;
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) {}
+      return fetchText('https://www.youtube.com/channel/' + id, 10000)
+        .then(function (html) {
+          var m = /"channelVideoPlayerRenderer":\{"videoId":"([\w-]{11})","title":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/.exec(html);
+          if (!m) throw new Error('no featured video');
+          var f = { id: m[1], title: unjson(m[2]) };
+          var d = /"channelVideoPlayerRenderer":\{[\s\S]{0,4000}?"description":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/.exec(html);
+          if (d) f.desc = unjson(d[1]).slice(0, 400);
+          try { localStorage.setItem(key, JSON.stringify(f)); } catch (e) {}
+          return f;
+        })
+        .catch(function () { return saved || snap.featured || null; })
+        .then(function (f) {
+          return load().then(function (ch) {
+            if (!f) f = ch.videos[0] || null;
+            // use the feed's description if this video is among the latest uploads
+            var inFeed = f && ch.videos.find(function (v) { return v.id === f.id; });
+            if (inFeed) f = Object.assign({}, inFeed, f, { desc: f.desc || inFeed.desc });
+            if (f && !f.ch) f.ch = ch.name;
+            featuredCache = f;
+            return f;
+          });
+        });
+    }
+    channels[id] = { id: id, isMdluex: isMdluex, load: load, tabs: tabs, featured: featured };
+    return channels[id];
+  }
+
+  /* ---------- channels the viewer added (saved on this TV) ---------- */
+  function userChannels() { return (Store.settings().ytChannels || []).filter(function (c) { return c && c.id && c.id !== CHANNEL_ID; }); }
+  function addChannel(c) {
+    var list = userChannels().filter(function (x) { return x.id !== c.id; });
+    list.push({ id: c.id, name: c.name, avatar: c.avatar || null });
+    Store.setSetting('ytChannels', list);
+  }
+  function removeChannel(id) {
+    if (id === CHANNEL_ID) return;   // Mdluex Industries is always on
+    Store.setSetting('ytChannels', userChannels().filter(function (x) { return x.id !== id; }));
+    delete channels[id];
+  }
+  /* The channel's real profile picture, read from its YouTube page (og:image) and remembered on this TV.
+     Mdluex Industries also has a built-in copy for when YouTube can't be reached. */
+  var MDLUEX_AVATAR = 'https://yt3.ggpht.com/jhtpG11x04FcwjDOaaZkRtdd1eMqvrNI2UvBPgv9ORHC7lXVHMgJHK-2Z8N3AzpykQprMkh6ww=s240-c-k-c0x00ffffff-no-rj-mo';
+  var avatarJobs = {};
+  function savedAvatar(id) {
+    try { var a = JSON.parse(localStorage.getItem('mdx_yt_avatars') || '{}')[id]; if (a) return a; } catch (e) {}
+    return id === CHANNEL_ID ? MDLUEX_AVATAR : null;
+  }
+  function avatar(id) {
+    if (avatarJobs[id]) return avatarJobs[id];
+    avatarJobs[id] = fetchText('https://www.youtube.com/channel/' + id, 12000).then(function (html) {
+      var m = /<meta property="og:image" content="([^"]+)"/.exec(html) || /"avatar":\{"thumbnails":\[\{"url":"([^"]+)"/.exec(html);
+      if (!m) throw new Error('no picture');
+      var url = fixUrl(m[1].replace(/&amp;/g, '&')).replace(/=s\d+-/, '=s240-');
+      try { var all = JSON.parse(localStorage.getItem('mdx_yt_avatars') || '{}'); all[id] = url; localStorage.setItem('mdx_yt_avatars', JSON.stringify(all)); } catch (e) {}
+      return url;
+    }).catch(function () { return savedAvatar(id); });
+    return avatarJobs[id];
+  }
+  /* every channel shown in the app: Mdluex Industries first, then the viewer's */
+  function allChannels() {
+    var snap = typeof CHANNEL_SNAPSHOT !== 'undefined' ? CHANNEL_SNAPSHOT : {};
+    return [{ id: CHANNEL_ID, name: snap.name || 'Mdluex Industries', avatar: savedAvatar(CHANNEL_ID), fixed: true }]
+      .concat(userChannels().map(function (c) { return Object.assign({}, c, { avatar: savedAvatar(c.id) || c.avatar }); }));
+  }
+
+  /* Find channels by name (YouTube's channel search). */
+  function search(q) {
+    return fetchText('https://www.youtube.com/results?search_query=' + encodeURIComponent(q) + '&sp=EgIQAg%253D%253D', 12000).then(function (html) {
+      var out = [], seen = {}, re = /"channelRenderer":\{"channelId":"(UC[\w-]{22})"/g, m;
+      while ((m = re.exec(html)) && out.length < 12) {
+        if (seen[m[1]]) continue;
+        seen[m[1]] = 1;
+        var part = html.slice(m.index, m.index + 5000);
+        var title = /"title":\{"simpleText":"((?:[^"\\]|\\.)*)"/.exec(part);
+        var img = /"thumbnails":\[\{"url":"((?:[^"\\]|\\.)*)"/.exec(part);
+        var info = /"(?:videoCountText|subscriberCountText)":\{(?:"accessibility":\{[^}]*\}\},)?"simpleText":"((?:[^"\\]|\\.)*)"/.exec(part);
+        out.push({ id: m[1], name: title ? unjson(title[1]) : m[1], avatar: img ? fixUrl(unjson(img[1])).replace(/=s\d+-/, '=s240-') : null, info: info ? unjson(info[1]) : '' });
+      }
+      return out;
+    });
+  }
+  /* A channel from what the viewer typed: a channel link, an @handle, a channel ID, or a name to search for. */
+  function resolve(text) {
+    text = String(text || '').trim();
+    var id = /(UC[\w-]{22})/.exec(text);
+    var handle = /(?:youtube\.com\/)?(@[\w.\-]+)/.exec(text) || /youtube\.com\/((?:c|user)\/[\w.\-]+)/.exec(text);
+    if (!id && !handle) return search(text);
+    var url = id ? 'https://www.youtube.com/channel/' + id[1] : 'https://www.youtube.com/' + handle[1];
+    return fetchText(url, 12000).then(function (html) {
+      var cid = (/"externalId":"(UC[\w-]{22})"/.exec(html) || /<meta itemprop="identifier" content="(UC[\w-]{22})"/.exec(html) ||
+        /"channelId":"(UC[\w-]{22})"/.exec(html) || [])[1];
+      if (!cid) return [];
+      var name = /<meta property="og:title" content="([^"]*)"/.exec(html);
+      var img = /<meta property="og:image" content="([^"]*)"/.exec(html);
+      var div = document.createElement('div');
+      div.innerHTML = name ? name[1] : '';
+      return [{ id: cid, name: div.textContent || cid, avatar: img ? img[1] : null, info: handle ? handle[1] : '' }];
+    });
   }
 
   /* ---------- YouTube IFrame API ---------- */
@@ -222,6 +308,8 @@ var Channel = (function () {
     if (m.ev === 'error' && pv.box) { pv.box.remove(); pv.box = pv.frame = null; }
   });
 
-  return { load: load, featured: featured, tabs: tabs, isShort: isShort, shortThumb: shortThumb, thumb: thumb, playerUrl: playerUrl, preview: { play: previewPlay, stop: pvStop, destroy: pvDestroy, suspend: pvSuspend }, loadApi: loadApi, openInYouTubeApp: openInYouTubeApp, CHANNEL_ID: CHANNEL_ID };
+  var mdluex = of(CHANNEL_ID);
+  return { load: mdluex.load, featured: mdluex.featured, tabs: mdluex.tabs, of: of, userChannels: userChannels, allChannels: allChannels,
+    addChannel: addChannel, removeChannel: removeChannel, avatar: avatar, search: search, resolve: resolve, isShort: isShort, shortThumb: shortThumb, thumb: thumb, playerUrl: playerUrl, preview: { play: previewPlay, stop: pvStop, destroy: pvDestroy, suspend: pvSuspend }, loadApi: loadApi, openInYouTubeApp: openInYouTubeApp, CHANNEL_ID: CHANNEL_ID };
 })();
 var Preview = Channel.preview;

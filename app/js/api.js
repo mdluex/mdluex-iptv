@@ -23,17 +23,17 @@ var Api = (function () {
     var timer = setTimeout(function () { if (ctl) ctl.abort(); }, timeout);
     return fetch(url, { signal: ctl ? ctl.signal : undefined, cache: 'no-store' })
       .then(function (r) {
-        if (!r.ok) throw new ApiError('Server answered with error ' + r.status, 'http');
+        if (!r.ok) throw new ApiError(T('Server answered with error {0}', r.status), 'http');
         return r.text();
       })
       .then(function (txt) {
-        if (!txt || !txt.trim()) throw new ApiError('Server sent an empty reply', 'empty');
-        try { return JSON.parse(txt); } catch (e) { throw new ApiError('Server sent an unreadable reply', 'parse'); }
+        if (!txt || !txt.trim()) throw new ApiError(T('Server sent an empty reply'), 'empty');
+        try { return JSON.parse(txt); } catch (e) { throw new ApiError(T('Server sent an unreadable reply'), 'parse'); }
       })
       .catch(function (e) {
         if (e instanceof ApiError) throw e;
-        if (e && e.name === 'AbortError') throw new ApiError('Server took too long to answer', 'timeout');
-        throw new ApiError('Cannot reach the server', 'network');
+        if (e && e.name === 'AbortError') throw new ApiError(T('Server took too long to answer'), 'timeout');
+        throw new ApiError(T('Cannot reach the server'), 'network');
       })
       .then(function (v) { clearTimeout(timer); return v; }, function (e) { clearTimeout(timer); throw e; });
   }
@@ -67,7 +67,7 @@ var Api = (function () {
   /* Account check: retries harder because this is what decides if the user gets in. */
   Xtream.prototype.account = function () {
     return this.call({}, { ttl: 0, retries: 3, timeout: 12000 }).then(function (d) {
-      if (!d || typeof d !== 'object' || !d.user_info) throw new ApiError('Server reply had no account information', 'noinfo');
+      if (!d || typeof d !== 'object' || !d.user_info) throw new ApiError(T('Server reply had no account information'), 'noinfo');
       return d;
     });
   };

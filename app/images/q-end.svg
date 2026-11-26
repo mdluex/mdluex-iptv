@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 100" width="220" height="100">
+  <!-- arabesque scrolls that close the surah header -->
+  <g fill="#f4b9b1" stroke="#a8251d" stroke-width="3" stroke-linejoin="round">
+    <path d="M8 50 C30 14 70 10 96 30 C110 41 118 47 132 47 C118 53 110 59 96 70 C70 90 30 86 8 50Z"/>
+    <path d="M132 47 C150 22 182 18 210 30 C196 38 188 44 184 50 C188 56 196 62 210 70 C182 82 150 78 132 53Z"/>
+  </g>
+  <g fill="#fffaf0" stroke="#a8251d" stroke-width="2">
+    <path d="M30 50 C44 32 66 30 82 42 C74 46 74 54 82 58 C66 70 44 68 30 50Z"/>
+    <circle cx="160" cy="50" r="11"/>
+  </g>
+  <g fill="#d9534a" stroke="#a8251d" stroke-width="1.5">
+    <circle cx="56" cy="50" r="7"/>
+    <circle cx="160" cy="50" r="4"/>
+  </g>
+  <g fill="none" stroke="#a8251d" stroke-width="2.5" stroke-linecap="round">
+    <path d="M96 30 C104 20 116 16 124 22"/>
+    <path d="M96 70 C104 80 116 84 124 78"/>
+  </g>
+</svg>

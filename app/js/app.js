@@ -31,31 +31,32 @@ function fmtClock(d) {
   d = d || new Date();
   if (Store.settings().clock24) return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   var hr = d.getHours() % 12 || 12;
-  return hr + ':' + String(d.getMinutes()).padStart(2, '0') + (d.getHours() < 12 ? ' AM' : ' PM');
+  return hr + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + T(d.getHours() < 12 ? 'AM' : 'PM');
 }
-var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-function fmtDate(ms) { var d = new Date(ms); return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); }
+function fmtDate(ms) { var d = new Date(ms); return d.getDate() + ' ' + I18N.month(d.getMonth()) + ' ' + d.getFullYear(); }
 function fmtAgo(ms) {
   var s = Math.floor((Date.now() - ms) / 1000);
-  if (s < 90) return 'just now';
-  if (s < 3600) return Math.floor(s / 60) + ' min ago';
-  if (s < 86400) return Math.floor(s / 3600) + ' h ago';
-  return Math.floor(s / 86400) + ' days ago';
+  if (s < 90) return T('just now');
+  if (s < 3600) return T('{0} min ago', Math.floor(s / 60));
+  if (s < 86400) return T('{0} h ago', Math.floor(s / 3600));
+  return T('{0} days ago', Math.floor(s / 86400));
 }
 var ICON = {
-  home: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 11h3v9h5v-6h4v6h5v-9h3z"/></svg>',
-  live: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-7.6l3.3-3.3-.7-.7L12 6 8 2l-.7.7L10.6 6H3a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm0 13H3V8h18z"/></svg>',
-  movie: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4z"/></svg>',
-  series: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14a2 2 0 0 0 2 2h14v-2H4zm16-4H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-8 12.5v-9l6 4.5z"/></svg>',
-  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg>',
-  heart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.4 10.6 20C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.6 11.5z"/></svg>',
-  settings: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.3 7.3 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.3 7.3 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.3 7.3 0 0 0 1.7 1L11 21h4l.4-2.9a7.3 7.3 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>',
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/></svg>',
+  live: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6.5" width="19" height="14" rx="2.5"/><path d="m8 2.5 4 4 4-4"/></svg>',
+  movie: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 4l2 5M13 4l2 5M18 4l2 5"/></svg>',
+  series: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="14" height="13" rx="2.5"/><path d="M3.5 7.5V18a2.5 2.5 0 0 0 2.5 2.5h11"/><path d="m12.5 7 3.5 2.5-3.5 2.5z"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.5-4.5"/></svg>',
+  heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.6-4.6-9.3-9.5C1.6 7.8 3.6 4.5 7.1 4.5c2 0 3.5 1.1 4.9 3 1.4-1.9 2.9-3 4.9-3 3.5 0 5.5 3.3 4.4 6.5-1.7 4.9-9.3 9.5-9.3 9.5z"/></svg>',
+  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>',
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg>',
   info: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/></svg>',
   restart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"/></svg>',
-  yt: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8zM10 15V9l5.2 3z"/></svg>',
+  subs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="2.5"/><path d="M5.5 5.5h13M8 2h8"/><path d="m10.5 12.5 4 2.5-4 2.5z"/></svg>',
+  yt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="m10 9 5 3-5 3z"/></svg>',
+  quran: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.2 5.1 7.7 4.5 3 4.5v14c4.7 0 7.2.6 9 2 1.8-1.4 4.3-2 9-2v-14c-4.7 0-7.2.6-9 2z"/><path d="M12 6.5v14"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>'
 };
 
@@ -89,7 +90,7 @@ var App = (function () {
   var toastTimer;
   function toast(msg, ms) {
     var t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
+    t.textContent = T(msg); t.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { t.classList.remove('show'); }, ms || 2800);
   }
@@ -133,11 +134,11 @@ var App = (function () {
   function confirm(title, text, okLabel, cancelLabel) {
     return new Promise(function (res) {
       modal(function (box, m) {
-        box.appendChild(h('h2', { text: title, dir: 'auto' }));
-        if (text) box.appendChild(h('p', { text: text, dir: 'auto' }));
+        box.appendChild(h('h2', { text: T(title), dir: 'auto' }));
+        if (text) box.appendChild(h('p', { text: T(text), dir: 'auto' }));
         var row = h('div', { class: 'btn-row' });
-        row.appendChild(Focus.make(h('div', { class: 'btn primary', text: okLabel || 'OK', 'data-autofocus': '1' }), function () { m.close(true); }));
-        row.appendChild(Focus.make(h('div', { class: 'btn', text: cancelLabel || 'Cancel' }), function () { m.close(false); }));
+        row.appendChild(Focus.make(h('div', { class: 'btn primary', text: T(okLabel || 'OK'), 'data-autofocus': '1' }), function () { m.close(true); }));
+        row.appendChild(Focus.make(h('div', { class: 'btn', text: T(cancelLabel || 'Cancel') }), function () { m.close(false); }));
         box.appendChild(row);
       }, { onClose: function (r) { res(!!r); } });
     });
@@ -146,12 +147,12 @@ var App = (function () {
     // items: [{label, value, checked, head, onSelect}]
     return new Promise(function (res) {
       modal(function (box, m) {
-        box.appendChild(h('h2', { text: title, dir: 'auto' }));
+        box.appendChild(h('h2', { text: T(title), dir: 'auto' }));
         var list = h('div', { class: 'menu', 'data-zone': 'menu' });
         var firstChecked = null;
         items.forEach(function (it) {
-          if (it.head) { list.appendChild(h('div', { class: 'menu-head', text: it.head })); return; }
-          var el = h('div', { class: 'menu-item' + (it.checked ? ' checked' : '') }, [h('span', { text: it.label, dir: 'auto' }), it.value ? h('span', { class: 'v', text: it.value, dir: 'auto' }) : null]);
+          if (it.head) { list.appendChild(h('div', { class: 'menu-head', text: T(it.head) })); return; }
+          var el = h('div', { class: 'menu-item' + (it.checked ? ' checked' : '') }, [h('span', { text: T(it.label), dir: 'auto' }), it.value ? h('span', { class: 'v', text: T(it.value), dir: 'auto' }) : null]);
           Focus.make(el, function () { m.close(it); if (it.onSelect) it.onSelect(it); });
           if (it.checked && !firstChecked) { firstChecked = el; el.setAttribute('data-autofocus', '1'); }
           list.appendChild(el);
@@ -164,8 +165,8 @@ var App = (function () {
     return new Promise(function (res) {
       var entered = '';
       modal(function (box, m) {
-        box.appendChild(h('h2', { text: title || 'Enter PIN' }));
-        box.appendChild(h('p', { text: 'Use the number buttons on your remote or the pad below.' }));
+        box.appendChild(h('h2', { text: T(title || 'Enter PIN') }));
+        box.appendChild(h('p', { text: T('Use the number buttons on your remote or the pad below.') }));
         var dots = h('div', { class: 'pin-dots' }, [h('i'), h('i'), h('i'), h('i')]);
         box.appendChild(dots);
         var pad = h('div', { class: 'pin-pad', 'data-zone': 'pad' });
@@ -196,7 +197,7 @@ var App = (function () {
     return pinPrompt(title).then(function (p) {
       if (p == null) return false;
       if (p === Store.settings().pin) return true;
-      toast('Wrong PIN'); return false;
+      toast(T('Wrong PIN')); return false;
     });
   }
 
@@ -208,7 +209,7 @@ var App = (function () {
     return locked && !unlocked[cat.category_id];
   }
   function unlockCategory(cat) {
-    return checkPin('Locked category').then(function (ok) { if (ok) unlocked[cat.category_id] = true; return ok; });
+    return checkPin(T('Locked category')).then(function (ok) { if (ok) unlocked[cat.category_id] = true; return ok; });
   }
 
   /* ---------- key handling ---------- */
@@ -249,8 +250,9 @@ var App = (function () {
     for (var i = keyHandlers.length - 1; i >= 0; i--) { if (keyHandlers[i](ev)) return; }
     if (currentView && currentView.onKey && currentView.onKey(ev)) return;
     switch (code) {
-      case K.LEFT: if (!Focus.move('left')) openSidebar(); return;
-      case K.RIGHT: Focus.move('right'); return;
+      // the sidebar sits on the left (right in Arabic): moving past the edge of the screen opens it
+      case K.LEFT: if (!Focus.move('left') && !I18N.rtl) openSidebar(); return;
+      case K.RIGHT: if (!Focus.move('right') && I18N.rtl) openSidebar(); return;
       case K.UP: Focus.move('up'); return;
       case K.DOWN: Focus.move('down'); return;
       case K.ENTER: Focus.select(); return;
@@ -270,15 +272,17 @@ var App = (function () {
 
   /* ---------- sidebar ---------- */
   var NAV = [
-    { id: 'home', label: 'Home', icon: 'home' },
-    { id: 'search', label: 'Search', icon: 'search' },
-    { id: 'live', label: 'Live TV', icon: 'live' },
-    { id: 'movies', label: 'Movies', icon: 'movie' },
-    { id: 'series', label: 'Series', icon: 'series' },
-    { id: 'favorites', label: 'My List', icon: 'heart' },
-    { id: 'channel', label: 'Mdluex Channel', icon: 'yt' },
+    { id: 'home', label: T('Home'), icon: 'home' },
+    { id: 'search', label: T('Search'), icon: 'search' },
+    { id: 'live', label: T('Live TV'), icon: 'live' },
+    { id: 'movies', label: T('Movies'), icon: 'movie' },
+    { id: 'series', label: T('Series'), icon: 'series' },
+    { id: 'favorites', label: T('My List'), icon: 'heart' },
+    { id: 'channel', label: T('Mdluex Channel'), icon: 'yt' },
+    { id: 'ytChannels', nav: 'ytchannels', label: T('YouTube Channels'), icon: 'subs' },
+    { id: 'quran', label: T('Quran'), icon: 'quran' },
     { spacer: true },
-    { id: 'settings', label: 'Settings', icon: 'settings' }
+    { id: 'settings', label: T('Settings'), icon: 'settings' }
   ];
   function buildSidebar() {
     var sb = document.getElementById('sidebar');
@@ -286,11 +290,11 @@ var App = (function () {
     sb.appendChild(h('div', { class: 'logo' }, [h('div', { class: 'mark' }), h('div', { class: 'word', text: 'Mdluex IPTV' })]));
     NAV.forEach(function (n) {
       if (n.spacer) { sb.appendChild(h('div', { class: 'nav-spacer' })); sb.appendChild(profileItem()); return; }
-      var el = h('div', { class: 'nav-item', data: { nav: n.id } });
+      var el = h('div', { class: 'nav-item', data: { nav: n.nav || n.id } });
       el.innerHTML = ICON[n.icon];
       el.appendChild(h('span', { text: n.label }));
       Focus.make(el, function () { closeSidebar(); go(n.id, {}, { reset: true }); }, function () { openSidebar(); });
-      el._right = function () { closeSidebar(); return focusView(); };
+      el[I18N.rtl ? '_left' : '_right'] = function () { closeSidebar(); return focusView(); };
       el._onBlur = function () { setTimeout(function () { var c = Focus.current; if (!c || !c.closest('#sidebar')) closeSidebar(); }, 0); };
       sb.appendChild(el);
     });
@@ -304,7 +308,7 @@ var App = (function () {
   function profileItem() {
     var el = h('div', { class: 'nav-item profile', data: { nav: 'profile' } }, [h('div', { class: 'avatar' }), h('span', { class: 'pname' })]);
     Focus.make(el, function () { closeSidebar(); switchPlaylist(); }, function () { openSidebar(); });
-    el._right = function () { closeSidebar(); return focusView(); };
+    el[I18N.rtl ? '_left' : '_right'] = function () { closeSidebar(); return focusView(); };
     el._onBlur = function () { setTimeout(function () { var c = Focus.current; if (!c || !c.closest('#sidebar')) closeSidebar(); }, 0); };
     return el;
   }
@@ -313,21 +317,21 @@ var App = (function () {
     if (!el) return;
     var pl = Store.active();
     el.querySelector('.avatar').textContent = pl ? initials(pl.name) : '+';
-    el.querySelector('.pname').textContent = pl ? pl.name : 'Add playlist';
+    el.querySelector('.pname').textContent = pl ? pl.name : T('Add playlist');
   }
   function switchPlaylist() {
     var list = Store.playlists(), cur = Store.active();
     if (!list.length) { if (App.playlistForm) App.playlistForm(); return; }
-    var items = list.map(function (p) { return { label: p.name + (p.demo ? ' (demo)' : ''), value: p.demo ? '' : Api.normalizeServer(p.server).replace(/^https?:\/\//, ''), pl: p, checked: cur && cur.id === p.id }; });
-    items.push({ label: '+ Add playlist', a: 'add' });
-    items.push({ label: 'Manage playlists', a: 'manage' });
-    menu('Switch playlist', items).then(function (it) {
+    var items = list.map(function (p) { return { label: p.name + (p.demo ? T(' (demo)') : ''), value: p.demo ? '' : Api.normalizeServer(p.server).replace(/^https?:\/\//, ''), pl: p, checked: cur && cur.id === p.id }; });
+    items.push({ label: T('+ Add playlist'), a: 'add' });
+    items.push({ label: T('Manage playlists'), a: 'manage' });
+    menu(T('Switch playlist'), items).then(function (it) {
       if (!it) return;
       if (it.a === 'add') { if (App.playlistForm) App.playlistForm(); return; }
       if (it.a === 'manage') { go('settings', {}, { reset: true }); return; }
       if (cur && it.pl.id === cur.id) return;
       usePlaylist(it.pl);
-      toast('Switched to ' + it.pl.name);
+      toast(T('Switched to {0}', it.pl.name));
       go('home', {}, { reset: true });
     });
   }
@@ -374,9 +378,10 @@ var App = (function () {
     entry.view = currentView;
     var main = document.getElementById('view');
     main.innerHTML = '';
-    document.getElementById('page-title').textContent = v.title || '';
+    document.getElementById('page-title').textContent = T(v.title || '');
     setHints([]);
-    if (v.nav) setActiveNav(v.nav);
+    var nav = typeof v.nav === 'function' ? v.nav(entry.params) : v.nav;
+    if (nav) setActiveNav(nav);
     var p = currentView.render(main, entry.params);
     var focusIt = function () {
       if (opts && opts.restoreKey) {
@@ -397,9 +402,9 @@ var App = (function () {
       return;
     }
     if (stack.length && stack[0].name !== 'home' && Store.active()) { go('home', {}, { reset: true }); return; }
-    confirm('Exit Mdluex IPTV?', null, 'Exit', 'Stay').then(function (ok) {
+    confirm(T('Exit Mdluex IPTV?'), null, T('Exit'), T('Stay')).then(function (ok) {
       if (!ok) return;
-      if (!Platform.exit()) toast('Exit works on the TV');
+      if (!Platform.exit()) toast(T('Exit works on the TV'));
     });
   }
   /* Re-render the current screen (e.g. after playback) keeping focus on the same item. */
@@ -414,12 +419,12 @@ var App = (function () {
   function showError(main, e) {
     main.innerHTML = '';
     var box = h('div', { class: 'welcome' }, [
-      h('h1', { text: 'Something went wrong', style: { fontSize: '52px' } }),
+      h('h1', { text: T('Something went wrong'), style: { fontSize: '52px' } }),
       h('p', { text: (e && e.message) || String(e) })
     ]);
     var row = h('div', { class: 'btn-row' });
-    row.appendChild(Focus.make(h('div', { class: 'btn primary', text: 'Try again', 'data-autofocus': '1' }), function () { if (api && api.cache) api.cache = {}; render(stack[stack.length - 1], {}); }));
-    row.appendChild(Focus.make(h('div', { class: 'btn', text: 'Settings' }), function () { go('settings', {}, { reset: true }); }));
+    row.appendChild(Focus.make(h('div', { class: 'btn primary', text: T('Try again'), 'data-autofocus': '1' }), function () { if (api && api.cache) api.cache = {}; render(stack[stack.length - 1], {}); }));
+    row.appendChild(Focus.make(h('div', { class: 'btn', text: T('Settings') }), function () { go('settings', {}, { reset: true }); }));
     box.appendChild(row);
     main.appendChild(box);
     Focus.first(main);
@@ -428,7 +433,7 @@ var App = (function () {
     var bar = document.getElementById('hintbar');
     bar.innerHTML = '';
     list.forEach(function (hn) {
-      bar.appendChild(h('div', { class: 'hint' }, [h('span', { class: 'key ' + (hn.cls || ''), text: hn.key }), h('span', { text: hn.label })]));
+      bar.appendChild(h('div', { class: 'hint' }, [h('span', { class: 'key ' + (hn.cls || ''), text: hn.key }), h('span', { text: T(hn.label) })]));
     });
   }
 
@@ -436,19 +441,19 @@ var App = (function () {
   function describeAccount() {
     var a = account, ui = a.info && a.info.user_info;
     if (!ui) {
-      if (a.loading) return { level: '', short: 'Checking account…' };
-      return { level: 'bad', short: 'Account not checked', detail: a.error || '' };
+      if (a.loading) return { level: '', short: T('Checking account…') };
+      return { level: 'bad', short: T('Account not checked'), detail: a.error || '' };
     }
     var auth = String(ui.auth) === '1' || ui.auth === true;
     var status = ui.status || (auth ? 'Active' : 'Unknown');
     var expMs = ui.exp_date && ui.exp_date !== 'null' ? Number(ui.exp_date) * 1000 : null;
     var days = expMs ? Math.ceil((expMs - Date.now()) / 86400000) : null;
     var level = 'ok', short;
-    if (!auth) { level = 'bad'; short = 'Login rejected'; }
-    else if (status !== 'Active') { level = 'bad'; short = status; }
-    else if (expMs && days <= 0) { level = 'bad'; short = 'Expired ' + fmtDate(expMs); }
-    else if (expMs) { level = days <= 3 ? 'bad' : (days <= 10 ? 'warn' : 'ok'); short = 'Expires ' + fmtDate(expMs) + ' · ' + days + (days === 1 ? ' day' : ' days'); }
-    else short = 'No expiry date (unlimited)';
+    if (!auth) { level = 'bad'; short = T('Login rejected'); }
+    else if (status !== 'Active') { level = 'bad'; short = T(status); }
+    else if (expMs && days <= 0) { level = 'bad'; short = T('Expired {0}', fmtDate(expMs)); }
+    else if (expMs) { level = days <= 3 ? 'bad' : (days <= 10 ? 'warn' : 'ok'); short = T('Expires {0} · {1}', fmtDate(expMs), I18N.days(days)); }
+    else short = T('No expiry date (unlimited)');
     var conns = ui.max_connections != null ? (Number(ui.active_cons || 0) + '/' + ui.max_connections) : '—';
     var full = ui.max_connections != null && Number(ui.active_cons || 0) >= Number(ui.max_connections);
     return {
@@ -462,7 +467,7 @@ var App = (function () {
     chip.className = 'chip ' + d.level;
     chip.innerHTML = '';
     chip.appendChild(h('span', { class: 'dot' }));
-    chip.appendChild(h('span', { text: d.short + (d.stale ? ' (saved)' : '') }));
+    chip.appendChild(h('span', { text: d.short + (d.stale ? T(' (saved)') : '') }));
     chip.style.display = Store.active() ? '' : 'none';
     document.dispatchEvent(new CustomEvent('account'));
   }
@@ -473,13 +478,13 @@ var App = (function () {
       account = { loading: false, info: info, error: null, checkedAt: Date.now(), fromCache: false };
       if (!api.isDemo) Store.saveAccountCache(info);
       var d = describeAccount();
-      if (!d.auth) toast('The server rejected your username or password', 5000);
-      else if (d.level === 'bad' && d.status !== 'Active') toast('Account status: ' + d.status, 5000);
-      else if (d.days != null && d.days <= 5 && d.days > 0) toast('Your subscription ends in ' + d.days + (d.days === 1 ? ' day' : ' days'), 5000);
+      if (!d.auth) toast(T('The server rejected your username or password'), 5000);
+      else if (d.level === 'bad' && d.status !== 'Active') toast(T('Account status: {0}', T(d.status)), 5000);
+      else if (d.days != null && d.days <= 5 && d.days > 0) toast(T('Your subscription ends in {0}', I18N.days(d.days)), 5000);
     }).catch(function (e) {
       var cached = Store.accountCache();
       account = { loading: false, info: cached ? cached.info : null, error: e.message, checkedAt: cached ? cached.checkedAt : 0, fromCache: !!cached };
-      toast(e.message + (cached ? ' – showing your last saved account info' : ''), 5000);
+      toast(cached ? T('{0} – showing your last saved account info', e.message) : e.message, 5000);
     }).then(renderAccountChip);
   }
 

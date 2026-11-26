@@ -7,6 +7,9 @@ Building, testing and releasing the app. For installing and using it, see the [R
 |---|---|
 | `app/` | The TV app (HTML / CSS / JavaScript), shared by every TV system |
 | `app/js/platform.js` | The only TV-specific part: keys, exit, YouTube app, remote type (colour keys or not) |
+| `app/js/i18n.js` | English / Arabic texts and right-to-left layout; follows the TV's language |
+| `app/js/quran.js` | Quran: surah list, mushaf-style reader, recitation with word-by-word highlighting (Quran.com API) |
+| `app/fonts/` | Bundled fonts (Cairo, Amiri Quran, Scheherazade New), SIL Open Font License |
 | `app/js/channel_snapshot.js` | Offline copy of the channel – refresh with `python tools/update_channel.py` |
 | `platforms/android/` | Android TV / Fire TV app: a full-screen WebView with the shared app + a native ExoPlayer for streams |
 | `platforms/webos/` | LG webOS app settings (`appinfo.json`) |

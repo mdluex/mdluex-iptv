@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 100" width="600" height="100" preserveAspectRatio="none">
+  <!-- the title cartouche with shaped (ogee) ends -->
+  <path d="M62 6 H538 C562 6 572 30 594 50 C572 70 562 94 538 94 H62 C38 94 28 70 6 50 C28 30 38 6 62 6Z"
+        fill="#f7d3cd" stroke="#a8251d" stroke-width="4" vector-effect="non-scaling-stroke"/>
+  <path d="M70 15 H530 C550 15 558 34 576 50 C558 66 550 85 530 85 H70 C50 85 42 66 24 50 C42 34 50 15 70 15Z"
+        fill="none" stroke="#d0574d" stroke-width="1.6" vector-effect="non-scaling-stroke"/>
+</svg>

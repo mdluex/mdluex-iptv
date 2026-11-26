@@ -20,7 +20,7 @@ var Player = (function () {
           onbufferingcomplete: function () { emit('buffering', false); },
           oncurrentplaytime: function (t) { emit('time', t); },
           onstreamcompleted: function () { emit('end'); },
-          onerror: function (e) { emit('error', 'Playback error: ' + e); },
+          onerror: function (e) { emit('error', T('Playback error: {0}', e)); },
           onevent: function () {},
           onsubtitlechange: function (dur, text) { emit('subtitle', text); },
           ondrmevent: function () {}
@@ -30,10 +30,10 @@ var Player = (function () {
         emit('buffering', true);
         av.prepareAsync(function () {
           emit('buffering', false);
-          var go = function () { try { av.play(); } catch (e) { emit('error', 'Could not start: ' + e.message); } emit('ready'); };
+          var go = function () { try { av.play(); } catch (e) { emit('error', T('Could not start: {0}', e.message)); } emit('ready'); };
           if (startMs > 0) { try { av.seekTo(startMs, go, go); } catch (e) { go(); } } else go();
-        }, function (e) { emit('buffering', false); emit('error', 'Could not open the stream (' + e + ')'); });
-      } catch (e) { emit('error', 'Could not open the stream (' + e.message + ')'); }
+        }, function (e) { emit('buffering', false); emit('error', T('Could not open the stream ({0})', e)); });
+      } catch (e) { emit('error', T('Could not open the stream ({0})', e.message)); }
     },
     paused: function () { try { return webapis.avplay.getState() === 'PAUSED'; } catch (e) { return false; } },
     play: function () { try { webapis.avplay.play(); } catch (e) {} },
@@ -50,7 +50,7 @@ var Player = (function () {
       try {
         webapis.avplay.getTotalTrackInfo().forEach(function (t) {
           var info = {}; try { info = JSON.parse(t.extra_info); } catch (e) {}
-          var label = (info.language || info.track_lang || '').toUpperCase() || ('Track ' + (t.index + 1));
+          var label = (info.language || info.track_lang || '').toUpperCase() || T('Track {0}', t.index + 1);
           if (t.type === 'AUDIO') out.audio.push({ index: t.index, label: label + (info.channels ? ' (' + info.channels + 'ch)' : '') });
           if (t.type === 'TEXT') out.text.push({ index: t.index, label: label });
         });
@@ -165,11 +165,11 @@ var Player = (function () {
     if (!video) return out;
     var at = video.audioTracks, tt = video.textTracks, i;
     if (at) for (i = 0; i < at.length; i++) {
-      out.audio.push({ index: i, label: (at[i].language || at[i].label || 'Track ' + (i + 1)).toUpperCase() });
+      out.audio.push({ index: i, label: (at[i].language || at[i].label || T('Track {0}', i + 1)).toUpperCase() });
       if (at[i].enabled) out.audioCurrent = i;
     }
     if (tt) for (i = 0; i < tt.length; i++) {
-      out.text.push({ index: i, label: (tt[i].language || tt[i].label || 'Subtitle ' + (i + 1)).toUpperCase() });
+      out.text.push({ index: i, label: (tt[i].language || tt[i].label || T('Subtitle {0}', i + 1)).toUpperCase() });
       if (tt[i].mode === 'showing') out.textCurrent = i;
     }
     return out;

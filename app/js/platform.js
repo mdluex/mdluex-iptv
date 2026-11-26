@@ -26,6 +26,7 @@ var Platform = (function () {
 
   return {
     name: name,
+    version: '1.4.0',
     device: device,
     fireTV: device === 'firetv',
     colorKeys: colorKeys,

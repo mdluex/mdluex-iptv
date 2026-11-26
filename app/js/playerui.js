@@ -70,7 +70,7 @@ var PlayerUI = (function () {
     var hints = h('div', { class: 'osd-hints' });
     var list = [['OK', 'Play / Pause'], ['◀ ▶', 'Seek'], ['▲', 'Audio · Subtitles · More'], ['BACK', 'Exit']];
     if (S.kind === 'episode' && S.nextEp && Platform.colorKeys) list.splice(3, 0, ['▶▶|', 'Blue: Next episode']);
-    list.forEach(function (x) { hints.appendChild(h('div', { class: 'hint' }, [h('span', { class: 'key', text: x[0] }), h('span', { text: x[1] })])); });
+    list.forEach(function (x) { hints.appendChild(h('div', { class: 'hint' }, [h('span', { class: 'key', text: x[0] }), h('span', { text: T(x[1]) })])); });
     var bottom = h('div', { class: 'osd-bottom' }, [bar, h('div', { class: 'osd-times' }, [tCur, tLeft]), hints]);
     var center = h('div', { class: 'osd-center hidden' });
     osd.appendChild(top); osd.appendChild(center); osd.appendChild(bottom);
@@ -98,10 +98,10 @@ var PlayerUI = (function () {
   function buildLiveOsd(epg) {
     osd.innerHTML = '';
     var ch = S.channel;
-    var info = h('div', {}, [h('div', { class: 't', dir: 'auto' }, [ch.name, h('span', { class: 'live-badge', text: 'LIVE' })])]);
+    var info = h('div', {}, [h('div', { class: 't', dir: 'auto' }, [ch.name, h('span', { class: 'live-badge', text: T('LIVE') })])]);
     var now = epg && epg[0], next = epg && epg[1];
-    if (now) info.appendChild(h('div', { class: 'now', text: 'Now: ' + now.title, dir: 'auto' }));
-    if (next) info.appendChild(h('div', { class: 'next', text: fmtClock(new Date(next.start)) + '  Next: ' + next.title, dir: 'auto' }));
+    if (now) info.appendChild(h('div', { class: 'now', text: T('Now: {0}', now.title), dir: 'auto' }));
+    if (next) info.appendChild(h('div', { class: 'next', text: T('{0}  Next: {1}', fmtClock(new Date(next.start)), next.title), dir: 'auto' }));
     var top = h('div', { class: 'osd-top' }, [h('div'), h('div', { class: 'clock', text: fmtClock() })]);
     var row = h('div', { class: 'osd-live' }, [
       h('div', { class: 'num', text: ch.num ? String(ch.num) : '' }),
@@ -110,7 +110,7 @@ var PlayerUI = (function () {
     if (now && now.end > now.start) bottom.appendChild(h('div', { class: 'bar', style: { marginTop: '20px' } }, [h('i', { style: { width: Math.min(100, (Date.now() - now.start) / (now.end - now.start) * 100) + '%' } })]));
     var hints = h('div', { class: 'osd-hints' });
     [['▲ ▼', 'Change channel'], ['◀', 'Channel list'], ['OK', 'Info'], Platform.colorKeys ? ['Y', 'Favorite'] : [Platform.menuKey, 'Options'], ['BACK', 'Exit']].forEach(function (x) {
-      hints.appendChild(h('div', { class: 'hint' }, [h('span', { class: 'key', text: x[0] }), h('span', { text: x[1] })]));
+      hints.appendChild(h('div', { class: 'hint' }, [h('span', { class: 'key', text: x[0] }), h('span', { text: T(x[1]) })]));
     });
     bottom.appendChild(hints);
     osd.appendChild(top); osd.appendChild(bottom);
@@ -134,14 +134,14 @@ var PlayerUI = (function () {
     $('player-spinner').classList.add('hidden');
     if (S.kind === 'live' && !S.retried) { S.retried = true; App.toast('Reconnecting…'); setTimeout(function () { if (S) startStream(); }, 1500); return; }
     S.blocking = true;
-    var box = h('div', { class: 'err-box' }, [h('h2', { text: 'Playback problem' }), h('p', { text: msg })]);
+    var box = h('div', { class: 'err-box' }, [h('h2', { text: T('Playback problem') }), h('p', { text: msg })]);
     var row = h('div', { class: 'btn-row', style: { justifyContent: 'center' } });
-    row.appendChild(Focus.make(h('div', { class: 'btn primary', text: 'Try again', 'data-autofocus': '1' }), function () { box.remove(); S.blocking = false; S.retried = false; startStream(curTime()); }));
-    if (S.kind === 'live') row.appendChild(Focus.make(h('div', { class: 'btn', text: 'Switch to ' + (Store.settings().liveFormat === 'ts' ? 'HLS' : 'TS') }), function () {
+    row.appendChild(Focus.make(h('div', { class: 'btn primary', text: T('Try again'), 'data-autofocus': '1' }), function () { box.remove(); S.blocking = false; S.retried = false; startStream(curTime()); }));
+    if (S.kind === 'live') row.appendChild(Focus.make(h('div', { class: 'btn', text: T('Switch to {0}', Store.settings().liveFormat === 'ts' ? 'HLS' : 'TS') }), function () {
       Store.setSetting('liveFormat', Store.settings().liveFormat === 'ts' ? 'm3u8' : 'ts'); box.remove(); S.blocking = false; startStream();
     }));
-    if (S.kind === 'yt') row.appendChild(Focus.make(h('div', { class: 'btn', text: 'Open in YouTube app' }), function () { var id = S.video.id; exit(); Channel.openInYouTubeApp(id); }));
-    row.appendChild(Focus.make(h('div', { class: 'btn', text: 'Exit' }), exit));
+    if (S.kind === 'yt') row.appendChild(Focus.make(h('div', { class: 'btn', text: T('Open in YouTube app') }), function () { var id = S.video.id; exit(); Channel.openInYouTubeApp(id); }));
+    row.appendChild(Focus.make(h('div', { class: 'btn', text: T('Exit') }), exit));
     box.appendChild(row);
     osd.appendChild(box);
     showOsd(0);
@@ -166,10 +166,10 @@ var PlayerUI = (function () {
     S.nextShown = ended ? 'ended' : 'soon';
     var old = osd.querySelector('.next-up'); if (old) old.remove();
     var n = S.nextEp, left = 10;
-    var lab = h('div', { class: 'l', text: ended ? 'Next episode in ' + left + 's' : 'Up next' });
-    var box = h('div', { class: 'next-up' }, [lab, h('div', { class: 't', text: 'S' + n.season + ':E' + (n.ep.episode_num || '') + ' · ' + (n.ep.title || ''), dir: 'auto' })]);
+    var lab = h('div', { class: 'l', text: ended ? T('Next episode in {0}s', left) : T('Up next') });
+    var box = h('div', { class: 'next-up' }, [lab, h('div', { class: 't', text: T('S{0}:E{1}', n.season, n.ep.episode_num || '') + ' · ' + (n.ep.title || ''), dir: 'auto' })]);
     var row = h('div', { class: 'btn-row' });
-    var playNow = Focus.make(h('div', { class: 'btn primary small', text: 'Play next' }), function () { playNext(); });
+    var playNow = Focus.make(h('div', { class: 'btn primary small', text: T('Play next') }), function () { playNext(); });
     row.appendChild(playNow);
     row.appendChild(Focus.make(h('div', { class: 'btn small', text: ended ? 'Exit' : 'Hide' }), function () { clearInterval(nextTimer); box.remove(); if (ended) exit(); }));
     box.appendChild(row);
@@ -178,7 +178,7 @@ var PlayerUI = (function () {
     Focus.set(playNow);
     clearInterval(nextTimer);
     if (ended) nextTimer = setInterval(function () {
-      left--; lab.textContent = 'Next episode in ' + left + 's';
+      left--; lab.textContent = T('Next episode in {0}s', left);
       if (left <= 0) { clearInterval(nextTimer); playNext(); }
     }, 1000);
   }
@@ -269,9 +269,10 @@ var PlayerUI = (function () {
     items.push({ label: 'Restart from beginning', a: 'restart' });
     if (S.nextEp) items.push({ label: 'Next episode', a: 'next' });
     App.menu(S.title, items).then(function (it) {
-      if (!it || !S) return;
-      if (it.a === 'audio') { Player.selectTrack('AUDIO', it.index); App.toast('Audio: ' + it.label); }
-      if (it.a === 'text') { Player.selectTrack('TEXT', it.index); App.toast('Subtitles: ' + it.label); }
+      if (!S) return;
+        if (!it) { showOsd(); return; }   // closed with Back: let the timeline hide again
+      if (it.a === 'audio') { Player.selectTrack('AUDIO', it.index); App.toast(T('Audio: {0}', it.label)); }
+      if (it.a === 'text') { Player.selectTrack('TEXT', it.index); App.toast(T('Subtitles: {0}', T(it.label))); }
       if (it.a === 'aspect') { S.aspect = it.mode; Player.setAspect(it.mode); }
       if (it.a === 'sleep') sleepMenu();
       if (it.a === 'restart') seekTo(0);
@@ -280,8 +281,9 @@ var PlayerUI = (function () {
     });
   }
   function sleepMenu() {
-    App.menu('Sleep timer', [{ label: 'Off', m: 0 }, { label: '15 minutes', m: 15 }, { label: '30 minutes', m: 30 }, { label: '60 minutes', m: 60 }, { label: '90 minutes', m: 90 }])
+    App.menu('Sleep timer', [{ label: 'Off', m: 0 }, { label: T('{0} minutes', 15), m: 15 }, { label: T('{0} minutes', 30), m: 30 }, { label: T('{0} minutes', 60), m: 60 }, { label: T('{0} minutes', 90), m: 90 }])
       .then(function (it) {
+        if (S) showOsd();
         if (!it) return;
         clearTimeout(sleepTimer); sleepTimer = null;
         if (it.m) {
@@ -290,7 +292,7 @@ var PlayerUI = (function () {
             if (S) exit();
             App.toast('Sleep timer: playback stopped');
           }, it.m * 60000);
-          App.toast('Playback will stop in ' + it.label);
+          App.toast(T('Playback will stop in {0}', it.label));
         } else App.toast('Sleep timer off');
       });
   }
@@ -326,7 +328,8 @@ var PlayerUI = (function () {
     var fav = Store.isFav('live', S.channel.id);
     App.menu(S.channel.name, [{ label: fav ? 'Remove from favorites' : 'Add to favorites', a: 'fav' }, { label: 'Channel list', a: 'list' }])
       .then(function (it) {
-        if (!it || !S) return;
+        if (!S) return;
+        if (!it) { showOsd(); return; }   // closed with Back: let the timeline hide again
         if (it.a === 'fav') toggleLiveFav();
         if (it.a === 'list') openZap();
         showOsd();
@@ -344,17 +347,17 @@ var PlayerUI = (function () {
   var digits = '', digitTimer;
   function digit(d) {
     digits += d;
-    App.toast('Channel ' + digits, 1500);
+    App.toast(T('Channel {0}', digits), 1500);
     clearTimeout(digitTimer);
     digitTimer = setTimeout(function () {
       var n = Number(digits); digits = '';
       var i = S.list.findIndex(function (c) { return Number(c.num) === n; });
-      if (i < 0) { App.toast('Channel ' + n + ' is not in this list'); return; }
+      if (i < 0) { App.toast(T('Channel {0} is not in this list', n)); return; }
       S.index = i; S.channel = S.list[i]; buildLiveOsd(null); showOsd(5000); startStream();
     }, 1500);
   }
   function openZap() {
-    var box = h('div', { class: 'zap-list' }, [h('h3', { text: 'Channels' })]);
+    var box = h('div', { class: 'zap-list' }, [h('h3', { text: T('Channels') })]);
     var inner = h('div', { class: 'inner', 'data-zone': 'zap' });
     var curEl = null;
     S.list.forEach(function (ch, i) {
@@ -394,7 +397,7 @@ var PlayerUI = (function () {
     }
     Player.open(S.url, { startMs: startMs || 0, title: S.title, durationHint: S.durationHint });
     buildVodOsd(); showOsd();
-    if (startMs > 0) App.toast('Resuming from ' + fmtTime(startMs));
+    if (startMs > 0) App.toast(T('Resuming from {0}', fmtTime(startMs)));
   }
 
   function common(session) {
@@ -427,7 +430,7 @@ var PlayerUI = (function () {
     if (!f.cur) { App.toast('Episode not found'); return; }
     var e = f.cur.ep, ei = e.info || {};
     var title = ctx.series.name;
-    common({ kind: 'episode', ctx: ctx, title: title, sub: 'S' + f.cur.season + ':E' + (e.episode_num || '') + ' · ' + (e.title || ''),
+    common({ kind: 'episode', ctx: ctx, title: title, sub: T('S{0}:E{1}', f.cur.season, e.episode_num || '') + ' · ' + (e.title || ''),
       key: 'episode:' + e.id, url: api.episodeUrl(e.id, e.container_extension), durationHint: ei.duration_secs ? ei.duration_secs * 1000 : 0,
       nextEp: f.next, nextShown: false,
       meta: { type: 'episode', id: e.id, title: e.title, seriesId: ctx.series.id, seriesName: title, season: f.cur.season, epNum: e.episode_num,
@@ -465,14 +468,14 @@ var PlayerUI = (function () {
     if (m.ev === 'ended') onEnded();
     if (m.ev === 'error') {
       clearTimeout(yt.readyTimer);
-      var why = { 2: 'Invalid video', 5: 'The TV cannot play this video', 100: 'Video not found or private', 101: 'The owner does not allow playing this video in apps', 150: 'The owner does not allow playing this video in apps', 153: 'YouTube rejected the player', 'api-load': 'Could not load the YouTube player' }[m.code] || ('YouTube error ' + m.code);
-      onError(why + '. You can open it in the YouTube app instead.');
+      var why = { 2: 'Invalid video', 5: 'The TV cannot play this video', 100: 'Video not found or private', 101: 'The owner does not allow playing this video in apps', 150: 'The owner does not allow playing this video in apps', 153: 'YouTube rejected the player', 'api-load': 'Could not load the YouTube player' }[m.code] || T('YouTube error {0}', m.code);
+      onError(T('{0}. You can open it in the YouTube app instead.', T(why)));
     }
   }
   window.addEventListener('message', onYtMessage);
 
   function playYouTube(v, startMs) {
-    common({ kind: 'yt', video: v, title: v.title, sub: 'Mdluex Industries', key: 'yt:' + v.id,
+    common({ kind: 'yt', video: v, title: v.title, sub: v.ch || 'Mdluex Industries', key: 'yt:' + v.id,
       meta: { type: 'yt', id: v.id, title: v.title } });
     yt.t = startMs || 0; yt.d = 0; yt.state = -1;
     var holder = $('yt-holder');
@@ -487,7 +490,7 @@ var PlayerUI = (function () {
       fit: v.short || Channel.isShort(v.id) });
     applyYtQuality(yt.frame);
     holder.appendChild(yt.frame);
-    if (startMs > 0) App.toast('Resuming from ' + fmtTime(startMs));
+    if (startMs > 0) App.toast(T('Resuming from {0}', fmtTime(startMs)));
     clearTimeout(yt.readyTimer);
     yt.readyTimer = setTimeout(function () {
       if (S && S.kind === 'yt' && yt.state !== 1) onError('YouTube did not start. Check the internet connection, or open it in the YouTube app.');
@@ -531,10 +534,11 @@ var PlayerUI = (function () {
       items.push({ label: 'Restart from beginning', a: 'restart' });
       items.push({ label: 'Open in YouTube app', a: 'app' });
       App.menu(S.title, items).then(function (it) {
-        if (!it || !S) return;
-        if (it.a === 'q') { Store.setSetting('ytQuality', it.v); if (yt.frame) applyYtQuality(yt.frame); App.toast('Quality: ' + it.label); }
-        if (it.a === 'rate') { ytSend({ cmd: 'rate', r: it.v }); App.toast('Speed: ' + it.label); }
-        if (it.a === 'cc') { ytSend({ cmd: 'captions', lang: it.v }); App.toast('Subtitles: ' + it.label); }
+        if (!S) return;
+        if (!it) { showOsd(); return; }   // closed with Back: let the timeline hide again
+        if (it.a === 'q') { Store.setSetting('ytQuality', it.v); if (yt.frame) applyYtQuality(yt.frame); App.toast(T('Quality: {0}', T(it.label))); }
+        if (it.a === 'rate') { ytSend({ cmd: 'rate', r: it.v }); App.toast(T('Speed: {0}', T(it.label))); }
+        if (it.a === 'cc') { ytSend({ cmd: 'captions', lang: it.v }); App.toast(T('Subtitles: {0}', T(it.label))); }
         if (it.a === 'sleep') sleepMenu();
         if (it.a === 'restart') seekTo(0);
         if (it.a === 'app') { var id = S.video.id; exit(); Channel.openInYouTubeApp(id); }

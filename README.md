@@ -155,10 +155,16 @@ The bottom of the screen always shows which buttons do what on the screen you're
 - **Search** across channels, movies, series and Mdluex videos.
 - **Choose audio language and subtitles**, change the picture size, and set a **sleep timer**.
 - **Parental lock** for adult categories with a PIN (the starting PIN is **0000** — change it in Settings).
-- **Arabic titles** are shown right-to-left correctly.
+- **Arabic or English** — the app follows your TV's language automatically, and in Arabic the whole app reads
+  right-to-left. Change it any time in **Settings → Language**.
 - **Your subscription's expiry date** is always shown, and the app keeps working with the last known details if the
   server is slow.
 - **Mdluex Industries channel** — watch the YouTube channel inside the app, no subscription needed.
+- **Your own YouTube channels** — in **YouTube Channels**, choose **Add channel** and search by name, @handle or link.
+  Their latest videos show on Home too. (Mdluex Industries always stays.)
+- **Quran** — choose a surah and a reciter, and listen while you read: the page looks like a printed mushaf and the
+  verse and the word being recited light up as you listen. 12 famous reciters, repeat a verse, continue to the next
+  surah, and it remembers where you stopped. ▲▼ move between verses, ◀▶ between surahs.
 
 <a id="updating"></a>
 ## Updating
