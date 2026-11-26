@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1640 108" width="1640" height="108">
+  <!-- the Quran player bar: the same shaped-end cartouche as the surah titles, in the bar's dark red -->
+  <path d="M62 4 H1578 C1606 4 1616 32 1636 54 C1616 76 1606 104 1578 104 H62 C34 104 24 76 4 54 C24 32 34 4 62 4Z"
+        fill="#6e140f" fill-opacity=".96" stroke="#f0b9b1" stroke-width="3"/>
+  <path d="M70 13 H1570 C1592 13 1601 36 1617 54 C1601 72 1592 95 1570 95 H70 C48 95 39 72 23 54 C39 36 48 13 70 13Z"
+        fill="none" stroke="#d0574d" stroke-width="1.6"/>
+</svg>

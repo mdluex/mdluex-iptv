@@ -611,22 +611,22 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 /* player bar over the pages */
 .quran-bar {
   position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); width: 1640px; height: 108px; z-index: 5;
-  display: flex; align-items: center; padding: 0 30px; border-radius: 18px; direction: rtl;
-  background: rgba(110,20,15,.95); border: 2px solid #f0b9b1; box-shadow: 0 14px 40px rgba(0,0,0,.55); color: #fdf3e6;
+  display: flex; align-items: center; padding: 0 74px; direction: rtl; color: #fdf3e6;
+  background: url(../images/q-bar.svg) center / 100% 100% no-repeat;   /* shaped like the surah-title cartouche */
   transition: opacity .35s ease, transform .35s ease;
 }
 .quran-bar.off { opacity: 0; transform: translateX(-50%) translateY(30px); }
 .quran-bar .qbtn { width: 62px; height: 62px; flex: none; border-radius: 50%; background: #fdf3e6; color: #8a1a13; display: flex; align-items: center; justify-content: center; }
 .quran-bar .qbtn svg { width: 34px; height: 34px; }
 .quran-bar .qbtn.focused { box-shadow: 0 0 0 4px #f6e3b0; }
-.quran-bar .meta { -webkit-margin-start: 22px; margin-inline-start: 22px; width: 470px; flex: none; font-family: "Cairo", sans-serif; }
+.quran-bar .meta { -webkit-margin-start: 20px; margin-inline-start: 20px; width: 400px; flex: none; font-family: "Cairo", sans-serif; }
 .quran-bar .where { font-size: 25px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .quran-bar .who { font-size: 19px; color: #d6c28f; }
-.quran-bar .qprog { flex: 1; height: 8px; border-radius: 4px; background: rgba(246,227,176,.22); overflow: hidden; margin: 0 26px; }
+.quran-bar .qprog { flex: 1; min-width: 80px; height: 8px; border-radius: 4px; background: rgba(246,227,176,.22); overflow: hidden; margin: 0 20px; }
 .quran-bar .qprog i { display: block; height: 100%; width: 0; background: #f0b9b1; border-radius: 4px; }
-.quran-bar .qtime { font-size: 21px; color: #d6c28f; direction: ltr; width: 150px; flex: none; text-align: center; }
+.quran-bar .qtime { font-size: 21px; color: #d6c28f; direction: ltr; width: 130px; flex: none; text-align: center; }
 .quran-bar .qhints { display: flex; font-size: 17px; color: #b9c9bf; -webkit-margin-start: 10px; margin-inline-start: 10px; flex: none; }
-.quran-bar .qhints .hint { -webkit-margin-start: 18px; margin-inline-start: 18px; }
+.quran-bar .qhints .hint { -webkit-margin-start: 14px; margin-inline-start: 14px; }
 .quran-bar .qhints .key { background: rgba(246,227,176,.16); color: #f6e3b0; }
 .mushaf.loading .qbtn { animation: qpulse 1s ease-in-out infinite; }
 @keyframes qpulse { 50% { opacity: .5; } }
