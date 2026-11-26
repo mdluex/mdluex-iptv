@@ -1,20 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 100" width="220" height="100">
-  <!-- arabesque scrolls at the ends of the surah header. Both ends of the tile are flat (x=0 and x=220, y 42–58),
-       so each leaf sits flush against the next tile's leaf: the row is joined all the way along. -->
-  <g fill="#f4b9b1" stroke="#a8251d" stroke-width="3" stroke-linejoin="round">
-    <path d="M0 42 C26 12 66 10 94 30 C108 41 118 47 132 47 C118 53 108 59 94 70 C66 90 26 88 0 58Z"/>
-    <path d="M132 47 C152 22 188 14 208 26 C214 31 220 37 220 42 L220 58 C220 63 214 69 208 74 C188 86 152 78 132 53Z"/>
-  </g>
-  <g fill="#fffaf0" stroke="#a8251d" stroke-width="2">
-    <path d="M24 50 C40 32 64 30 80 42 C72 46 72 54 80 58 C64 70 40 68 24 50Z"/>
-    <circle cx="170" cy="50" r="11"/>
-  </g>
-  <g fill="#d9534a" stroke="#a8251d" stroke-width="1.5">
-    <circle cx="52" cy="50" r="7"/>
-    <circle cx="170" cy="50" r="4"/>
-  </g>
-  <g fill="none" stroke="#a8251d" stroke-width="2.5" stroke-linecap="round">
-    <path d="M94 30 C102 20 114 16 122 22"/>
-    <path d="M94 70 C102 80 114 84 122 78"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="8 0 176 100" width="176" height="100">
+  <!-- arabesque scrolls that close the surah header. The tile is 176 wide, so the next leaf's tip sits right in
+       this leaf's tail notch; the neighbours' overlapping parts are drawn too, so repeated tiles join seamlessly. -->
+  <defs>
+    <g id="scroll">
+      <g fill="#f4b9b1" stroke="#a8251d" stroke-width="3" stroke-linejoin="round">
+        <path d="M8 50 C30 14 70 10 96 30 C110 41 118 47 132 47 C118 53 110 59 96 70 C70 90 30 86 8 50Z"/>
+        <path d="M132 47 C150 22 182 18 210 30 C196 38 188 44 184 50 C188 56 196 62 210 70 C182 82 150 78 132 53Z"/>
+      </g>
+      <g fill="#fffaf0" stroke="#a8251d" stroke-width="2">
+        <path d="M30 50 C44 32 66 30 82 42 C74 46 74 54 82 58 C66 70 44 68 30 50Z"/>
+        <circle cx="160" cy="50" r="11"/>
+      </g>
+      <g fill="#d9534a" stroke="#a8251d" stroke-width="1.5">
+        <circle cx="56" cy="50" r="7"/>
+        <circle cx="160" cy="50" r="4"/>
+      </g>
+      <g fill="none" stroke="#a8251d" stroke-width="2.5" stroke-linecap="round">
+        <path d="M96 30 C104 20 116 16 124 22"/>
+        <path d="M96 70 C104 80 116 84 124 78"/>
+      </g>
+    </g>
+  </defs>
+  <use xlink:href="#scroll" x="176"/>
+  <use xlink:href="#scroll"/>
+  <use xlink:href="#scroll" x="-176"/>
 </svg>
