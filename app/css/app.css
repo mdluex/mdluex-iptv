@@ -573,7 +573,7 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 .mflow .w { border-radius: 8px; transition: color .12s ease, background-color .12s ease; }
 .mflow .w.allah { color: #c4121a; }
 /* the word being recited: bold and coloured (strokes thickened, so the line never re-flows) */
-.mflow .w.on { color: #0a6e48; -webkit-text-stroke: .03em #0a6e48; }
+.mflow .w.on { color: #c4121a; -webkit-text-stroke: .03em #c4121a; }
 .mflow .w.allah.on { color: #c4121a; -webkit-text-stroke: .03em #c4121a; }
 /* verse number: the scalloped rosette with the number exactly in its centre */
 .mflow .end {
