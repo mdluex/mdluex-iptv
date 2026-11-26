@@ -35,6 +35,34 @@ var PlayerUI = (function () {
   }
   function exit() { clearTimeout(sleepTimer); sleepTimer = null; teardown(true); }
 
+  /* ---------- touch: on-screen buttons over the video (touchscreens only) ---------- */
+  var TOUCH_ICON = {
+    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+    back10: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6"/><path d="M4 4v4.6h4.6"/><text x="12" y="15.5" font-size="7" text-anchor="middle" fill="currentColor" stroke="none" font-family="Arial" font-weight="700">10</text></svg>',
+    fwd10: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.4-5.7L20 8.6"/><path d="M20 4v4.6h-4.6"/><text x="12" y="15.5" font-size="7" text-anchor="middle" fill="currentColor" stroke="none" font-family="Arial" font-weight="700">10</text></svg>',
+    playpause: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v16l8-8zM14 5h3v14h-3zm5 0h3v14h-3z"/></svg>',
+    more: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+    chup: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>',
+    chdown: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+    list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>',
+    fav: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>'
+  };
+  function touchControls(list) {
+    var box = h('div', { class: 'touch-ctl' });
+    list.forEach(function (x) {
+      var b = h('div', { class: 'tbtn t-' + x[0], html: TOUCH_ICON[x[0]] });
+      Focus.make(b, function () { x[1](); if (S) showOsd(); });
+      box.appendChild(b);
+    });
+    return box;
+  }
+  // a tap on the video (not on a button) shows or hides the controls
+  if (Platform.touch) document.addEventListener('click', function (e) {
+    if (!S || !layer || layer.classList.contains('hidden') || !layer.contains(e.target)) return;
+    if (e.target.closest && e.target.closest('.focusable, .osd-bar, .zap-list')) return;
+    if (osd.classList.contains('off')) showOsd(); else if (!S.paused()) osd.classList.add('off');
+  });
+
   /* ---------- progress saving (resume) ---------- */
   function curTime() { return S.kind === 'yt' ? ytTime() : Player.time(); }
   function curDur() { return S.kind === 'yt' ? ytDuration() : (Player.duration() || S.durationHint || 0); }
@@ -74,6 +102,14 @@ var PlayerUI = (function () {
     var bottom = h('div', { class: 'osd-bottom' }, [bar, h('div', { class: 'osd-times' }, [tCur, tLeft]), hints]);
     var center = h('div', { class: 'osd-center hidden' });
     osd.appendChild(top); osd.appendChild(center); osd.appendChild(bottom);
+    if (Platform.touch) {
+      hints.style.display = 'none';
+      osd.appendChild(touchControls([['close', exit], ['back10', function () { jump(-10000); }], ['playpause', togglePause], ['fwd10', function () { jump(10000); }], ['more', optionsMenu]]));
+      bar.addEventListener('click', function (e) {   // tap the timeline to jump there
+        var r = bar.getBoundingClientRect(), d = curDur();
+        if (d && r.width) { seekTo(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * d); showOsd(); }
+      });
+    }
     S.ui = { fill: fill, knob: knob, tip: tip, tCur: tCur, tLeft: tLeft, center: center };
     updateBar();
   }
@@ -114,6 +150,10 @@ var PlayerUI = (function () {
     });
     bottom.appendChild(hints);
     osd.appendChild(top); osd.appendChild(bottom);
+    if (Platform.touch) {
+      hints.style.display = 'none';
+      osd.appendChild(touchControls([['close', exit], ['chup', function () { zap(-1); }], ['playpause', function () { Player.toggle(); }], ['chdown', function () { zap(1); }], ['list', openZap], ['fav', toggleLiveFav]]));
+    }
     S.ui = {};
   }
 

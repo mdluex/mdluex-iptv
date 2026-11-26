@@ -507,33 +507,34 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 }
 /* a soft eight-pointed-star lattice, as on mushaf covers */
 .quran-list, .mushaf {
-  background-color: #08140f;
+  background-color: #160504;
   background-image:
-    radial-gradient(ellipse at 50% 30%, rgba(23,74,58,.85) 0%, rgba(8,20,15,0) 70%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%23c9a45c' stroke-opacity='.10' stroke-width='1.4'%3E%3Crect x='22' y='22' width='36' height='36'/%3E%3Crect x='22' y='22' width='36' height='36' transform='rotate(45 40 40)'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Cpath d='M0 40h14M66 40h14M40 0v14M40 66v14'/%3E%3C/g%3E%3C/svg%3E");
+    radial-gradient(ellipse at 50% 30%, rgba(110,20,15,.85) 0%, rgba(22,5,4,0) 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%23f0b9b1' stroke-opacity='.10' stroke-width='1.4'%3E%3Crect x='22' y='22' width='36' height='36'/%3E%3Crect x='22' y='22' width='36' height='36' transform='rotate(45 40 40)'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Cpath d='M0 40h14M66 40h14M40 0v14M40 66v14'/%3E%3C/g%3E%3C/svg%3E");
 }
 .quran-banner { text-align: center; padding: 120px 60px 26px; }
-.quran-banner .qb-title { font-family: "Amiri Quran", serif; font-size: 96px; line-height: 1.5; color: #e9cf8f; text-shadow: 0 4px 30px rgba(0,0,0,.6); }
-.quran-banner .qb-sub { font-size: 24px; color: #b9c9bf; margin: 12px 0 30px; }
+.quran-banner .qb-title { font-family: "Amiri Quran", serif; font-size: 96px; line-height: 1.6; padding-bottom: 10px; color: #f6d2cc; text-shadow: 0 4px 30px rgba(0,0,0,.6); }
+.quran-banner .qb-sub { font-size: 24px; line-height: 1.5; color: #d9b3ad; margin: 0 0 30px; }
 .quran-banner .btn-row { justify-content: center; }
 .quran-banner .btn svg { width: 30px; height: 30px; }
 .sura-grid { padding: 10px 60px 60px; justify-content: center; }
 .sura {
-  flex: none; position: relative; width: 336px; height: 118px; border-radius: 12px; background: rgba(16,44,35,.78);
-  border: 1px solid rgba(201,164,92,.28); display: flex; align-items: center; padding: 0 22px; transition: transform .14s ease; will-change: transform;
+  flex: none; position: relative; width: 336px; height: 118px; border-radius: 12px; background: rgba(110,20,15,.55);
+  border: 1px solid rgba(240,185,177,.32); display: flex; align-items: center; padding: 0 22px; transition: transform .14s ease; will-change: transform;
 }
 .sura .no {
   position: relative; width: 58px; height: 58px; flex: none; display: flex; align-items: center; justify-content: center;
-  font-size: 21px; font-weight: 800; color: #e3c27e; -webkit-margin-end: 20px; margin-inline-end: 20px;
+  font-size: 21px; font-weight: 800; color: #f6d2cc; -webkit-margin-end: 20px; margin-inline-end: 20px;
 }
 /* eight-pointed star around the number, as in printed mushafs */
-.sura .no::before, .sura .no::after { content: ''; position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px; border: 2px solid #c9a45c; border-radius: 5px; }
+.sura .no::before, .sura .no::after { content: ''; position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px; border: 2px solid #f0b9b1; border-radius: 5px; }
 .sura .no::after { transform: rotate(45deg); }
 .sura .tx { min-width: 0; }
-.sura .ar { font-family: "Amiri Quran", serif; font-size: 36px; line-height: 1.35; white-space: nowrap; color: #f3e6c4; }
-.sura .en { font-size: 18px; color: #9fb4a8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sura.focused { background: #f3e6c4; border-color: #c9a45c; transform: scale(1.06); z-index: 2; }
-.sura.focused .ar { color: #0b3b2e; } .sura.focused .en { color: #5a5040; } .sura.focused .no { color: #8a6a24; }
+.sura .ar { font-family: "Amiri Quran", serif; font-size: 34px; line-height: 1.6; white-space: nowrap; color: #fdf3e6; }
+.sura .en { font-size: 18px; line-height: 1.4; margin-top: 2px; color: #d9b3ad; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sura.focused { background: #fdf3e6; border-color: #f0b9b1; transform: scale(1.06); z-index: 2; }
+.sura.focused .ar { color: #6e140f; } .sura.focused .en { color: #7a4a44; } .sura.focused .no { color: #a8251d; }
+.sura.focused .no::before, .sura.focused .no::after { border-color: #a8251d; }
 .no-flex-gap .sura-grid > * { margin: 0 11px 22px; }
 
 /* full screen while reading: no sidebar, title bar or hint bar */
@@ -569,7 +570,8 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 .mscroll { position: absolute; top: 30px; right: 52px; bottom: 30px; left: 52px; overflow: hidden; font-family: "Mushaf Bold", "Amiri Quran", serif; font-weight: 400; }
 .mflow { line-height: 2.15; text-align: justify; text-align-last: center; direction: rtl; padding-bottom: 40vh; }
 /* a short surah: the header and basmala stay at the top, the verses sit in the middle of the space below */
-.mscroll.fits { display: flex; flex-direction: column; }
+.mtrack { will-change: transform; transition: transform .45s ease; }
+.mscroll.fits .mtrack { display: flex; flex-direction: column; height: 100%; }
 .mscroll.fits .mbody { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 .mscroll.fits .mflow { padding-bottom: 0; }
 .mflow .ayah { border-radius: 10px; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-color .25s ease; }
@@ -606,7 +608,7 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 .m-sura .cart span { font-size: .95em; line-height: 1; color: #111; }
 /* Quran.com mushaf fonts: each word is one glyph of its page's font; the verse-end ornament comes from the font */
 .mushaf.qpc .mflow { line-height: 2.1; word-spacing: .08em; }
-.mflow .end.g { display: inline; width: auto; height: auto; background: none; margin: 0 .05em; top: 0; vertical-align: baseline; }
+.mflow .end.g { display: inline; width: auto; height: auto; background: none; margin: 0 .05em; top: 0; vertical-align: baseline; color: #b3241c; }   /* verse ornament in the Quran red */
 /* page number, centred at the foot of the page */
 .mnum { position: absolute; left: 50%; bottom: -61px; width: 190px; margin-left: -95px; height: 48px; z-index: 3; display: flex; align-items: center; justify-content: center;
   background: url(../images/q-cart.svg) center / 100% 100% no-repeat; }
@@ -627,7 +629,7 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 .quran-bar .where { font-size: 25px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .quran-bar .who { font-size: 19px; color: #d6c28f; }
 .quran-bar .qprog { flex: 1; min-width: 80px; height: 8px; border-radius: 4px; background: rgba(246,227,176,.22); overflow: hidden; margin: 0 20px; }
-.quran-bar .qprog i { display: block; height: 100%; width: 0; background: #f0b9b1; border-radius: 4px; }
+.quran-bar .qprog i { display: block; height: 100%; width: 100%; background: #f0b9b1; border-radius: 4px; transform: scaleX(0); transform-origin: right center; will-change: transform; }
 .quran-bar .qtime { font-size: 21px; color: #d6c28f; direction: ltr; width: 130px; flex: none; text-align: center; }
 .quran-bar .qhints { display: flex; font-size: 17px; color: #b9c9bf; -webkit-margin-start: 10px; margin-inline-start: 10px; flex: none; }
 .quran-bar .qhints .hint { -webkit-margin-start: 14px; margin-inline-start: 14px; }
@@ -635,3 +637,50 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 .mushaf.loading .qbtn { animation: qpulse 1s ease-in-out infinite; }
 @keyframes qpulse { 50% { opacity: .5; } }
 .quran-error { margin: auto; padding: 120px 60px; text-align: center; font-size: 30px; color: #e9cf8f; }
+
+/* the reader appears complete, all at once */
+.mushaf .mpaper, .mushaf .quran-bar { transition: opacity .3s ease; }
+.mushaf.preparing .mpaper, .mushaf.preparing .quran-bar { opacity: 0; }
+/* the page frame and the player bar are their own GPU layers: text highlighting never re-draws them */
+.mushaf .mpaper { will-change: transform; }
+.mushaf .quran-bar { will-change: opacity, transform; }
+
+/* Older TV engines without CSS grid (Tizen 4 = Chrome 56): the same layouts with flexbox */
+@supports not (display: grid) {
+  .account-card { display: flex; flex-wrap: wrap; }
+  .account-card > * { width: calc(25% - 12px); margin: 0 16px 16px 0; }
+  .account-card > *:nth-child(4n) { margin-right: 0; }
+  .pin-pad { display: flex; flex-wrap: wrap; width: 358px; margin: 0 auto; }
+  .pin-pad > * { width: 110px; margin: 0 14px 14px 0; }
+  .pin-pad > *:nth-child(3n) { margin-right: 0; }
+  .osd-center { display: flex; align-items: center; justify-content: center; }
+}
+
+/* ---------- Touchscreens (Android phones and tablets): swipe to scroll, tap, on-screen controls ---------- */
+html.touch .scroll-y, html.touch .billboard-layout > .rows, html.touch .cat-list, html.touch .grid-col, html.touch .ch-col,
+html.touch .modal .menu, html.touch .zap-list .inner { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+html.touch .row-track { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+html.touch ::-webkit-scrollbar { display: none; }
+html.touch #hintbar { display: none; }
+.touch-ctl { position: absolute; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none; }
+.touch-ctl .tbtn {
+  position: absolute; pointer-events: auto; width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.45); color: #fff; border: 2px solid rgba(255,255,255,.35);
+}
+.touch-ctl .tbtn svg { width: 56px; height: 56px; }
+.touch-ctl .tbtn.focused { background: var(--accent); border-color: var(--accent); }
+.touch-ctl .t-close { top: 40px; left: 50px; width: 96px; height: 96px; }
+.touch-ctl .t-more { top: 40px; right: 220px; width: 96px; height: 96px; }
+.touch-ctl .t-playpause { top: 50%; left: 50%; margin: -80px 0 0 -80px; width: 160px; height: 160px; }
+.touch-ctl .t-playpause svg { width: 80px; height: 80px; }
+.touch-ctl .t-back10, .touch-ctl .t-chup { top: 50%; left: 50%; margin: -60px 0 0 -380px; }
+.touch-ctl .t-fwd10, .touch-ctl .t-chdown { top: 50%; left: 50%; margin: -60px 0 0 260px; }
+.touch-ctl .t-list { top: 40px; right: 220px; width: 96px; height: 96px; }
+.touch-ctl .t-fav { top: 40px; right: 340px; width: 96px; height: 96px; }
+.osd-bar { cursor: pointer; }
+.quran-bar .qtbtn {
+  width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px;
+  background: rgba(246,227,176,.16); color: #fdf3e6; -webkit-margin-start: 12px; margin-inline-start: 12px;
+}
+.quran-bar .qtbtn.focused { background: #fdf3e6; color: #8a1a13; }
+html.touch .osd-top { padding-left: 180px; }   /* room for the close button */

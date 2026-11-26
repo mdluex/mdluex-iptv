@@ -31,7 +31,7 @@ Pick your TV:
 |---|---|---|
 | **Amazon Fire TV** (Stick, Cube, Fire TV smart TVs) | Easy — about 5 minutes | [Fire TV](#firetv) |
 | **Android TV / Google TV** (Chromecast, Shield, Mi Box, Sony, TCL, Hisense…) | Easy — about 5 minutes | [Android TV](#androidtv) |
-| **Samsung** (2017 and newer) | Medium — needs a phone or computer once | [Samsung](#samsung) |
+| **Samsung** (2018 and newer) | Medium — needs a phone or computer once | [Samsung](#samsung) |
 | **LG** (2021 and newer, webOS 6+) | Harder — needs a computer once | [LG](#lg) |
 
 <a id="firetv"></a>

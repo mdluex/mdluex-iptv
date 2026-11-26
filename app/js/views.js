@@ -62,7 +62,15 @@
       })(n);
     }
     more();
+    // touch: swiping a list near its end adds the next batch (the remote does it on focus, above)
+    container.setAttribute('data-more', '1');
+    container._more = function () { if (n < items.length) more(); };
   }
+  if (Platform.touch) document.addEventListener('scroll', function (e) {
+    var t = e.target;
+    if (!t || !t.querySelectorAll || t.scrollTop + t.clientHeight < t.scrollHeight - 1200) return;
+    Array.prototype.forEach.call(t.querySelectorAll('[data-more]'), function (c) { if (c._more) c._more(); });
+  }, true);
   function needPlaylist(main) {
     if (App.api) return false;
     var box = h('div', { class: 'welcome' }, [h('div', { class: 'mark' }), h('h1', { text: T('Add your IPTV account'), style: { fontSize: '54px' } }),

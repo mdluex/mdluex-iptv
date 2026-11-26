@@ -2,7 +2,10 @@ package com.mdluex.iptv;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.UiModeManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -113,6 +116,15 @@ public class MainActivity extends Activity {
         if (now - lastBack < 250) return;
         lastBack = now;
         web.evaluateJavascript("window.App&&App.key(10009)", null);
+    }
+
+    /** A TV (or TV box): TV mode, the Android TV (leanback) feature, or no touchscreen at all. */
+    private boolean isTV() {
+        UiModeManager ui = (UiModeManager) getSystemService(UI_MODE_SERVICE);
+        PackageManager pm = getPackageManager();
+        return (ui != null && ui.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION)
+                || pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+                || !pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
 
     private boolean isFireTV() {
@@ -339,7 +351,8 @@ public class MainActivity extends Activity {
             });
         }
         /** "firetv" on Amazon Fire TV devices, otherwise "androidtv" */
-        @JavascriptInterface public String device() { return isFireTV() ? "firetv" : "androidtv"; }
+        /** "firetv", "androidtv", or "mobile" (a phone or tablet: the only kind that gets touch controls) */
+        @JavascriptInterface public String device() { return isFireTV() ? "firetv" : (isTV() ? "androidtv" : "mobile"); }
         @JavascriptInterface public void exit() { main.post(MainActivity.this::finish); }
     }
 

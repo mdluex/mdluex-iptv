@@ -1,3 +1,11 @@
+/* Older TV engines (Tizen 4 = Chrome 56) lack a few newer JavaScript helpers: add them. */
+if (!String.prototype.padStart) {
+  String.prototype.padStart = function (len, fill) {
+    var s = String(this); fill = fill == null ? ' ' : String(fill);
+    while (s.length < len) s = fill + s;
+    return s.length > len && fill.length > 1 ? s.slice(s.length - len) : s;
+  };
+}
 /* Which TV system we run on, and the few things that differ between them.
    Everything else (screens, design, features) is shared by Samsung Tizen, LG webOS and Android TV. */
 var Platform = (function () {
@@ -7,12 +15,15 @@ var Platform = (function () {
     typeof MdxNative !== 'undefined' ? 'android' :
     (typeof PalmServiceBridge !== 'undefined' || /Web0S|webOS/i.test(ua)) ? 'webos' :
     'browser';
-  /* Android builds tell us the device family: 'firetv' (Amazon Fire TV) or 'androidtv' */
+  /* Android builds tell us the device family: 'firetv', 'androidtv' or 'mobile' (phone / tablet) */
   var device = '';
   try { if (name === 'android' && MdxNative.device) device = String(MdxNative.device()); } catch (e) {}
   /* Samsung and LG remotes have red/green/yellow/blue buttons; Android TV and Fire TV remotes don't,
      so there the item actions live in an options menu (Fire TV: the ☰ button; any Android remote: hold OK). */
   var colorKeys = name !== 'android';
+  /* touch controls (swipe to scroll, tap, on-screen player buttons) only on Android phones and tablets:
+     the Android app checks TV mode / Android TV / touchscreen itself, so TVs and TV boxes never get them. */
+  var touch = (name === 'android' && device === 'mobile') || (name === 'browser' && /[?&]touch=1/.test(location.search));
 
   /* LG webOS system services (luna://...) without LG's helper library */
   function luna(uri, params, cb) {
@@ -30,6 +41,7 @@ var Platform = (function () {
     device: device,
     fireTV: device === 'firetv',
     colorKeys: colorKeys,
+    touch: touch,
     /* the label for the key that opens the options menu, where there are no colored buttons */
     menuKey: device === 'firetv' ? '☰' : 'Hold OK',
     isTV: name !== 'browser',
@@ -82,4 +94,4 @@ var Platform = (function () {
     defaultLiveFormat: name === 'webos' ? 'm3u8' : 'ts'
   };
 })();
-document.documentElement.className += ' platform-' + Platform.name + (Platform.fireTV ? ' platform-firetv' : '');
+document.documentElement.className += ' platform-' + Platform.name + (Platform.fireTV ? ' platform-firetv' : '') + (Platform.touch ? ' touch' : '');

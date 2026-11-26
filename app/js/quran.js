@@ -51,27 +51,59 @@ var Quran = (function () {
     }).catch(function (e) { chaptersCache = null; if (saved) return saved; throw e; });
     return chaptersCache;
   }
-  /* every verse of a surah, word by word, with its mushaf page and juz (the API returns 50 verses per request) */
+  /* Every verse of a surah, word by word. Two light requests: the mushaf glyphs (with each verse's page; every
+     Madinah mushaf page ends at the end of a verse) and the Uthmani text. The juz comes from the table below. */
+  var JUZ_START = [[1, 1], [2, 142], [2, 253], [3, 93], [4, 24], [4, 148], [5, 82], [6, 111], [7, 88], [8, 41],
+    [9, 93], [11, 6], [12, 53], [15, 1], [17, 1], [18, 75], [21, 1], [23, 1], [25, 21], [27, 56],
+    [29, 46], [33, 31], [36, 28], [39, 32], [41, 47], [46, 1], [51, 31], [58, 1], [67, 1], [78, 1]];
+  function juzOf(ch, n) {
+    var j = 1;
+    for (var i = 0; i < JUZ_START.length; i++) {
+      var c = JUZ_START[i][0], v = JUZ_START[i][1];
+      if (ch > c || (ch === c && n >= v)) j = i + 1; else break;
+    }
+    return j;
+  }
+  var ONLY_MARKS = /^[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06DD\u06DF-\u06ED\u0640]+$/;   // pause marks (not ۞)
+  /* One verse from the light data. Quran.com numbers words with a pause mark (ۖ ۗ ۚ …) belonging to the word before
+     it; here a mark that is a glyph of its own is joined to that word, so the numbers match the recitation timings.
+     Returns null when the text and glyphs can't be lined up (then the verse's exact word list is fetched). */
+  function buildVerse(ch, n, page, glyphs, tokens) {
+    if (tokens.length !== glyphs.length - 1) return null;
+    var words = [], pos = 0, lead = null;
+    tokens.forEach(function (t, i) {
+      if (t === '\u06DE') { lead = { t: t, g: glyphs[i] }; return; }   // ۞ (quarter hizb) belongs to the word after it
+      if (ONLY_MARKS.test(t) && words.length) { var w = words[words.length - 1]; w.t += ' ' + t; w.g += glyphs[i]; return; }
+      words.push({ p: ++pos, g: lead ? lead.g + ' ' + glyphs[i] : glyphs[i], gp: page, t: lead ? lead.t + ' ' + t : t });
+      lead = null;
+    });
+    words.push({ p: pos + 1, g: glyphs[glyphs.length - 1], gp: page, end: true, t: arNum(n) });
+    return { n: n, page: page, juz: juzOf(ch, n), words: words };
+  }
+  function exactVerse(ch, n) {
+    return getJSON(API + '/verses/by_key/' + ch + ':' + n + '?words=true&word_fields=text_uthmani,code_v2,v2_page').then(function (d) {
+      var v = d.verse;
+      return { n: n, page: v.words[0].v2_page, juz: juzOf(ch, n),
+        words: v.words.map(function (w) { return { p: w.position, t: w.char_type_name === 'end' ? arNum(n) : w.text_uthmani, g: w.code_v2, gp: w.v2_page, end: w.char_type_name === 'end' }; }) };
+    });
+  }
   var textCache = {};
   function verses(ch) {
     if (textCache[ch]) return textCache[ch];
-    var url = API + '/verses/by_chapter/' + ch + '?words=true&word_fields=text_uthmani,code_v2,v2_page&fields=page_number,juz_number&per_page=50&page=';
-    textCache[ch] = getJSON(url + 1).then(function (first) {
-      var all = [Promise.resolve(first)];
-      for (var p = 2; p <= first.pagination.total_pages; p++) all.push(getJSON(url + p));
-      return Promise.all(all);
-    }).then(function (all) {
-      var out = [];
-      all.forEach(function (pg) {
-        pg.verses.forEach(function (v) {
-          out.push({ n: v.verse_number, page: v.page_number, juz: v.juz_number,
-            words: v.words.map(function (w) { return { p: w.position, t: w.text_uthmani, g: w.code_v2, gp: w.v2_page, end: w.char_type_name === 'end' }; }) });
-        });
-      });
-      return out;
+    textCache[ch] = Promise.all([
+      getJSON(API + '/quran/verses/code_v2?chapter_number=' + ch),
+      getJSON(API + '/quran/verses/uthmani?chapter_number=' + ch)
+    ]).then(function (r) {
+      var text = {};
+      r[1].verses.forEach(function (v) { text[v.verse_key] = String(v.text_uthmani || '').trim().split(/\s+/).filter(Boolean); });
+      return Promise.all(r[0].verses.map(function (v) {
+        var n = +String(v.verse_key).split(':')[1];
+        return buildVerse(ch, n, v.v2_page, String(v.code_v2 || '').trim().split(/\s+/), text[v.verse_key] || []) || exactVerse(ch, n);
+      }));
     }).catch(function (e) { delete textCache[ch]; throw e; });
     return textCache[ch];
   }
+
   /* ---------- the mushaf font from Quran.com: the King Fahd Complex lettering, one font per mushaf page,
      each word one glyph. The plain (black) version; the name of Allah is coloured by the app. ---------- */
   var FONT_BASE = 'https://verses.quran.foundation/fonts/quran/hafs/v2/woff2/p';
@@ -84,14 +116,43 @@ var Quran = (function () {
         .catch(function (e) { delete fontJobs[page]; throw e; });
     return fontJobs[page];
   }
+  /* the page's decorations, decoded once and kept, so the page appears complete instead of piece by piece */
+  var ART = ['q-frame', 'q-cart', 'q-medal', 'q-end', 'q-rope', 'q-bar'];
+  var artJob = null;
+  function decorations() {
+    if (artJob) return artJob;
+    artJob = Promise.all(ART.map(function (n) {
+      return new Promise(function (res) {
+        var im = new Image();
+        im.onload = function () { if (im.decode) im.decode().then(res, res); else res(); };
+        im.onerror = res;
+        im.src = 'images/' + n + '.svg';
+        decorations.keep.push(im);   // keep them alive: the CSS backgrounds then reuse the decoded images
+      });
+    }));
+    return artJob;
+  }
+  decorations.keep = [];
   /* the fonts for every page of a surah; resolves to 'v2', or null (then the bundled font is used) */
-  function mushafFonts(verses) {
-    var pages = {};
-    verses.forEach(function (v) { v.words.forEach(function (w) { if (w.gp) pages[w.gp] = 1; }); });
-    var list = Object.keys(pages);
-    if (!list.length) return Promise.resolve(null);
-    if (list.indexOf('1') < 0) list.push('1');   // page 1 also draws the basmala
-    return Promise.all(list.map(pageFont)).then(function () { return 'v2'; }).catch(function () { return null; });
+  /* Fonts for the pages around where reading starts (and page 1, which draws the basmala). Resolves to
+     { ver: 'v2', loaded: {page: true}, rest: [pages to load later, nearest first] }, or { ver: null } if they fail. */
+  function mushafFonts(verses, startN) {
+    var pages = {}, startPage = null;
+    verses.forEach(function (v) {
+      v.words.forEach(function (w) { if (w.gp) pages[w.gp] = 1; });
+      if (v.n === (startN || 1) && v.words[0]) startPage = v.words[0].gp;
+    });
+    var all = Object.keys(pages).map(Number);
+    if (!all.length) return Promise.resolve({ ver: null });
+    if (startPage == null) startPage = all[0];
+    var first = all.filter(function (p) { return p >= startPage - 1 && p <= startPage + 2; });
+    var rest = all.filter(function (p) { return first.indexOf(p) < 0; })
+      .sort(function (a, b) { return Math.abs(a - startPage) - Math.abs(b - startPage); });
+    var wait = first.concat([1]);
+    return Promise.all(wait.map(pageFont)).then(function () {
+      var loaded = {}; wait.forEach(function (p) { loaded[p] = true; });
+      return { ver: 'v2', loaded: loaded, rest: rest };
+    }).catch(function () { return { ver: null }; });
   }
 
   var audioCache = {};
@@ -150,7 +211,7 @@ var Quran = (function () {
   function duration() { return audio && isFinite(audio.duration) ? audio.duration * 1000 : 0; }
 
   return { RECITERS: RECITERS, BASMALA: BASMALA, arNum: arNum, prefs: prefs, setPref: setPref, reciter: reciter, reciterName: reciterName,
-    chapters: chapters, verses: verses, mushafFonts: mushafFonts, recitation: recitation, play: play, stop: stop, toggle: toggle, seek: seek,
+    chapters: chapters, verses: verses, mushafFonts: mushafFonts, pageFont: pageFont, decorations: decorations, recitation: recitation, play: play, stop: stop, toggle: toggle, seek: seek,
     paused: paused, duration: duration };
 })();
 
@@ -185,6 +246,7 @@ var Quran = (function () {
       var wrap = h('div', { class: 'scroll-y quran-list' });
       main.appendChild(wrap);
       wrap.appendChild(h('div', { class: 'spinner center-spin' }));
+      Quran.decorations();   // decorations load while the list is open
       return Quran.chapters().then(function (list) {
         wrap.innerHTML = '';
         var p = Quran.prefs(), last = p.last && list[p.last.ch - 1];
@@ -206,6 +268,12 @@ var Quran = (function () {
         ]));
         var g = h('div', { class: 'grid sura-grid', 'data-zone': 'grid' });
         list.forEach(function (c) { g.appendChild(suraTile(c)); });
+        // back on the first row of surahs: show the page from the very top again (title and buttons)
+        var firstTile = g.firstChild;
+        Array.prototype.forEach.call(g.children, function (t) {
+          var prev = t._onFocus;
+          t._onFocus = function (e) { if (prev) prev(e); if (t.offsetTop === firstTile.offsetTop) wrap.scrollTop = 0; };
+        });
         wrap.appendChild(g);
         App.setHints([{ key: 'OK', label: 'Listen & read' }]);
       }).catch(function (e) { App.showError(main, e); });
@@ -263,8 +331,9 @@ var Quran = (function () {
       scroller.appendChild(h('div', { class: 'spinner center-spin' }));
       var ch = params.ch, prefs = Quran.prefs(), rec = Quran.reciter();
 
-      return Promise.all([Quran.chapters(), Quran.verses(ch).then(function (vs) { return Quran.mushafFonts(vs).then(function (ver) { return [vs, ver]; }); })]).then(function (r) {
-        var info = r[0][ch - 1], verses = r[1][0], fontVer = r[1][1];
+      root.classList.add('preparing');   // hidden until text, fonts and decorations are all ready
+      return Promise.all([Quran.chapters(), Quran.verses(ch).then(function (vs) { return Quran.mushafFonts(vs, params.ayah).then(function (f) { return [vs, f]; }); }), Quran.decorations()]).then(function (r) {
+        var info = r[0][ch - 1], verses = r[1][0], fonts = r[1][1], fontVer = fonts.ver, pending = {};
         root.classList.toggle('qpc', !!fontVer);
         scroller.innerHTML = '';
         topSura.textContent = 'سورة ' + info.ar;
@@ -282,17 +351,21 @@ var Quran = (function () {
           wordEls[v.n] = {};
           pageOf[v.n] = v;
           v.words.forEach(function (w) {
-            var glyph = fontVer && w.g && w.gp;
+            var glyph = fontVer && w.g && w.gp && fonts.loaded[w.gp];
+            var later = fontVer && w.g && w.gp && !glyph;   // its page font is still on the way
             if (w.end) {
               // the verse number never starts a line on its own: it stays joined to the verse's last word
               if (a.lastChild && a.lastChild.nodeType === 3) a.lastChild.nodeValue = ' ';
               // the mushaf font has its own verse-end ornament; otherwise our rosette with the number
-              if (glyph) a.appendChild(h('span', { class: 'end g', text: w.g, style: { fontFamily: 'qpc' + fontVer + 'p' + w.gp } }));
-              else a.appendChild(h('span', { class: 'end' }, [h('b', { text: w.t })]));
+              var ee = glyph ? h('span', { class: 'end g', text: w.g, style: { fontFamily: 'qpc' + fontVer + 'p' + w.gp } })
+                : h('span', { class: 'end' }, [h('b', { text: w.t })]);
+              if (later) (pending[w.gp] = pending[w.gp] || []).push({ el: ee, w: w });
+              a.appendChild(ee);
               return;
             }
             var we = glyph ? h('span', { class: 'w' + (isAllah(w.t) ? ' allah' : ''), text: w.g, style: { fontFamily: 'qpc' + fontVer + 'p' + w.gp } })
               : h('span', { class: 'w' + (isAllah(w.t) ? ' allah' : ''), text: w.t });
+            if (later) (pending[w.gp] = pending[w.gp] || []).push({ el: we, w: w });
             wordEls[v.n][w.p] = we;
             a.appendChild(we);
             a.appendChild(document.createTextNode(' '));
@@ -302,6 +375,10 @@ var Quran = (function () {
           text.appendChild(document.createTextNode(' '));
         });
         scroller.appendChild(h('div', { class: 'mbody' }, [basmala, text]));   // basmala + verses (centred in the free space when the surah is short)
+        // everything that moves sits on one layer that slides with a GPU transform (no re-drawing of the page)
+        var track = h('div', { class: 'mtrack' }), curSt = 0;
+        while (scroller.firstChild) track.appendChild(scroller.firstChild);
+        scroller.appendChild(track);
         // a short surah that doesn't fill the page sits in the middle of it, top to bottom
         function centerIfShort() {
           scroller.classList.remove('fits');
@@ -310,7 +387,7 @@ var Quran = (function () {
         }
         centerIfShort();
         showFrom(0);
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { centerIfShort(); showFrom(scroller.scrollTop); });
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { centerIfShort(); showFrom(curSt); });
 
         // player bar (hides itself after a few seconds, like the video player)
         var btn = h('div', { class: 'qbtn', 'data-autofocus': '1' });
@@ -322,6 +399,15 @@ var Quran = (function () {
         [['OK', T('Play / Pause')], ['▲ ▼', T('Previous · next verse')], ['◀ ▶', T('Next · previous surah')], [Platform.colorKeys ? 'INFO' : T(Platform.menuKey), T('Options')]]
           .forEach(function (x) { hints.appendChild(h('div', { class: 'hint' }, [h('span', { class: 'key', text: x[0] }), h('span', { text: x[1] })])); });
         var barEl = h('div', { class: 'quran-bar' }, [btn, h('div', { class: 'meta' }, [where, who]), prog, tm, hints]);
+        if (Platform.touch) {   // on a touchscreen the key hints become buttons
+          hints.innerHTML = '';
+          [['▲', function () { self._goAyah(-1); }], ['▼', function () { self._goAyah(1); }], ['◀', function () { self._turn(1); }], ['▶', function () { self._turn(-1); }], ['☰', function () { self._options(); }]].forEach(function (x) {
+            var b = h('div', { class: 'qtbtn', text: x[0] });
+            Focus.make(b, function () { x[1](); self._showBar(); });
+            hints.appendChild(b);
+          });
+          root.addEventListener('click', function (e) { if (!(e.target.closest && e.target.closest('.focusable'))) showBar(); });
+        }
         root.appendChild(barEl);
         var hideT;
         function showBar(ms) { barEl.classList.remove('off'); clearTimeout(hideT); hideT = setTimeout(function () { if (!Quran.paused()) barEl.classList.add('off'); }, ms || 4000); }
@@ -343,16 +429,17 @@ var Quran = (function () {
           var L = lineH(), off = text.offsetTop;
           scroller.style.height = '';
           var room = scroller.clientHeight;
-          scroller.scrollTop = st;
+          curSt = st;
+          track.style.transform = st ? 'translateY(' + (-st) + 'px)' : '';
           if (scroller.classList.contains('fits')) return;
           var k = Math.floor((st + room - off) / L);   // lines of the text that fit completely
           if (k >= 1) scroller.style.height = Math.max(L, off + k * L - st) + 'px';
         }
-        function keepVisible(el) {
-          var L = lineH(), off = text.offsetTop, st = scroller.scrollTop, hgt = scroller.clientHeight;
+        function keepVisible(el, force) {
+          var L = lineH(), off = text.offsetTop, st = curSt, hgt = scroller.clientHeight;
           var line = Math.max(0, Math.floor((el.offsetTop - off + L * 0.3) / L));
           var lineTop = off + line * L;
-          if (lineTop >= st && lineTop + L <= st + hgt) return;   // the verse's first line is already in view
+          if (!force && lineTop >= st && lineTop + L <= st + hgt) return;   // the verse's first line is already in view
           showFrom(line === 0 ? 0 : lineTop);
         }
         function markAyah(n, noSave) {
@@ -361,7 +448,7 @@ var Quran = (function () {
           if (basmala) basmala.classList.toggle('cur', n === 0);
           curAyah = n;
           if (ayahEls[n]) { ayahEls[n].classList.add('cur'); keepVisible(ayahEls[n]); }
-          else if (n === 0) scroller.scrollTop = 0;
+          else if (n === 0) showFrom(0);
           setWhere();
           if (n > 0 && !noSave) Quran.setPref('last', { ch: ch, ayah: n });
         }
@@ -389,8 +476,9 @@ var Quran = (function () {
             markWord(w ? w.p : null);
           }
           var d = Quran.duration();
-          prog.firstChild.style.width = d ? Math.min(100, ms / d * 100) + '%' : '0';
-          tm.textContent = fmtTime(ms) + (d ? ' / ' + fmtTime(d) : '');
+          prog.firstChild.style.transform = 'scaleX(' + (d ? Math.min(1, ms / d) : 0) + ')';
+          var label = fmtTime(ms) + (d ? ' / ' + fmtTime(d) : '');
+          if (label !== tm.textContent) tm.textContent = label;
         }
         function goAyah(n) {
           if (!timing) return;
@@ -411,6 +499,22 @@ var Quran = (function () {
         self._cleanup = function () { clearTimeout(endTimer); clearTimeout(hideT); };
 
         if (params.ayah) markAyah(params.ayah, true); else setWhere();
+        requestAnimationFrame(function () { root.classList.remove('preparing'); });
+        (function loadRest(list) {
+          if (!list || !list.length || !fontVer) return;
+          var p = list.shift();
+          Quran.pageFont(p).then(function () {
+            if (!root.isConnected) return;
+            (pending[p] || []).forEach(function (it) {
+              it.el.style.fontFamily = 'qpc' + fontVer + 'p' + p;
+              if (it.w.end) { it.el.className = 'end g'; it.el.textContent = it.w.g; } else it.el.textContent = it.w.g;
+            });
+            delete pending[p];
+            centerIfShort();
+            if (curAyah > 0 && ayahEls[curAyah]) { var a0 = curAyah; curAyah = -1; markAyah(a0, true); keepVisible(ayahEls[a0], true); }
+            loadRest(list);
+          }, function () { loadRest(list); });
+        })(fonts.rest && fonts.rest.slice());
         showBar(6000);
         Quran.recitation(rec.id, ch).then(function (t) {
           timing = t;
