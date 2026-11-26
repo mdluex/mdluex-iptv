@@ -13,6 +13,9 @@
 > باشتراك الـ IPTV الذي لديك بالفعل (عنوان السيرفر واسم المستخدم وكلمة المرور التي أعطاها لك مزوّد الخدمة —
 > ويُسمّى غالبًا حساب "Xtream Codes").
 
+> **أسهل طريقة للتثبيت: [mdluex.github.io/mdluex-iptv](https://mdluex.github.io/mdluex-iptv/)** — اختر شاشتك واتبع الصور،
+> مع أزرار تحميل أحدث إصدار (بالعربية والإنجليزية).
+
 ![الشاشة الرئيسية لتطبيق Mdluex IPTV](docs/screens/home.png)
 
 ## المحتويات
@@ -209,7 +212,7 @@
 **هل التطبيق بفلوس؟ هل فيه قنوات؟**
 التطبيق مجاني، ولا يحتوي على أي قنوات — تحتاج اشتراك IPTV خاص بك.
 
-ما زالت عندك مشكلة؟ [افتح بلاغًا (Issue)](https://github.com/mdluex/mdluex-iptv/issues) واكتب موديل شاشتك وما يحدث معك.
+ما زالت عندك مشكلة؟ راسلنا على **[hello@mdluex.com](mailto:hello@mdluex.com)** أو [افتح بلاغًا (Issue)](https://github.com/mdluex/mdluex-iptv/issues) — واكتب موديل شاشتك وما يحدث معك.
 
 <a id="screenshots"></a>
 ## صور وفيديو
@@ -243,10 +246,9 @@
 و[webOS Homebrew Channel](https://github.com/webosbrew/apps-repo) لديها إذن بعرض Mdluex IPTV ومشاركة الإصدارات
 الرسمية بدون تعديل من هذه الصفحة.
 
-تريد استخدامه تجاريًا؟ **تواصل معي أولًا** عبر [GitHub](https://github.com/mdluex) أو
-[قناة Mdluex Industries على يوتيوب](https://www.youtube.com/@Mdlu3x).
+تريد استخدامه تجاريًا؟ **تواصل معي أولًا** على **[hello@mdluex.com](mailto:hello@mdluex.com)**.
 
 ## المطوّر
-**محمود صلاح** — [Mdluex Industries على يوتيوب](https://www.youtube.com/@Mdlu3x)
+**محمود صلاح** — الموقع الرسمي **[www.mdluex.com](https://www.mdluex.com)** · الدعم والاستخدام التجاري **[hello@mdluex.com](mailto:hello@mdluex.com)** · [Mdluex Industries على يوتيوب](https://www.youtube.com/@Mdlu3x)
 
 </div>

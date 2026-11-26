@@ -11,6 +11,9 @@ Works on **Samsung**, **LG**, **Android TV / Google TV** and **Amazon Fire TV**.
 > with the IPTV subscription you already have (the *server address*, *username* and *password* your provider gave
 > you — often called an "Xtream Codes" login).
 
+> **The easiest way to install: [mdluex.github.io/mdluex-iptv](https://mdluex.github.io/mdluex-iptv/)** — pick your TV and follow
+> the pictures, with download buttons for the newest version (English and Arabic).
+
 ![Mdluex IPTV home screen](docs/screens/home.png)
 
 ## Contents
@@ -202,7 +205,7 @@ subscription, so you'll need to add it again.
 **Does it cost anything? Does it include channels?**
 The app is free. It doesn't include any channels — you need your own IPTV subscription.
 
-Still stuck? [Open an issue](https://github.com/mdluex/mdluex-iptv/issues) and tell us your TV model and what happens.
+Still stuck? Email **[hello@mdluex.com](mailto:hello@mdluex.com)** or [open an issue](https://github.com/mdluex/mdluex-iptv/issues) — tell us your TV model and what happens.
 
 <a id="screenshots"></a>
 ## Screenshots and video
@@ -237,8 +240,7 @@ The free community stores of [Apps2Samsung / TV-Store](https://github.com/Apps2S
 and the [webOS Homebrew Channel](https://github.com/webosbrew/apps-repo) have permission to list Mdluex IPTV and
 share the unchanged official releases from this page.
 
-Want to use it commercially? **Contact me first** through [GitHub](https://github.com/mdluex) or the
-[Mdluex Industries YouTube channel](https://www.youtube.com/@Mdlu3x).
+Want to use it commercially? **Contact me first** at **[hello@mdluex.com](mailto:hello@mdluex.com)**.
 
 ## Author
-**Mahmoud Salah** — [Mdluex Industries on YouTube](https://www.youtube.com/@Mdlu3x)
+**Mahmoud Salah** — website **[www.mdluex.com](https://www.mdluex.com)** · support & business **[hello@mdluex.com](mailto:hello@mdluex.com)** · [Mdluex Industries on YouTube](https://www.youtube.com/@Mdlu3x)

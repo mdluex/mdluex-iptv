@@ -96,6 +96,7 @@ var I18N = (function () {
     'Continue Watching and resume points will be removed for this playlist.': 'سيتم حذف متابعة المشاهدة ونقاط الاستئناف لهذه القائمة.',
     'History cleared': 'تم مسح السجل', 'Clear recently watched channels': 'مسح القنوات التي شاهدتها مؤخرًا', 'About': 'حول التطبيق',
     'Mdluex IPTV {0} · by Mdluex Industries': 'Mdluex IPTV {0} · من Mdluex Industries',
+    'Website': 'الموقع الرسمي', 'Support & commercial use': 'الدعم والاستخدام التجاري',
     'Language': 'اللغة', 'Automatic (TV language)': 'تلقائي (لغة الشاشة)', 'English': 'English', 'العربية': 'العربية',
     /* player */
     'Play / Pause': 'تشغيل / إيقاف مؤقت', 'Seek': 'تقديم / ترجيع', 'Audio · Subtitles · More': 'الصوت · الترجمة · المزيد',

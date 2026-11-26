@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mdluex IPTV — Install on your TV</title>
+  <meta name="description" content="Install Mdluex IPTV on Samsung, LG, Android TV and Fire TV in a few easy steps. Live TV, movies, series, YouTube channels and the Quran on your TV.">
+  <meta name="theme-color" content="#d11515">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    /* language and theme before the page draws (no flash): saved choice, else the browser's language; light by default */
+    (function () {
+      var d = document.documentElement, lang = null, theme = null;
+      try { lang = localStorage.getItem('mdx-lang'); theme = localStorage.getItem('mdx-theme'); } catch (e) {}
+      if (!lang) lang = /^ar/i.test(navigator.language || '') ? 'ar' : 'en';
+      d.lang = lang; d.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      d.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
+    })();
+  </script>
+</head>
+<body>
+  <!-- ===================== top bar ===================== -->
+  <header class="topbar">
+    <div class="wrap topbar-in">
+      <a class="brand" href="#top" aria-label="Mdluex IPTV">
+        <img class="logo logo-dark" src="img/logo.svg" alt="" width="28" height="42">
+        <img class="logo logo-light" src="img/logo-light.svg" alt="" width="28" height="42">
+        <span>Mdluex IPTV</span>
+      </a>
+      <nav class="nav">
+        <a href="#install" data-t="nav.install">Install</a>
+        <a href="#download" data-t="nav.download">Download</a>
+        <a href="#features" data-t="nav.features">Features</a>
+        <a href="#help" data-t="nav.help">Help</a>
+      </nav>
+      <div class="tools">
+        <button class="tool" id="langBtn" type="button" aria-label="Language"><span data-t="lang.switch">العربية</span></button>
+        <button class="tool icon" id="themeBtn" type="button" aria-label="Dark mode">
+          <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ===================== hero ===================== -->
+    <section class="hero">
+      <div class="wrap hero-in">
+        <div class="hero-text">
+          <p class="kicker" data-t="hero.kicker">Free · No ads · Personal use</p>
+          <h1 data-t="hero.title">Your IPTV, beautifully on your TV</h1>
+          <p class="lead" data-t="hero.lead">Live TV, movies and series from your own IPTV subscription — plus the Quran with live recitation and your favourite YouTube channels. For Samsung, LG, Android TV and Fire TV.</p>
+          <div class="cta">
+            <a class="btn primary" href="#install"><span data-t="hero.cta">Install on my TV</span></a>
+            <a class="btn ghost" href="#download"><span data-t="hero.download">Download files</span></a>
+          </div>
+          <p class="version-line"><span class="dot"></span><span id="heroVersion" data-t="hero.checking">Checking the latest version…</span></p>
+        </div>
+        <div class="hero-art">
+          <div class="tv">
+            <div class="tv-screen"><img src="screens/home.png" alt="Mdluex IPTV home screen" loading="eager"></div>
+            <div class="tv-stand"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap">
+      <div class="note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 8v5M12 16.5v.5"/></svg>
+        <p data-t="note.player">Mdluex IPTV is only a player. It doesn't come with channels, movies or series — you sign in with the IPTV subscription you already have. The Quran and YouTube channels work without one.</p>
+      </div>
+    </div>
+
+    <!-- ===================== pick your TV ===================== -->
+    <section class="section" id="install">
+      <div class="wrap">
+        <p class="eyebrow" data-t="pick.eyebrow">Step 1</p>
+        <h2 data-t="pick.title">Which TV do you have?</h2>
+        <p class="sub" data-t="pick.sub">Choose your TV and follow the pictures. Most people are done in 5 minutes.</p>
+        <div class="pick" role="tablist">
+          <button class="pick-card" data-guide="firetv" role="tab" type="button">
+            <span class="pick-ico"><img src="img/ico-firetv.svg" alt=""></span>
+            <strong>Amazon Fire TV</strong>
+            <small data-t="pick.firetv">Fire TV Stick, Cube, Fire TV smart TVs</small>
+            <span class="badge easy" data-t="level.easy">Easy</span>
+          </button>
+          <button class="pick-card" data-guide="android" role="tab" type="button">
+            <span class="pick-ico"><img src="img/ico-android.svg" alt=""></span>
+            <strong>Android TV / Google TV</strong>
+            <small data-t="pick.android">Chromecast, Shield, Mi Box, Sony, TCL, Hisense…</small>
+            <span class="badge easy" data-t="level.easy">Easy</span>
+          </button>
+          <button class="pick-card" data-guide="samsung" role="tab" type="button">
+            <span class="pick-ico"><img src="img/ico-samsung.svg" alt=""></span>
+            <strong>Samsung</strong>
+            <small data-t="pick.samsung">Smart TVs from 2018 and newer</small>
+            <span class="badge medium" data-t="level.medium">Needs a phone or PC once</span>
+          </button>
+          <button class="pick-card" data-guide="lg" role="tab" type="button">
+            <span class="pick-ico"><img src="img/ico-lg.svg" alt=""></span>
+            <strong>LG</strong>
+            <small data-t="pick.lg">webOS 6 and newer (2021+)</small>
+            <span class="badge hard" data-t="level.hard">Needs a PC once</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== guides ===================== -->
+    <section class="section guides" id="guides">
+      <div class="wrap">
+
+        <!-- Fire TV -->
+        <article class="guide" id="guide-firetv">
+          <h2><span data-t="g.title">Install on</span> Amazon Fire TV</h2>
+          <ol class="steps">
+            <li class="step">
+              <div class="step-art"><img src="img/step-firetv-downloader.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="fire.1.t">Get the free “Downloader” app</h3>
+                <p data-t="fire.1.p">On your Fire TV, search for Downloader in the app store and install it.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-art"><img src="img/step-unknown-apps.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="fire.2.t">Allow it to install apps</h3>
+                <p data-t="fire.2.p">Settings → My Fire TV → Developer options → Install unknown apps → turn on Downloader.</p>
+                <p class="tip" data-t="fire.2.tip">No “Developer options”? Go to Settings → My Fire TV → About and click your device name 7 times.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-art"><img src="img/step-type-link.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="fire.3.t">Type this address and press Go</h3>
+                <p class="code" dir="ltr"><code>mdluex.github.io/mdluex-iptv/apk</code><button class="copy" type="button" data-copy="mdluex.github.io/mdluex-iptv/apk" data-t="copy">Copy</button></p>
+                <p data-t="fire.3.p">The newest version downloads by itself.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-art"><img src="img/step-install-open.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="fire.4.t">Choose Install, then Open</h3>
+                <p data-t="fire.4.p">Next time you'll find Mdluex IPTV in “Your Apps & Channels”.</p>
+              </div>
+            </li>
+          </ol>
+          <p class="small-print" data-t="fire.vega">The newest Fire TV devices that run Vega OS can't install apps from outside Amazon's store, so Mdluex IPTV won't run on them.</p>
+        </article>
+
+        <!-- Android TV -->
+        <article class="guide" id="guide-android">
+          <h2><span data-t="g.title">Install on</span> Android TV / Google TV</h2>
+          <ol class="steps">
+            <li class="step">
+              <div class="step-art"><img src="img/step-firetv-downloader.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="and.1.t">Get the free “Downloader” app</h3>
+                <p data-t="and.1.p">Install Downloader (by AFTVnews) from the Google Play Store on your TV.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-art"><img src="img/step-type-link.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="fire.3.t">Type this address and press Go</h3>
+                <p class="code" dir="ltr"><code>mdluex.github.io/mdluex-iptv/apk</code><button class="copy" type="button" data-copy="mdluex.github.io/mdluex-iptv/apk" data-t="copy">Copy</button></p>
+                <p data-t="fire.3.p">The newest version downloads by itself.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-art"><img src="img/step-unknown-apps.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="and.3.t">Allow it, then Install</h3>
+                <p data-t="and.3.p">When Android asks, allow Downloader to install unknown apps, then choose Install.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-art"><img src="img/step-install-open.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="and.4.t">Open Mdluex IPTV</h3>
+                <p data-t="and.4.p">It's in your apps. Prefer a USB stick? Download the Android file below and open it with a file manager.</p>
+              </div>
+            </li>
+          </ol>
+        </article>
+
+        <!-- Samsung -->
+        <article class="guide" id="guide-samsung">
+          <h2><span data-t="g.title">Install on</span> Samsung</h2>
+          <p class="guide-intro" data-t="sam.intro">Samsung TVs only accept apps from outside their store when the app is prepared for your TV. The free Apps2Samsung app does that for you.</p>
+          <ol class="steps">
+            <li class="step">
+              <div class="step-art"><img src="img/step-samsung-12345.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="sam.1.t">Turn on Developer Mode</h3>
+                <p data-t="sam.1.p">On the TV open Apps, then press 1 2 3 4 5 on the remote. A “Developer Mode” window opens — switch it On.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-art"><img src="img/step-samsung-hostip.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="sam.2.t">Type your phone's or PC's address</h3>
+                <p data-t="sam.2.p">In “Host PC IP” type the IP address of the phone or computer you'll use next (phone: Settings → Wi-Fi → your network). Then turn the TV off and on.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-art"><img src="img/step-apps2samsung.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="sam.3.t">Install with Apps2Samsung</h3>
+                <p data-t="sam.3.p">Get Apps2Samsung (Windows, Mac, Linux, Android or iPhone), find Mdluex IPTV in its list and choose Install. The first time, sign in with a free Samsung account.</p>
+                <p><a class="link" href="https://github.com/Apps2Samsung/Apps2Samsung" target="_blank" rel="noopener" data-t="sam.3.link">Get Apps2Samsung →</a></p>
+              </div>
+            </li>
+          </ol>
+          <details class="alt">
+            <summary data-t="sam.alt.t">Have a Windows PC? Use the one-click installer instead</summary>
+            <ol class="mini">
+              <li data-t="sam.alt.1">Do step 1 and 2 above with your PC's address.</li>
+              <li data-t="sam.alt.2">Download the Samsung installer (.zip) below, unzip it and double-click Install-MdluexIPTV.cmd.</li>
+              <li data-t="sam.alt.3">Follow the screens — it finds your TV and installs the app. Run it again any time to update.</li>
+            </ol>
+          </details>
+        </article>
+
+        <!-- LG -->
+        <article class="guide" id="guide-lg">
+          <h2><span data-t="g.title">Install on</span> LG</h2>
+          <p class="guide-intro" data-t="lg.intro">LG allows apps from outside its store through its Developer Mode app and the free Homebrew Channel. You set this up once.</p>
+          <ol class="steps">
+            <li class="step">
+              <div class="step-art"><img src="img/step-lg-devmode.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="lg.1.t">Turn on Developer Mode</h3>
+                <p data-t="lg.1.p">Create a free account at webostv.developer.lge.com. On the TV install “Developer Mode” from the LG Content Store, sign in and switch Dev Mode Status on.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-art"><img src="img/step-lg-homebrew.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="lg.2.t">Install Homebrew Channel</h3>
+                <p data-t="lg.2.p">Follow the Homebrew Channel guide (it uses the free webOS Dev Manager on a computer).</p>
+                <p><a class="link" href="https://www.webosbrew.org/devmode/" target="_blank" rel="noopener" data-t="lg.2.link">Homebrew Channel guide →</a></p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="step-art"><img src="img/step-lg-repo.svg" alt=""></div>
+              <div class="step-text">
+                <h3 data-t="lg.3.t">Add our list and install</h3>
+                <p data-t="lg.3.p">In Homebrew Channel open Settings → Add repository and enter:</p>
+                <p class="code" dir="ltr"><code>https://mdluex.github.io/mdluex-iptv/lg/apps.json</code><button class="copy" type="button" data-copy="https://mdluex.github.io/mdluex-iptv/lg/apps.json" data-t="copy">Copy</button></p>
+                <p data-t="lg.3.p2">Then find Mdluex IPTV in the list and install it.</p>
+              </div>
+            </li>
+          </ol>
+          <p class="small-print" data-t="lg.extend">LG's Developer Mode turns itself off after about 6 weeks: open the Developer Mode app now and then and press Extend.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===================== first time ===================== -->
+    <section class="section alt-bg" id="setup">
+      <div class="wrap two">
+        <div>
+          <p class="eyebrow" data-t="setup.eyebrow">Step 2</p>
+          <h2 data-t="setup.title">Add your subscription</h2>
+          <ol class="mini big">
+            <li data-t="setup.1">Open Mdluex IPTV and choose “Add IPTV playlist”.</li>
+            <li data-t="setup.2">Type the server address, username and password your IPTV provider gave you.</li>
+            <li data-t="setup.3">Save — your channels, movies and series appear, with your subscription's end date at the top.</li>
+          </ol>
+          <p class="sub" data-t="setup.demo">Just looking? Choose “Try demo”, open the Quran, or watch the YouTube channels — no subscription needed.</p>
+        </div>
+        <div class="step-art wide"><img src="img/step-playlist.svg" alt=""></div>
+      </div>
+    </section>
+
+    <!-- ===================== downloads ===================== -->
+    <section class="section" id="download">
+      <div class="wrap">
+        <p class="eyebrow" data-t="dl.eyebrow">Always the newest version</p>
+        <h2 data-t="dl.title">Download</h2>
+        <p class="sub"><span data-t="dl.sub">These files come straight from the latest release.</span> <span id="relInfo"></span></p>
+        <div class="downloads" id="downloads">
+          <div class="dl-card skeleton"></div><div class="dl-card skeleton"></div><div class="dl-card skeleton"></div><div class="dl-card skeleton"></div>
+        </div>
+        <p class="small-print"><a class="link" id="allReleases" href="https://github.com/mdluex/mdluex-iptv/releases/latest" target="_blank" rel="noopener" data-t="dl.all">All files and release notes on GitHub →</a></p>
+      </div>
+    </section>
+
+    <!-- ===================== features ===================== -->
+    <section class="section alt-bg" id="features">
+      <div class="wrap">
+        <p class="eyebrow" data-t="feat.eyebrow">What's inside</p>
+        <h2 data-t="feat.title">Everything in one app</h2>
+        <div class="features">
+          <div class="feat"><img src="img/f-live.svg" alt=""><h3 data-t="feat.live.t">Live TV</h3><p data-t="feat.live.p">Channel logos, a TV guide of what's on now and next, favourites and recently watched.</p></div>
+          <div class="feat"><img src="img/f-movies.svg" alt=""><h3 data-t="feat.movies.t">Movies &amp; series</h3><p data-t="feat.movies.p">Posters, seasons and episodes, My List, and the next episode playing by itself.</p></div>
+          <div class="feat"><img src="img/f-resume.svg" alt=""><h3 data-t="feat.resume.t">Continue where you stopped</h3><p data-t="feat.resume.p">Movies, episodes and videos remember your spot.</p></div>
+          <div class="feat"><img src="img/f-quran.svg" alt=""><h3 data-t="feat.quran.t">The Quran</h3><p data-t="feat.quran.p">A mushaf page with 12 reciters — the verse and word being recited light up as you listen.</p></div>
+          <div class="feat"><img src="img/f-youtube.svg" alt=""><h3 data-t="feat.yt.t">YouTube channels</h3><p data-t="feat.yt.p">Add your favourite channels; their newest videos show on the home screen.</p></div>
+          <div class="feat"><img src="img/f-lang.svg" alt=""><h3 data-t="feat.lang.t">Arabic &amp; English</h3><p data-t="feat.lang.p">Follows your TV's language, fully right-to-left in Arabic. Parental lock included.</p></div>
+        </div>
+        <div class="shots">
+          <figure><img src="screens/movies.png" alt="" loading="lazy"><figcaption data-t="shot.movies">Movies</figcaption></figure>
+          <figure><img src="screens/series-details.png" alt="" loading="lazy"><figcaption data-t="shot.series">Series and episodes</figcaption></figure>
+          <figure><img src="screens/live-tv.png" alt="" loading="lazy"><figcaption data-t="shot.live">Live TV with TV guide</figcaption></figure>
+          <figure><img src="screens/youtube-channel.png" alt="" loading="lazy"><figcaption data-t="shot.yt">YouTube channels</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== help ===================== -->
+    <section class="section" id="help">
+      <div class="wrap narrow">
+        <p class="eyebrow" data-t="help.eyebrow">Questions</p>
+        <h2 data-t="help.title">Need help?</h2>
+        <details class="faq"><summary data-t="q.free.t">Is it free? Does it include channels?</summary><p data-t="q.free.p">The app is free. It doesn't include any channels — you need your own IPTV subscription. The Quran and YouTube channels work without one.</p></details>
+        <details class="faq"><summary data-t="q.freeze.t">A live channel freezes or won't play.</summary><p data-t="q.freeze.p">Open Settings → Live TV stream type and switch between MPEG-TS and HLS. One usually works better with your provider.</p></details>
+        <details class="faq"><summary data-t="q.login.t">It says my login is wrong or expired.</summary><p data-t="q.login.p">Check the server address, username and password with your IPTV provider — only they can fix a subscription problem.</p></details>
+        <details class="faq"><summary data-t="q.samsung.t">Samsung: Apps2Samsung can't find my TV.</summary><p data-t="q.samsung.p">Make sure the TV and your phone or PC are on the same Wi-Fi, and that “Host PC IP” in Developer Mode is that device's current address. Then restart the TV.</p></details>
+        <details class="faq"><summary data-t="q.update.t">How do I update?</summary><p data-t="q.update.p">Fire TV / Android TV: repeat the Downloader steps. Samsung: Apps2Samsung shows the update. LG: Homebrew Channel shows the update. Your settings are kept.</p></details>
+        <details class="faq"><summary data-t="q.pin.t">What's the parental PIN?</summary><p data-t="q.pin.p">It starts as 0000. Change it in Settings → Change PIN.</p></details>
+        <div class="contact">
+          <a class="contact-card" href="mailto:hello@mdluex.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span><strong data-t="contact.mail.t">Support &amp; commercial use</strong><small dir="ltr">hello@mdluex.com</small></span></a>
+          <a class="contact-card" href="https://www.mdluex.com" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg><span><strong data-t="contact.web.t">Official website</strong><small dir="ltr">www.mdluex.com</small></span></a>
+        </div>
+        <p class="sub"><a class="link" href="https://github.com/mdluex/mdluex-iptv/issues" target="_blank" rel="noopener" data-t="help.issue">Still stuck? Tell us your TV model and what happens →</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-in">
+      <div class="brand small">
+        <img class="logo logo-dark" src="img/logo.svg" alt="" width="20" height="30">
+        <img class="logo logo-light" src="img/logo-light.svg" alt="" width="20" height="30">
+        <span>Mdluex IPTV</span>
+      </div>
+      <p data-t="foot.license">Free for personal use. Not for sale or paid IPTV services.</p>
+      <p><span data-t="foot.business">Support &amp; commercial use:</span> <a class="link" href="mailto:hello@mdluex.com" dir="ltr">hello@mdluex.com</a> · <a class="link" href="https://www.mdluex.com" target="_blank" rel="noopener" dir="ltr">www.mdluex.com</a></p>
+      <p><span data-t="foot.by">Made by</span> Mahmoud Salah · <a class="link" href="https://www.youtube.com/@Mdlu3x" target="_blank" rel="noopener">Mdluex Industries</a> · <a class="link" href="https://github.com/mdluex/mdluex-iptv" target="_blank" rel="noopener">GitHub</a></p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

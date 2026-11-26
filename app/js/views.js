@@ -1222,6 +1222,8 @@
         });
       }));
       s.appendChild(setRow('About', T('Mdluex IPTV {0} · by Mdluex Industries', Platform.version), function () {}));
+      s.appendChild(setRow('Website', 'www.mdluex.com', function () {}));
+      s.appendChild(setRow('Support & commercial use', 'hello@mdluex.com', function () {}));
       App.setHints([{ key: 'OK', label: 'Change' }]);
     }
   };

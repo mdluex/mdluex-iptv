@@ -1,0 +1,41 @@
+# Publishes the website on GitHub Pages after every push to main and every release:
+#   landing/  -> the home page  (https://mdluex.github.io/mdluex-iptv/)
+#   docs/     -> kept at the same addresses (/apk, /lg/apps.json, /screens, demo video)
+name: Website
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Put the site together
+        run: |
+          mkdir -p _site
+          cp -r docs/. _site/
+          cp -r landing/. _site/
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
