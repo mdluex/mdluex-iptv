@@ -1,19 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 100" width="220" height="100">
-  <!-- arabesque scrolls that close the surah header -->
-  <g fill="#f4b9b1" stroke="#a8251d" stroke-width="3" stroke-linejoin="round">
-    <path d="M8 50 C30 14 70 10 96 30 C110 41 118 47 132 47 C118 53 110 59 96 70 C70 90 30 86 8 50Z"/>
-    <path d="M132 47 C150 22 182 18 210 30 C196 38 188 44 184 50 C188 56 196 62 210 70 C182 82 150 78 132 53Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100" width="160" height="100">
+  <!-- Interlaced strapwork for the ends of the surah header: two straps weave across the tile and leave it exactly
+       as they enter it, so repeated tiles form one continuous chain. -->
+  <g stroke="none">
+    <path d="M0 50 C20 18 60 18 80 50 C60 82 20 82 0 50Z" fill="#f4b9b1"/>
+    <path d="M80 50 C100 82 140 82 160 50 C140 18 100 18 80 50Z" fill="#f4b9b1"/>
   </g>
-  <g fill="#fffaf0" stroke="#a8251d" stroke-width="2">
-    <path d="M30 50 C44 32 66 30 82 42 C74 46 74 54 82 58 C66 70 44 68 30 50Z"/>
-    <circle cx="160" cy="50" r="11"/>
+  <g fill="none" stroke-linecap="butt">
+    <path d="M0 50 C20 18 60 18 80 50 S140 82 160 50" stroke="#a8251d" stroke-width="9"/>
+    <path d="M0 50 C20 82 60 82 80 50 S140 18 160 50" stroke="#a8251d" stroke-width="9"/>
+    <path d="M0 50 C20 18 60 18 80 50 S140 82 160 50" stroke="#fffaf0" stroke-width="3.2"/>
+    <path d="M0 50 C20 82 60 82 80 50 S140 18 160 50" stroke="#fffaf0" stroke-width="3.2"/>
   </g>
-  <g fill="#d9534a" stroke="#a8251d" stroke-width="1.5">
-    <circle cx="56" cy="50" r="7"/>
-    <circle cx="160" cy="50" r="4"/>
-  </g>
-  <g fill="none" stroke="#a8251d" stroke-width="2.5" stroke-linecap="round">
-    <path d="M96 30 C104 20 116 16 124 22"/>
-    <path d="M96 70 C104 80 116 84 124 78"/>
+  <!-- a rosette in each eye of the chain, a knot where the straps cross -->
+  <g stroke="#a8251d" stroke-width="2.2">
+    <circle cx="40" cy="50" r="11" fill="#fffaf0"/>
+    <circle cx="120" cy="50" r="11" fill="#fffaf0"/>
+    <circle cx="40" cy="50" r="5.5" fill="#d9534a"/>
+    <circle cx="120" cy="50" r="5.5" fill="#d9534a"/>
+    <path d="M80 41 89 50 80 59 71 50Z" fill="#d9534a"/>
+    <path d="M0 41 9 50 0 59 -9 50Z" fill="#d9534a"/>
+    <path d="M160 41 169 50 160 59 151 50Z" fill="#d9534a"/>
   </g>
 </svg>
