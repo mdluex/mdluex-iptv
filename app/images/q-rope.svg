@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
+  <!-- twisted rope for the thin inner border (used as a border-image: 12px edges, the pattern repeats along each side) -->
+  <rect width="36" height="36" fill="#fffaf0"/>
+  <g fill="#f4b9b1" stroke="#a8251d" stroke-width="1.3">
+    <ellipse cx="6" cy="6" rx="5.2" ry="2.6" transform="rotate(-45 6 6)"/>
+    <ellipse cx="18" cy="6" rx="5.2" ry="2.6" transform="rotate(-45 18 6)"/>
+    <ellipse cx="30" cy="6" rx="5.2" ry="2.6" transform="rotate(-45 30 6)"/>
+    <ellipse cx="6" cy="30" rx="5.2" ry="2.6" transform="rotate(-45 6 30)"/>
+    <ellipse cx="18" cy="30" rx="5.2" ry="2.6" transform="rotate(-45 18 30)"/>
+    <ellipse cx="30" cy="30" rx="5.2" ry="2.6" transform="rotate(-45 30 30)"/>
+    <ellipse cx="6" cy="18" rx="5.2" ry="2.6" transform="rotate(-45 6 18)"/>
+    <ellipse cx="30" cy="18" rx="5.2" ry="2.6" transform="rotate(-45 30 18)"/>
+  </g>
+</svg>

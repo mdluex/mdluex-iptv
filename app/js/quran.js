@@ -251,6 +251,7 @@ var Quran = (function () {
       // the page: a floral border band around cream paper, the surah and juz at the top, the page number at the foot
       var paper = h('div', { class: 'mpaper' });
       var inner = h('div', { class: 'minner' });
+      ['tl', 'tr', 'bl', 'br'].forEach(function (c) { paper.appendChild(h('i', { class: 'qc ' + c })); });
       paper.appendChild(inner);
       var topSura = h('span'), topJuz = h('span');
       inner.appendChild(h('div', { class: 'mtopbar' }, [h('div', { class: 'tcart' }, [topSura]), h('div', { class: 'tcart' }, [topJuz])]));
