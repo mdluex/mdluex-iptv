@@ -537,6 +537,7 @@ var Quran = (function () {
       }).catch(function (e) {
         scroller.innerHTML = '';
         scroller.appendChild(h('div', { class: 'quran-error' }, [h('p', { text: e.message })]));
+        root.classList.remove('preparing');   // show the message (the page is hidden until it is ready)
       });
     },
     onKey: function (e) {

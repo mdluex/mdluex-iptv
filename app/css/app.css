@@ -636,7 +636,7 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 .quran-bar .qhints .key { background: rgba(246,227,176,.16); color: #f6e3b0; }
 .mushaf.loading .qbtn { animation: qpulse 1s ease-in-out infinite; }
 @keyframes qpulse { 50% { opacity: .5; } }
-.quran-error { margin: auto; padding: 120px 60px; text-align: center; font-size: 30px; color: #e9cf8f; }
+.quran-error { margin: auto; padding: 120px 60px; text-align: center; font-size: 34px; color: #6e140f; }
 
 /* the reader appears complete, all at once */
 .mushaf .mpaper, .mushaf .quran-bar { transition: opacity .3s ease; }
