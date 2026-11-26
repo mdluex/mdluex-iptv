@@ -88,15 +88,11 @@
 **الخطوة 2 — على الموبايل أو الكمبيوتر: ثبّت التطبيق باستخدام Apps2Samsung**
 1. حمّل **[Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung)** (ويندوز، ماك، لينكس، أندرويد أو آيفون).
    يجب أن يكون الموبايل أو الكمبيوتر على نفس شبكة الـ Wi-Fi مثل الشاشة.
-2. في Apps2Samsung افتح **Settings → Installing → Your sources** وأضف:
-   <div dir="ltr">
+2. افتح Apps2Samsung وابحث عن **Mdluex IPTV** في قائمة التطبيقات (في قسم *Media servers & players*، أو استخدم البحث).
+3. ثبّته. في أول مرة سيطلب منك تسجيل الدخول بحساب سامسونج مجاني — وهذا شرط من سامسونج حتى يعمل التطبيق على شاشتك.
 
-   ```
-   github.com/mdluex/mdluex-iptv
-   ```
-   </div>
-3. ابحث عن **Mdluex IPTV** في القائمة وثبّته. في أول مرة سيطلب منك تسجيل الدخول بحساب سامسونج مجاني — وهذا شرط من
-   سامسونج حتى يعمل التطبيق على شاشتك.
+> لا تجده في القائمة؟ في Apps2Samsung افتح **Settings → Installing → Your sources**، وأضف
+> `github.com/mdluex/mdluex-iptv`، ثم ابحث مرة أخرى.
 
 <details>
 <summary><b>تفضّل كمبيوتر ويندوز؟ استخدم برنامج التثبيت بضغطة واحدة</b></summary>

@@ -80,12 +80,12 @@ Samsung TVs only accept apps from outside their store when the app is made for *
 **Step 2 — on your phone or computer: install the app with Apps2Samsung**
 1. Download **[Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung)** (Windows, Mac, Linux, Android or iPhone).
    The phone or computer must be on the same Wi-Fi as the TV.
-2. In Apps2Samsung open **Settings → Installing → Your sources** and add:
-   ```
-   github.com/mdluex/mdluex-iptv
-   ```
-3. Find **Mdluex IPTV** in its list and install it. The first time, it asks you to sign in with a free
-   Samsung account — Samsung requires this to make the app work on your TV.
+2. Open Apps2Samsung and find **Mdluex IPTV** in its app list (under *Media servers & players*, or use search).
+3. Install it. The first time, it asks you to sign in with a free Samsung account — Samsung requires this to make the
+   app work on your TV.
+
+> Don't see it in the list? In Apps2Samsung open **Settings → Installing → Your sources**, add
+> `github.com/mdluex/mdluex-iptv`, and look again.
 
 <details>
 <summary><b>Prefer a Windows computer? Use the one-click installer instead</b></summary>
