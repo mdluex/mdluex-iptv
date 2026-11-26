@@ -1,18 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 100" width="220" height="100">
-  <!-- arabesque scrolls at the ends of the surah header. Each leaf starts at the tile's edge and the tail opens to
-       the next tile's edge, with a strap running through, so repeated tiles join into one connected row. -->
-  <path d="M0 50 H220" stroke="#a8251d" stroke-width="3"/>
+  <!-- arabesque scrolls at the ends of the surah header. Both ends of the tile are flat (x=0 and x=220, y 42–58),
+       so each leaf sits flush against the next tile's leaf: the row is joined all the way along. -->
   <g fill="#f4b9b1" stroke="#a8251d" stroke-width="3" stroke-linejoin="round">
-    <path d="M0 50 C24 14 66 10 94 30 C108 41 118 47 132 47 C118 53 108 59 94 70 C66 90 24 86 0 50Z"/>
-    <path d="M132 47 C152 22 190 16 220 28 C206 37 198 44 196 50 C198 56 206 63 220 72 C190 84 152 78 132 53Z"/>
+    <path d="M0 42 C26 12 66 10 94 30 C108 41 118 47 132 47 C118 53 108 59 94 70 C66 90 26 88 0 58Z"/>
+    <path d="M132 47 C152 22 188 14 208 26 C214 31 220 37 220 42 L220 58 C220 63 214 69 208 74 C188 86 152 78 132 53Z"/>
   </g>
   <g fill="#fffaf0" stroke="#a8251d" stroke-width="2">
     <path d="M24 50 C40 32 64 30 80 42 C72 46 72 54 80 58 C64 70 40 68 24 50Z"/>
-    <circle cx="164" cy="50" r="11"/>
+    <circle cx="170" cy="50" r="11"/>
   </g>
   <g fill="#d9534a" stroke="#a8251d" stroke-width="1.5">
     <circle cx="52" cy="50" r="7"/>
-    <circle cx="164" cy="50" r="4"/>
+    <circle cx="170" cy="50" r="4"/>
   </g>
   <g fill="none" stroke="#a8251d" stroke-width="2.5" stroke-linecap="round">
     <path d="M94 30 C102 20 114 16 122 22"/>
