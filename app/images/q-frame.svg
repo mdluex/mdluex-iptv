@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 216 216" width="216" height="216">
+  <!-- The page border as a border-image (slice 72): corner pieces in the four corners, strapwork stars on the
+       edges. The browser repeats the edge tiles a whole number of times on every side, so all four sides match. -->
+  <defs>
+    <g id="star">
+      <rect width="72" height="72" fill="#fffaf0"/>
+      <g fill="none" stroke="#a8251d" stroke-width="7"><path d="M0 36h72M36 0v72"/></g>
+      <g fill="none" stroke="#f6c7c0" stroke-width="3.4"><path d="M0 36h72M36 0v72"/></g>
+      <g fill="#f4b9b1" stroke="#a8251d" stroke-width="2.4" stroke-linejoin="round">
+        <rect x="18" y="18" width="36" height="36"/>
+        <rect x="18" y="18" width="36" height="36" transform="rotate(45 36 36)"/>
+      </g>
+      <g fill="none" stroke="#fffaf0" stroke-width="1.4">
+        <rect x="22.5" y="22.5" width="27" height="27"/>
+        <rect x="22.5" y="22.5" width="27" height="27" transform="rotate(45 36 36)"/>
+      </g>
+      <circle cx="36" cy="36" r="9" fill="#d9534a" stroke="#a8251d" stroke-width="2"/>
+      <circle cx="36" cy="36" r="3.4" fill="#fffaf0"/>
+      <!-- the band's own edges: a red rule on both sides -->
+      <path d="M0 1.5h72M0 70.5h72" stroke="#a8251d" stroke-width="3"/>
+    </g>
+    <g id="corner">
+      <rect width="72" height="72" fill="#fffaf0"/>
+      <rect x="2" y="2" width="68" height="68" fill="#fbe3de" stroke="#a8251d" stroke-width="3"/>
+      <rect x="8" y="8" width="56" height="56" fill="none" stroke="#d0574d" stroke-width="1.5"/>
+      <g fill="#f4b9b1" stroke="#a8251d" stroke-width="1.8">
+        <ellipse cx="36" cy="19.5" rx="6.5" ry="11.5"/>
+        <ellipse cx="36" cy="19.5" rx="6.5" ry="11.5" transform="rotate(45 36 36)"/>
+        <ellipse cx="36" cy="19.5" rx="6.5" ry="11.5" transform="rotate(90 36 36)"/>
+        <ellipse cx="36" cy="19.5" rx="6.5" ry="11.5" transform="rotate(135 36 36)"/>
+        <ellipse cx="36" cy="19.5" rx="6.5" ry="11.5" transform="rotate(180 36 36)"/>
+        <ellipse cx="36" cy="19.5" rx="6.5" ry="11.5" transform="rotate(225 36 36)"/>
+        <ellipse cx="36" cy="19.5" rx="6.5" ry="11.5" transform="rotate(270 36 36)"/>
+        <ellipse cx="36" cy="19.5" rx="6.5" ry="11.5" transform="rotate(315 36 36)"/>
+      </g>
+      <circle cx="36" cy="36" r="8.5" fill="#d9534a" stroke="#a8251d" stroke-width="1.8"/>
+      <circle cx="36" cy="36" r="3.2" fill="#fffaf0"/>
+    </g>
+  </defs>
+  <use xlink:href="#corner" x="0" y="0"/>
+  <use xlink:href="#corner" x="144" y="0"/>
+  <use xlink:href="#corner" x="0" y="144"/>
+  <use xlink:href="#corner" x="144" y="144"/>
+  <!-- edges: top and bottom as they are, left and right turned so the band's rules run along the side -->
+  <use xlink:href="#star" x="72" y="0"/>
+  <use xlink:href="#star" x="72" y="144"/>
+  <use xlink:href="#star" transform="translate(72 72) rotate(90)"/>
+  <use xlink:href="#star" transform="translate(216 72) rotate(90)"/>
+</svg>

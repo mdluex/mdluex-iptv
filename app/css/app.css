@@ -547,27 +547,26 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
   src: url(../fonts/scheherazade-regular.woff2) format("woff2");   /* Scheherazade New (SIL, OFL) */
 }
 .mpaper {
-  position: absolute; top: 10px; right: 10px; bottom: 10px; left: 10px; color: #111;
-  background: #fffaf0 url(../images/q-band.svg) 0 0 / 72px 72px repeat;
-  border: 3px solid #a8251d; box-shadow: inset 0 0 0 4px #fffaf0, inset 0 0 0 6px #a8251d, 0 22px 60px rgba(0,0,0,.65);
+  position: absolute; top: 12px; right: 12px; bottom: 12px; left: 12px; color: #111; background: #fffaf0;
+  /* the border: corner pieces + strapwork stars, fitted a whole number of times on every side */
+  border: 72px solid #fffaf0; border-image: url(../images/q-frame.svg) 72 round;
+  outline: 3px solid #a8251d; box-shadow: 0 0 0 7px #fffaf0, 0 0 0 9px #a8251d, 0 22px 60px rgba(0,0,0,.65);
 }
 .minner {
-  position: absolute; top: 72px; right: 72px; bottom: 72px; left: 72px; background: #fcf8dc;
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: #fcf8dc;
   border: 3px solid #a8251d; box-shadow: 0 0 0 4px #fffaf0, 0 0 0 6px #a8251d, inset 0 0 0 4px #fcf8dc, inset 0 0 0 5px #d0574d;
 }
-/* corner pieces of the border and a twisted-rope line just inside it */
-.qc { position: absolute; width: 72px; height: 72px; z-index: 1; background: url(../images/q-corner.svg) center / 100% 100% no-repeat; }
-.qc.tl { top: 0; left: 0; } .qc.tr { top: 0; right: 0; } .qc.bl { bottom: 0; left: 0; } .qc.br { bottom: 0; right: 0; }
+/* a twisted-rope line just inside the border */
 .minner::before { content: ''; position: absolute; top: 5px; right: 5px; bottom: 5px; left: 5px; pointer-events: none;
   border: 12px solid transparent; border-image: url(../images/q-rope.svg) 12 round; }
 /* top line: the surah name (right) and the juz (left), each in a small framed label */
-.mtopbar { position: absolute; top: 24px; right: 34px; left: 34px; display: flex; justify-content: space-between; direction: rtl; z-index: 2; }
+.mtopbar { position: absolute; top: -61px; right: 60px; left: 60px; display: flex; justify-content: space-between; direction: rtl; z-index: 2; }
 .tcart {
   min-width: 280px; height: 50px; padding: 0 34px; text-align: center; background: url(../images/q-cart.svg) center / 100% 100% no-repeat;
   font-family: "Mushaf Bold", "Amiri Quran", serif; font-weight: 400; font-size: 28px; line-height: 50px; color: #111;
 }
 /* the text: large and bold; full lines run edge to edge, the last line of a passage is centred */
-.mscroll { position: absolute; top: 86px; right: 52px; bottom: 36px; left: 52px; overflow: hidden; font-family: "Mushaf Bold", "Amiri Quran", serif; font-weight: 400; }
+.mscroll { position: absolute; top: 30px; right: 52px; bottom: 30px; left: 52px; overflow: hidden; font-family: "Mushaf Bold", "Amiri Quran", serif; font-weight: 400; }
 .mflow { line-height: 2.15; text-align: justify; text-align-last: center; direction: rtl; padding-bottom: 40vh; }
 /* a short surah: the header and basmala stay at the top, the verses sit in the middle of the space below */
 .mscroll.fits { display: flex; flex-direction: column; }
@@ -609,9 +608,9 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 .mushaf.qpc .mflow { line-height: 2.1; word-spacing: .08em; }
 .mflow .end.g { display: inline; width: auto; height: auto; background: none; margin: 0 .05em; top: 0; vertical-align: baseline; }
 /* page number, centred at the foot of the page */
-.mnum { position: absolute; left: 50%; bottom: 12px; width: 190px; margin-left: -95px; height: 48px; z-index: 3; display: flex; align-items: center; justify-content: center;
+.mnum { position: absolute; left: 50%; bottom: -61px; width: 190px; margin-left: -95px; height: 48px; z-index: 3; display: flex; align-items: center; justify-content: center;
   background: url(../images/q-cart.svg) center / 100% 100% no-repeat; }
-.mnum b { font-family: "Cairo", sans-serif; font-weight: 700; font-size: 26px; line-height: 1; color: #111; }
+.mnum b { font-family: "Mushaf Bold", "Amiri Quran", serif; font-weight: 400; font-size: 32px; line-height: 1; color: #111; }
 
 /* player bar over the pages */
 .quran-bar {
