@@ -99,6 +99,6 @@ After every release: check that Apps2Samsung's catalog and the LG Homebrew Chann
 read the latest release), and that the website (landing page, on Vercel) shows it — Vercel redeploys it on every push.
 
 ## Compatibility
-Tested on a 2021 Samsung TV (Tizen 6.0, Chrome 76 engine) and Android (Android 16 emulator, 1080p). The LG and
-Fire TV versions are built from the same code but have not yet been tested on a real LG TV or Fire TV. Older
-engines lack some CSS (`inset`, flex `gap`); the app includes fallbacks.
+Tested and working on a 2021 Samsung TV (Tizen 6.0, Chrome 76 engine) and on a real LG TV (webOS), and on Android
+(Android 16 emulator, 1080p). The Fire TV version is built from the same Android app but has not yet been tested on
+a real Fire TV. Older engines lack some CSS (`inset`, flex `gap`); the app includes fallbacks.
