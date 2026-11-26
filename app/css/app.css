@@ -593,7 +593,7 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
   display: flex; align-items: center; height: 2.05em; margin: .2em 0 .05em; padding: .12em .15em; direction: rtl; font-size: .85em;
   background: #fbe3de; border: 3px solid #a8251d; box-shadow: inset 0 0 0 4px #fffaf0, inset 0 0 0 6px #d0574d;
 }
-.m-sura .arab { flex: 1; height: 86%; background: url(../images/q-end.svg) center / auto 100%; background-repeat: round no-repeat; }   /* whole links only: the chain never stops mid-shape */
+.m-sura .arab { flex: 1; height: 96%; background: url(../images/q-end.svg) center / auto 100%; background-repeat: round no-repeat; }   /* whole links only: the chain never stops mid-shape */
 .m-sura .arab:first-child { transform: scaleX(-1); }   /* the right-hand end, mirrored */
 .m-sura .medal {
   width: 1.8em; height: 1.8em; flex: none; margin: 0 -.04em; background: url(../images/q-medal.svg) center / contain no-repeat; position: relative; z-index: 1;   /* the chain runs into the circle */
@@ -603,7 +603,7 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 .m-sura .medal b { font-family: "Cairo", sans-serif; font-size: .34em; margin-top: .1em; color: #111; }
 .m-sura .cart { flex: none; width: 40%; height: 1.7em; margin: 0 .25em; display: flex; align-items: center; justify-content: center;
   background: url(../images/q-cart.svg) center / 100% 100% no-repeat; }
-.m-sura .cart span { font-size: 1.15em; line-height: 1; color: #111; }
+.m-sura .cart span { font-size: 1.45em; line-height: 1; color: #111; }
 /* Quran.com mushaf fonts: each word is one glyph of its page's font; the verse-end ornament comes from the font */
 .mushaf.qpc .mflow { line-height: 2.1; word-spacing: .08em; }
 .mflow .end.g { display: inline; width: auto; height: auto; background: none; margin: 0 .05em; top: 0; vertical-align: baseline; }
