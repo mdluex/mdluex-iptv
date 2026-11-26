@@ -596,7 +596,7 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 .m-sura .arab { flex: 1; height: 86%; background: url(../images/q-end.svg) center / auto 100%; background-repeat: round no-repeat; }   /* whole links only: the chain never stops mid-shape */
 .m-sura .arab:first-child { transform: scaleX(-1); }   /* the right-hand end, mirrored */
 .m-sura .medal {
-  width: 1.8em; height: 1.8em; flex: none; margin: 0 .15em; background: url(../images/q-medal.svg) center / contain no-repeat;
+  width: 1.8em; height: 1.8em; flex: none; margin: 0 -.04em; background: url(../images/q-medal.svg) center / contain no-repeat; position: relative; z-index: 1;   /* the chain runs into the circle */
   display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;
 }
 .m-sura .medal small { font-family: "Mushaf Bold", serif; font-size: .3em; color: #111; }
