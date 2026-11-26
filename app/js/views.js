@@ -17,6 +17,13 @@
   function normLive(x) { return { id: x.stream_id, name: x.name, icon: x.stream_icon, num: x.num, cat: x.category_id }; }
   function short(item) { return { id: item.id, name: item.name, icon: item.icon, ext: item.ext, num: item.num }; }
 
+  /* A colored-button hint on Samsung/LG; on remotes without colored buttons (Android TV, Fire TV)
+     the same action is in the options menu instead. */
+  function colorHint(key, cls, label) {
+    return Platform.colorKeys ? { key: key, cls: cls, label: label } : { key: Platform.menuKey, label: 'Options' };
+  }
+  function favHow() { return Platform.colorKeys ? 'Press the yellow button' : (Platform.fireTV ? 'Press ☰' : 'Hold OK'); }
+
   function card(o) {
     var c = h('div', { class: 'card ' + (o.kind || 'poster') + (o.progress != null ? ' has-prog' : ''), data: { key: o.key || '' } });
     var showsCaption = o.kind !== 'poster' || o.caption;
@@ -334,18 +341,15 @@
           put('newsr', row('Recently Updated Series', sortRecent(g.all.map(normSeries)).slice(0, 30).map(function (s) { return seriesCard(s, follow); })));
         }).catch(function () {}));
       }
-      App.setHints([{ key: '◀', label: 'Menu' }, { key: 'OK', label: 'Open' }, { key: 'R', cls: 'red', label: 'Remove from Continue Watching' }]);
+      App.setHints([{ key: '◀', label: 'Menu' }, { key: 'OK', label: 'Open' }, colorHint('R', 'red', 'Remove from Continue Watching')]);
       // first paint as soon as there is something to focus
       return Promise.race([Promise.all(tasks), new Promise(function (r) { setTimeout(r, 1500); })]).then(function () {
         if (!heroSlot.firstChild) rows.classList.add('no-hero');
       });
     },
     onKey: function (e) {
-      if (e.keyCode === K.RED) {
-        var c = Focus.current, key = c && c.dataset.key;
-        if (key && key.indexOf('cw:') === 0) { Store.removeProgress(key.slice(3)); App.toast('Removed from Continue Watching'); App.refresh(); }
-        return true;
-      }
+      if (e.keyCode === K.RED) { removeContinueFocused(); return true; }
+      if (e.keyCode === K.INFO) { itemOptions(); return true; }
       return false;
     }
   };
@@ -418,7 +422,7 @@
         gridCol.appendChild(grid);
         self._grid = grid;
         main.appendChild(lay);
-        App.setHints([{ key: 'OK', label: 'Open' }, { key: 'Y', cls: 'yellow', label: 'Add to My List' }]);
+        App.setHints([{ key: 'OK', label: 'Open' }, colorHint('Y', 'yellow', 'Add to My List')]);
         var token = 0;
         function loadCat(cat) {
           params.cat = cat.category_id;
@@ -471,9 +475,33 @@
       },
       onKey: function (e) {
         if (e.keyCode === K.YELLOW) { toggleFavFocused(); return true; }
+        if (e.keyCode === K.INFO) { itemOptions(); return true; }
         return false;
       }
     };
+  }
+  function removeContinueFocused() {
+    var c = Focus.current, key = c && c.dataset.key;
+    if (key && key.indexOf('cw:') === 0) { Store.removeProgress(key.slice(3)); App.toast('Removed from Continue Watching'); App.refresh(); }
+  }
+  /* Options for the focused card or channel: what the colored buttons do on Samsung/LG remotes.
+     Opened with INFO (Fire TV ☰, Android "hold OK", Samsung/LG Info). */
+  function itemOptions(after) {
+    var c = Focus.current, key = c && c.dataset.key;
+    if (!key) return;
+    var items = [], m = /^(mv|sr|ch):(.+)$/.exec(key);
+    if (m) {
+      var on = Store.isFav({ mv: 'movie', sr: 'series', ch: 'live' }[m[1]], m[2]);
+      items.push({ label: on ? 'Remove from My List' : 'Add to My List', a: 'fav' });
+    }
+    if (key.indexOf('cw:') === 0) items.push({ label: 'Remove from Continue Watching', a: 'cw' });
+    if (!items.length) return;
+    var title = c.querySelector('.cap') ? c.querySelector('.cap').firstChild.textContent : (c.querySelector('.name') || c.querySelector('.ph') || {}).textContent;
+    App.menu(title || 'Options', items).then(function (it) {
+      if (!it) return;
+      if (it.a === 'fav') { toggleFavFocused(); if (after) after(); }
+      if (it.a === 'cw') removeContinueFocused();
+    });
   }
   function toggleFavFocused() {
     var c = Focus.current, key = c && c.dataset.key;
@@ -507,7 +535,7 @@
       prevCol.appendChild(preview);
       self._grid = chCol;
       main.appendChild(lay);
-      App.setHints([{ key: 'OK', label: 'Watch' }, { key: 'Y', cls: 'yellow', label: 'Favorite' }, { key: 'CH ▲▼', label: 'Zap while watching' }]);
+      App.setHints([{ key: 'OK', label: 'Watch' }, colorHint('Y', 'yellow', 'Favorite'), { key: Platform.colorKeys ? 'CH ▲▼' : '▲▼', label: 'Zap while watching' }]);
       var token = 0, current = [], epgTimer;
 
       function showPreview(ch) {
@@ -566,7 +594,7 @@
           if (my !== token) return;
           chCol.innerHTML = '';
           current = items;
-          if (!items.length) { chCol.appendChild(empty(cat.category_id === '_fav' ? 'Press the yellow button on a channel to add it here.' : 'No channels here.')); return; }
+          if (!items.length) { chCol.appendChild(empty(cat.category_id === '_fav' ? favHow() + ' on a channel to add it here.' : 'No channels here.')); return; }
           fillIncremental(chCol, items, chRow, 40);
           showPreview(items[0]);
         }).catch(function (e) { if (my === token) { chCol.innerHTML = ''; chCol.appendChild(empty(e.message)); } });
@@ -597,6 +625,7 @@
     },
     onKey: function (e) {
       if (e.keyCode === K.YELLOW) { toggleFavFocused(); return true; }
+      if (e.keyCode === K.INFO) { itemOptions(); return true; }
       return false;
     }
   };
@@ -798,12 +827,16 @@
       var f = Store.favs();
       [row('Channels', f.live.map(function (c) { return channelCard(c, f.live); })), row('Movies', f.movie.map(movieCard)), row('Series', f.series.map(seriesCard)),
         row('Continue Watching', continueCards())].forEach(function (r) { if (r) rows.appendChild(r); });
-      if (!rows.children.length) rows.appendChild(empty('Your list is empty. Press the yellow button on any channel, movie or series to add it.'));
+      if (!rows.children.length) rows.appendChild(empty('Your list is empty. ' + favHow() + ' on any channel, movie or series to add it.'));
       wrap.appendChild(rows);
       main.appendChild(wrap);
-      App.setHints([{ key: 'Y', cls: 'yellow', label: 'Remove from My List' }]);
+      App.setHints([colorHint('Y', 'yellow', 'Remove from My List')]);
     },
-    onKey: function (e) { if (e.keyCode === K.YELLOW) { toggleFavFocused(); App.refresh(); return true; } return false; }
+    onKey: function (e) {
+      if (e.keyCode === K.YELLOW) { toggleFavFocused(); App.refresh(); return true; }
+      if (e.keyCode === K.INFO) { itemOptions(App.refresh); return true; }
+      return false;
+    }
   };
 
   /* ================= Mdluex Channel (YouTube) ================= */

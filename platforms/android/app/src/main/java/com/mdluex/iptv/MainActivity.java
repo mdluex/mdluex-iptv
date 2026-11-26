@@ -115,6 +115,11 @@ public class MainActivity extends Activity {
         web.evaluateJavascript("window.App&&App.key(10009)", null);
     }
 
+    private boolean isFireTV() {
+        return getPackageManager().hasSystemFeature("amazon.hardware.fire_tv")
+                || (Build.MANUFACTURER.equalsIgnoreCase("Amazon") && Build.MODEL.startsWith("AFT"));
+    }
+
     /* ------------------------------------------------------------------ remote keys -> app */
 
     /** Android key code -> the key code the shared app understands (Tizen/web numbering). */
@@ -140,8 +145,34 @@ public class MainActivity extends Activity {
         }
     }
 
+    /* Android TV and Fire TV remotes have no colored buttons. Holding OK opens the app's options
+       menu (the same as Info / the Fire TV ☰ button); a short press still selects. So OK is held back
+       until it is released or held long enough. */
+    private KeyEvent okDown;
+    private boolean okLong;
+    private static boolean isOk(int k) {
+        return k == KeyEvent.KEYCODE_DPAD_CENTER || k == KeyEvent.KEYCODE_ENTER || k == KeyEvent.KEYCODE_NUMPAD_ENTER;
+    }
+
     @Override
     public boolean dispatchKeyEvent(KeyEvent e) {
+        if (isOk(e.getKeyCode())) {
+            if (e.getAction() == KeyEvent.ACTION_DOWN) {
+                if (e.getRepeatCount() == 0) { okDown = KeyEvent.changeAction(e, KeyEvent.ACTION_DOWN); okLong = false; }
+                else if (!okLong && okDown != null && (e.isLongPress() || e.getEventTime() - okDown.getDownTime() >= 600)) {
+                    okLong = true;
+                    web.evaluateJavascript("window.App&&App.key(457)", null);
+                }
+                return true;
+            }
+            if (e.getAction() == KeyEvent.ACTION_UP) {
+                KeyEvent down = okDown;
+                okDown = null;
+                if (okLong || down == null) return true;
+                super.dispatchKeyEvent(down);   // a short press: deliver it now, as a normal OK
+                return super.dispatchKeyEvent(e);
+            }
+        }
         int code = mapKey(e.getKeyCode());
         if (code != 0) {
             if (code == 10009) {
@@ -307,6 +338,8 @@ public class MainActivity extends Activity {
                 try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ignored) { }
             });
         }
+        /** "firetv" on Amazon Fire TV devices, otherwise "androidtv" */
+        @JavascriptInterface public String device() { return isFireTV() ? "firetv" : "androidtv"; }
         @JavascriptInterface public void exit() { main.post(MainActivity.this::finish); }
     }
 

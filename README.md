@@ -1,6 +1,6 @@
 # Mdluex IPTV
 
-A fast, Netflix-style IPTV player for **Samsung (Tizen)**, **Android TV / Google TV** and **LG (webOS)** smart TVs,
+A fast, Netflix-style IPTV player for **Samsung (Tizen)**, **Android TV / Google TV**, **Amazon Fire TV** and **LG (webOS)** smart TVs,
 built for Xtream Codes servers — plus the
 **Mdluex Industries** YouTube channel, watchable without any IPTV account.
 
@@ -12,6 +12,7 @@ built for Xtream Codes servers — plus the
 |---|---|---|
 | **Samsung** (2017+) | [Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung): add the source `github.com/mdluex/mdluex-iptv` — it signs the app for your TV | [Samsung](#samsung-tv--with-apps2samsung-easiest) |
 | **Android TV / Google TV** | Install `MdluexIPTV-vX.X.X-android.apk` from the [latest release](https://github.com/mdluex/mdluex-iptv/releases/latest) | [Android](#android-tv--google-tv) |
+| **Amazon Fire TV** (Fire OS) | In the *Downloader* app, open `mdluex.github.io/mdluex-iptv/apk` | [Fire TV](#amazon-fire-tv) |
 | **LG** (webOS 6+, 2021+) | [Homebrew Channel](https://www.webosbrew.org/devmode/): add the repository `https://mdluex.github.io/mdluex-iptv/lg/apps.json` | [LG](#lg-tv-webos) |
 
 Mdluex IPTV has also been submitted to the community catalogs of
@@ -128,11 +129,30 @@ built-in video player (ExoPlayer), so live TS and HLS channels work.
 2. Put it on a USB stick and open it on the TV with a file manager, or send it with an app like *Send Files to TV*
    or *Downloader*.
 3. Allow **Install unknown apps** for that app when Android asks (Settings → Apps → Security & restrictions).
-4. Open **Mdluex IPTV** from the apps row. The TV remote's Back, Play/Pause, channel and colour keys all work.
+4. Open **Mdluex IPTV** from the apps row. The TV remote's Back, Play/Pause and channel keys all work. Most
+   Android remotes have no coloured buttons, so **hold OK** on a movie, series or channel for its options
+   (add to My List, remove from Continue Watching); in the player, ▲ opens audio, subtitles and more.
 
 You can also install it from a PC with `adb install MdluexIPTV-vX.X.X-android.apk` (Developer options → USB/network
 debugging on). Build it yourself with `powershell -ExecutionPolicy Bypass -File tools\build_android.ps1`
 (needs the Android SDK and JDK 17+).
+
+## Amazon Fire TV
+Fire TV Sticks, Fire TV Cube and Fire TV smart TVs running **Fire OS** use the same Android app.
+
+1. On the Fire TV, install **Downloader** (by AFTVnews) from the Amazon Appstore.
+2. Settings → My Fire TV → Developer options → **Install unknown apps** → turn it on for Downloader.
+   (No Developer options? Settings → My Fire TV → About → click the device name 7 times.)
+3. Open Downloader, type **`mdluex.github.io/mdluex-iptv/apk`** and select Go. It downloads the newest version;
+   choose **Install**.
+4. Open **Mdluex IPTV** from *Your Apps & Channels*.
+
+The Fire TV remote has no coloured buttons: press **☰** (Menu) on a movie, series or channel for its options
+(add to My List, remove from Continue Watching), and in the live player for favourites and the channel list.
+Holding OK does the same.
+
+Newer Fire TV devices that run **Vega OS** instead of Fire OS can't install Android apps, so Mdluex IPTV doesn't run on
+them.
 
 ## LG TV (webOS)
 **Easiest: Homebrew Channel.** Once the TV is in Developer Mode (step 1 below) install the free
@@ -169,7 +189,7 @@ these files (built into `dist\`):
 |---|---|---|
 | `MdluexIPTV-vX.X.X.zip` | the app + `installer\` + `LICENSE` | the Windows one-click Samsung installer |
 | `MdluexIPTV-vX.X.X.wgt` | `python tools/build_wgt.py` | Apps2Samsung / TV-Store |
-| `MdluexIPTV-vX.X.X-android.apk` | `tools\build_android.ps1` | Android TV |
+| `MdluexIPTV-vX.X.X-android.apk` | `tools\build_android.ps1` | Android TV, Fire TV (the `…/apk` short link finds it by the `-android.apk` ending) |
 | `MdluexIPTV-vX.X.X-lg-webos.ipk` | `tools\build_webos.ps1` | LG (Homebrew Channel, `ares-install`) |
 | `com.mdluex.iptv.manifest.json` | `python tools/make_store_listings.py` | LG Homebrew Channel |
 

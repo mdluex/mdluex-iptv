@@ -7,6 +7,12 @@ var Platform = (function () {
     typeof MdxNative !== 'undefined' ? 'android' :
     (typeof PalmServiceBridge !== 'undefined' || /Web0S|webOS/i.test(ua)) ? 'webos' :
     'browser';
+  /* Android builds tell us the device family: 'firetv' (Amazon Fire TV) or 'androidtv' */
+  var device = '';
+  try { if (name === 'android' && MdxNative.device) device = String(MdxNative.device()); } catch (e) {}
+  /* Samsung and LG remotes have red/green/yellow/blue buttons; Android TV and Fire TV remotes don't,
+     so there the item actions live in an options menu (Fire TV: the ☰ button; any Android remote: hold OK). */
+  var colorKeys = name !== 'android';
 
   /* LG webOS system services (luna://...) without LG's helper library */
   function luna(uri, params, cb) {
@@ -20,6 +26,11 @@ var Platform = (function () {
 
   return {
     name: name,
+    device: device,
+    fireTV: device === 'firetv',
+    colorKeys: colorKeys,
+    /* the label for the key that opens the options menu, where there are no colored buttons */
+    menuKey: device === 'firetv' ? '☰' : 'Hold OK',
     isTV: name !== 'browser',
     /* The TV's on-screen keyboard shrinks the window: TVs keep their full-HD layout. */
     keepFullHD: name !== 'browser',
@@ -70,4 +81,4 @@ var Platform = (function () {
     defaultLiveFormat: name === 'webos' ? 'm3u8' : 'ts'
   };
 })();
-document.documentElement.className += ' platform-' + Platform.name;
+document.documentElement.className += ' platform-' + Platform.name + (Platform.fireTV ? ' platform-firetv' : '');

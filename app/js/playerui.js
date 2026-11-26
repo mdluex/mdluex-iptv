@@ -69,7 +69,7 @@ var PlayerUI = (function () {
     var tCur = h('span'), tLeft = h('span');
     var hints = h('div', { class: 'osd-hints' });
     var list = [['OK', 'Play / Pause'], ['◀ ▶', 'Seek'], ['▲', 'Audio · Subtitles · More'], ['BACK', 'Exit']];
-    if (S.kind === 'episode' && S.nextEp) list.splice(3, 0, ['▶▶|', 'Blue: Next episode']);
+    if (S.kind === 'episode' && S.nextEp && Platform.colorKeys) list.splice(3, 0, ['▶▶|', 'Blue: Next episode']);
     list.forEach(function (x) { hints.appendChild(h('div', { class: 'hint' }, [h('span', { class: 'key', text: x[0] }), h('span', { text: x[1] })])); });
     var bottom = h('div', { class: 'osd-bottom' }, [bar, h('div', { class: 'osd-times' }, [tCur, tLeft]), hints]);
     var center = h('div', { class: 'osd-center hidden' });
@@ -109,7 +109,7 @@ var PlayerUI = (function () {
     var bottom = h('div', { class: 'osd-bottom' }, [row]);
     if (now && now.end > now.start) bottom.appendChild(h('div', { class: 'bar', style: { marginTop: '20px' } }, [h('i', { style: { width: Math.min(100, (Date.now() - now.start) / (now.end - now.start) * 100) + '%' } })]));
     var hints = h('div', { class: 'osd-hints' });
-    [['▲ ▼', 'Change channel'], ['◀', 'Channel list'], ['OK', 'Info'], ['Y', 'Favorite'], ['BACK', 'Exit']].forEach(function (x) {
+    [['▲ ▼', 'Change channel'], ['◀', 'Channel list'], ['OK', 'Info'], Platform.colorKeys ? ['Y', 'Favorite'] : [Platform.menuKey, 'Options'], ['BACK', 'Exit']].forEach(function (x) {
       hints.appendChild(h('div', { class: 'hint' }, [h('span', { class: 'key', text: x[0] }), h('span', { text: x[1] })]));
     });
     bottom.appendChild(hints);
@@ -308,15 +308,29 @@ var PlayerUI = (function () {
       case K.UP: case K.CHUP: zap(-1); return true;      // up = previous in list (like a channel list)
       case K.DOWN: case K.CHDN: zap(1); return true;
       case K.LEFT: openZap(); return true;
-      case K.ENTER: case K.INFO: showOsd(6000); return true;
-      case K.YELLOW: {
-        var on = Store.toggleFav('live', { id: S.channel.id, name: S.channel.name, icon: S.channel.icon, num: S.channel.num });
-        App.toast(on ? 'Added to favorites' : 'Removed from favorites'); return true;
-      }
+      case K.ENTER: showOsd(6000); return true;
+      case K.INFO: if (Platform.colorKeys) showOsd(6000); else liveOptions(); return true;
+      case K.YELLOW: toggleLiveFav(); return true;
       case K.PLAYPAUSE: case K.PAUSE: case K.PLAY: Player.toggle(); return true;
     }
     if (c >= 48 && c <= 57) { digit(c - 48); return true; }
     return true;
+  }
+  function toggleLiveFav() {
+    var on = Store.toggleFav('live', { id: S.channel.id, name: S.channel.name, icon: S.channel.icon, num: S.channel.num });
+    App.toast(on ? 'Added to favorites' : 'Removed from favorites');
+  }
+  /* remotes without colored buttons: favorite and the channel list from one menu */
+  function liveOptions() {
+    showOsd(0);
+    var fav = Store.isFav('live', S.channel.id);
+    App.menu(S.channel.name, [{ label: fav ? 'Remove from favorites' : 'Add to favorites', a: 'fav' }, { label: 'Channel list', a: 'list' }])
+      .then(function (it) {
+        if (!it || !S) return;
+        if (it.a === 'fav') toggleLiveFav();
+        if (it.a === 'list') openZap();
+        showOsd();
+      });
   }
   function zap(dir) {
     var list = S.list;

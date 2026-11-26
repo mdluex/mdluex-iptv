@@ -19,7 +19,10 @@ if (-not (Test-Path (Join-Path $proj 'local.properties'))) {
 }
 
 $task = if ($Debug) { 'assembleDebug' } else { 'assembleRelease' }
-$p = Start-Process -FilePath (Join-Path $proj 'gradlew.bat') -ArgumentList $task, '-q' -WorkingDirectory $proj -NoNewWindow -Wait -PassThru
+# Wait for Gradle itself only: Start-Process -Wait would also wait for the Gradle daemon it leaves running.
+$p = Start-Process -FilePath (Join-Path $proj 'gradlew.bat') -ArgumentList $task, '-q' -WorkingDirectory $proj -NoNewWindow -PassThru
+$null = $p.Handle   # keeps the exit code readable after the process ends
+$p.WaitForExit()
 if ($p.ExitCode -ne 0) { throw "Gradle $task failed" }
 
 $kind = if ($Debug) { 'debug' } else { 'release' }
