@@ -224,14 +224,22 @@ Still stuck? Email **[hello@mdluex.com](mailto:hello@mdluex.com)** or [open an i
 ## Screenshots and video
 [![Mdluex IPTV demo – click to watch the video](docs/demo-preview.gif)](docs/demo.mp4)
 
-▶ **[Watch the demo video (1:42)](docs/demo.mp4)** — recorded on a Samsung TV.
+▶ **[Watch the demo video (2:44)](docs/demo.mp4)** — the app at TV size (1920×1080) with a real IPTV subscription.
 
 | | |
 |---|---|
 | ![Movies](docs/screens/movies.png) | ![Movie details](docs/screens/movie-details.png) |
-| Movies | Movie details |
-| ![Series details](docs/screens/series-details.png) | ![Live TV](docs/screens/live-tv.png) |
-| Series, seasons and episodes | Live TV with TV guide |
+| Movies — Arabic and English, every category | Movie details |
+| ![Series](docs/screens/series.png) | ![Series details](docs/screens/series-details.png) |
+| Series (titles without a poster show their initials) | Series, seasons and episodes |
+| ![Episode buttons in the player](docs/screens/player-episodes.png) | ![All episodes beside the video](docs/screens/episode-list.png) |
+| Previous · All episodes · Next | The whole season beside the video |
+| ![Live TV](docs/screens/live-tv.png) | ![Search](docs/screens/search.png) |
+| Live TV — the channel plays in the preview | Search channels, movies and series |
+| ![Quran](docs/screens/quran.png) | ![Quran reader](docs/screens/quran-reader.png) |
+| The Holy Quran | Read along: the verse and word being recited light up |
+| ![YouTube channel](docs/screens/youtube-channel.png) | ![Add a playlist with your phone](docs/screens/add-playlist-qr.png) |
+| Mdluex Industries on YouTube | Add your playlist by scanning a QR code |
 
 ## Run your own IPTV server
 Have your own movies, series or channels? **[Mdluex IPTV Server](server/README.md)** is a free server program for

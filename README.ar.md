@@ -231,14 +231,22 @@
 ## صور وفيديو
 [![فيديو تجريبي لتطبيق Mdluex IPTV – اضغط للمشاهدة](docs/demo-preview.gif)](docs/demo.mp4)
 
-▶ **[شاهد الفيديو التجريبي (1:42)](docs/demo.mp4)** — مُسجّل على شاشة سامسونج.
+▶ **[شاهد الفيديو التجريبي (2:44)](docs/demo.mp4)** — التطبيق بحجم شاشة التلفزيون (1920×1080) مع اشتراك IPTV حقيقي.
 
 | | |
 |---|---|
 | ![الأفلام](docs/screens/movies.png) | ![تفاصيل الفيلم](docs/screens/movie-details.png) |
-| الأفلام | تفاصيل الفيلم |
-| ![تفاصيل المسلسل](docs/screens/series-details.png) | ![القنوات المباشرة](docs/screens/live-tv.png) |
-| المسلسلات والمواسم والحلقات | القنوات المباشرة مع دليل البرامج |
+| أفلام عربية وأجنبية بكل الأقسام | تفاصيل الفيلم |
+| ![المسلسلات](docs/screens/series.png) | ![تفاصيل المسلسل](docs/screens/series-details.png) |
+| المسلسلات (العمل بلا صورة يظهر بأول حروف اسمه) | المواسم والحلقات |
+| ![أزرار الحلقات](docs/screens/player-episodes.png) | ![كل الحلقات بجانب الفيديو](docs/screens/episode-list.png) |
+| الحلقة السابقة · كل الحلقات · التالية | الموسم كامل بجانب الفيديو |
+| ![القنوات المباشرة](docs/screens/live-tv.png) | ![البحث](docs/screens/search.png) |
+| القنوات المباشرة — المعاينة تعمل فورًا | البحث في القنوات والأفلام والمسلسلات |
+| ![القرآن الكريم](docs/screens/quran.png) | ![قارئ القرآن](docs/screens/quran-reader.png) |
+| القرآن الكريم | الآية والكلمة التي تُتلى تُضاء أثناء الاستماع |
+| ![قناة يوتيوب](docs/screens/youtube-channel.png) | ![أضف قائمتك من هاتفك](docs/screens/add-playlist-qr.png) |
+| قناة Mdluex Industries على يوتيوب | أضف قائمتك بمسح رمز QR |
 
 ## شغّل سيرفر IPTV خاص بك
 عندك أفلام أو مسلسلات أو قنوات خاصة بك؟ **[Mdluex IPTV Server](server/README.md)** برنامج سيرفر مجاني لويندوز مع

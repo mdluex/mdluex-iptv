@@ -512,23 +512,39 @@ var Quran = (function () {
         /* The text moves a screen at a time, always by whole lines, and the visible area ends on a whole line:
            no line is ever cut in half at the edge of the page. */
         function lineH() { return parseFloat(getComputedStyle(text).lineHeight) || 130; }
+        /* Lines are found from where the words really sit: a line that mixes page fonts can be a little taller than
+           the line height, and counting fixed-height lines drifted until lines were cut at the page edges. */
+        var flat = null;
+        function words() { if (!flat) flat = [].slice.call(text.querySelectorAll('.w, .end')); return flat; }
+        function lineTopAt(i) {   // the top of the highest word on word i's line
+          var w = words(), t = w[i].offsetTop, half = lineH() / 2, m = t, k;
+          for (k = i - 1; k >= 0 && Math.abs(w[k].offsetTop - t) < half; k--) m = Math.min(m, w[k].offsetTop);
+          for (k = i + 1; k < w.length && Math.abs(w[k].offsetTop - t) < half; k++) m = Math.min(m, w[k].offsetTop);
+          return m;
+        }
+        function firstBelow(y) {   // the first word that doesn't end above y
+          var w = words(), lo = 0, hi = w.length;
+          while (lo < hi) { var mid = (lo + hi) >> 1; if (w[mid].offsetTop + w[mid].offsetHeight > y) hi = mid; else lo = mid + 1; }
+          return lo;
+        }
         function showFrom(st) {
-          var L = lineH(), off = text.offsetTop;
           scroller.style.height = '';
           var room = scroller.clientHeight;
           curSt = st;
           showWindow(st);
           track.style.transform = hlBack.style.transform = hlFront.style.transform = st ? 'translateY(' + (-st) + 'px)' : '';
           if (scroller.classList.contains('fits')) return;
-          var k = Math.floor((st + room - off) / L);   // lines of the text that fit completely
-          if (k >= 1) scroller.style.height = Math.max(L, off + k * L - st) + 'px';
+          // the page ends just above the first line that doesn't fit completely
+          var j = firstBelow(st + room);
+          if (j < words().length) scroller.style.height = Math.max(lineH(), lineTopAt(j) - st - 2) + 'px';
         }
         function keepVisible(el, force) {
-          var L = lineH(), off = text.offsetTop, st = curSt, hgt = scroller.clientHeight;
-          var line = Math.max(0, Math.floor((el.offsetTop - off + L * 0.3) / L));
-          var lineTop = off + line * L;
-          if (!force && lineTop >= st && lineTop + L <= st + hgt) return;   // the verse's first line is already in view
-          showFrom(line === 0 ? 0 : lineTop);
+          var w = el.classList.contains('ayah') ? el.querySelector('.w, .end') : el;
+          if (!w) return;
+          var top = w.offsetTop, bot = top + w.offsetHeight, st = curSt, hgt = scroller.clientHeight;
+          if (!force && top >= st && bot <= st + hgt) return;   // already in view
+          var lt = lineTopAt(Math.max(0, words().indexOf(w)));
+          showFrom(lt - text.offsetTop < lineH() / 2 ? 0 : lt - 6);   // the first line: from the very top (title, basmala)
         }
         function markAyah(n, noSave) {
           if (n === curAyah) return;

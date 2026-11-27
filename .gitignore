@@ -42,3 +42,4 @@ platforms/android/keystore.properties
 *.keystore
 *.apk
 *.ipk
+tv-captures/
