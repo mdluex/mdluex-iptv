@@ -11,9 +11,12 @@ var Focus = (function () {
     var r = el.getBoundingClientRect();
     return r.width > 0 && r.height > 0;
   }
+  // each candidate's box is measured once per key press and reused when picking the nearest (e._r)
   function candidates(scope) {
     return Array.prototype.filter.call((scope || root()).querySelectorAll('.focusable'), function (e) {
-      return !e.classList.contains('disabled') && visible(e);
+      if (e.classList.contains('disabled') || !e.isConnected) return false;
+      var r = e._r = e.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
     });
   }
   function zoneOf(el) { return el ? el.closest('[data-zone]') : null; }
@@ -43,7 +46,7 @@ var Focus = (function () {
   function pick(c, list, dir) {
     var cx = (c.left + c.right) / 2, cy = (c.top + c.bottom) / 2, best = null, bestScore = Infinity;
     list.forEach(function (e) {
-      var r = e.getBoundingClientRect(), ex = (r.left + r.right) / 2, ey = (r.top + r.bottom) / 2, main, cross, overlap;
+      var r = e._r || e.getBoundingClientRect(), ex = (r.left + r.right) / 2, ey = (r.top + r.bottom) / 2, main, cross, overlap;
       if (dir === 'right') { if (!(ex > cx + 4 && r.right > c.right)) return; main = Math.max(0, r.left - c.right); cross = Math.abs(ey - cy); overlap = Math.min(c.bottom, r.bottom) - Math.max(c.top, r.top); }
       else if (dir === 'left') { if (!(ex < cx - 4 && r.left < c.left)) return; main = Math.max(0, c.left - r.right); cross = Math.abs(ey - cy); overlap = Math.min(c.bottom, r.bottom) - Math.max(c.top, r.top); }
       else if (dir === 'down') { if (!(ey > cy + 4 && r.bottom > c.bottom)) return; main = Math.max(0, r.top - c.bottom); cross = Math.abs(ex - cx); overlap = Math.min(c.right, r.right) - Math.max(c.left, r.left); }

@@ -4,7 +4,26 @@
 
   /* ================= shared helpers ================= */
   function hashStr(s) { var x = 0; for (var i = 0; i < s.length; i++) x = (x * 31 + s.charCodeAt(i)) | 0; return Math.abs(x); }
-  function grad(t) { var x = hashStr(t || '?'), a = x % 360; return 'linear-gradient(135deg, hsl(' + a + ',45%,30%), hsl(' + ((a + 50) % 360) + ',50%,10%))'; }
+  /* Placeholder art for titles without a picture: a gradient in shades of the Mdluex red (from crimson to deep
+     wine, fading into the app's near-black), picked from the name so the same title always looks the same. */
+  function grad(t) {
+    var x = hashStr(t || '?'), hue = (350 + x % 18) % 360, sat = 62 + (x >> 5) % 22, lit = 24 + (x >> 9) % 14, ang = 120 + (x >> 13) % 50;
+    return 'linear-gradient(' + ang + 'deg, hsl(' + hue + ',' + sat + '%,' + lit + '%), hsl(' + ((hue + 8) % 360) + ',' + (sat - 20) + '%,' + Math.round(lit / 3) + '%) 70%, #0a0a0c)';
+  }
+  /* "AR | The Dark Knight (2008)" -> "DK"; Arabic names give two separate letters */
+  var INI_SKIP = /^(the|a|an|of|and|al|el|ال|s\d+|e\d+|s\d+e\d+|hd|fhd|uhd|sd|4k|8k|hevc|h26[45]|vip|multi|sub|dub)$/i;
+  function initials(t) {
+    var s = String(t || '').replace(/^\s*[\[(][^\])]*[\])]\s*/, '').replace(/^\s*[A-Za-z0-9+]{1,5}\s*[|:\-–]\s+/, '')
+      .replace(/[\[(][^\])]*[\])]/g, ' ').replace(/(19|20)\d\d/g, ' ');
+    var words = s.split(/[\s\-_.:|,/]+/).filter(function (w) { return /[0-9A-Za-zÀ-ɏ؀-ۿ]/.test(w); });
+    if (!words.length) words = String(t || '').split(/\s+/).filter(Boolean);   // e.g. a film called "1917"
+    var main = words.filter(function (w) { return !INI_SKIP.test(w); });
+    if (!main.length) main = words;
+    var out = main.slice(0, 2).map(function (w) { if (/^ال[\u0600-\u06FF]{2}/.test(w)) w = w.slice(2); var m2 = /[0-9A-Za-z\u00C0-\u024F\u0600-\u06FF]/.exec(w); return m2 ? m2[0].toUpperCase() : ''; });
+    return out.join(/[؀-ۿ]/.test(out.join('')) ? '‌' : '');   // keep Arabic letters apart, not joined
+  }
+  // the initials, laid over the gradient
+  function placeholder(t) { return h('span', { class: 'ini', text: initials(t), dir: 'auto' }); }
   function spinner() { return h('div', { class: 'spinner center-spin' }); }
   function empty(text) { return h('div', { class: 'empty', text: T(text) }); }
 
@@ -27,7 +46,7 @@
   function card(o) {
     var c = h('div', { class: 'card ' + (o.kind || 'poster') + (o.progress != null ? ' has-prog' : ''), data: { key: o.key || '' } });
     var showsCaption = o.kind !== 'poster' || o.caption;
-    c.appendChild(h('div', { class: 'ph', text: showsCaption ? '' : (o.title || ''), style: { background: grad(o.title) }, dir: 'auto' }));
+    c.appendChild(h('div', { class: 'ph', style: { background: grad(o.title) }, dir: 'auto' }, [placeholder(o.title), showsCaption ? null : h('span', { class: 'pht', text: o.title || '' })]));
     if (o.img) {
       var im = h('img', { src: o.img, loading: 'lazy', alt: '' });
       im.onerror = function () { im.remove(); };
@@ -516,7 +535,7 @@
     }
     if (key.indexOf('cw:') === 0) items.push({ label: 'Remove from Continue Watching', a: 'cw' });
     if (!items.length) return;
-    var title = c.querySelector('.cap') ? c.querySelector('.cap').firstChild.textContent : (c.querySelector('.name') || c.querySelector('.ph') || {}).textContent;
+    var title = c.querySelector('.cap') ? c.querySelector('.cap').firstChild.textContent : (c.querySelector('.name') || c.querySelector('.ph .pht') || {}).textContent;
     App.menu(title || 'Options', items).then(function (it) {
       if (!it) return;
       if (it.a === 'fav') { toggleFavFocused(); if (after) after(); }
@@ -529,7 +548,7 @@
     var m = /^(mv|sr|ch):(.+)$/.exec(key);
     if (!m) return;
     var type = { mv: 'movie', sr: 'series', ch: 'live' }[m[1]];
-    var name = c.querySelector('.cap') ? c.querySelector('.cap').firstChild.textContent : (c.querySelector('.ph') || c.querySelector('.name') || {}).textContent;
+    var name = c.querySelector('.cap') ? c.querySelector('.cap').firstChild.textContent : (c.querySelector('.ph .pht') || c.querySelector('.name') || {}).textContent;
     var img = c.querySelector('img');
     var item = c._item || { id: m[2], name: name, icon: img ? img.src : null };
     var added = Store.toggleFav(type, short(item));
@@ -558,38 +577,90 @@
       main.appendChild(lay);
       App.setHints([{ key: 'OK', label: 'Watch' }, colorHint('Y', 'yellow', 'Favorite'), { key: Platform.colorKeys ? 'CH ▲▼' : '▲▼', label: 'Zap while watching' }]);
       var token = 0, current = [], epgTimer;
-      /* LG: the focused channel plays inside the preview card after the focus rests on it for a moment.
-         Fully stopped before full screen, because many subscriptions allow only one stream at a time.
-         Samsung (one AVPlay) and Android (native player behind the page) can't show a second video.
-         From Kerolosashraf7 (github.com/mdluex/mdluex-iptv/issues/1), tested on an LG TV. */
-      var pvVideo = null, pvTimer = null, pvOn = Platform.name === 'webos';
+      /* The focused channel plays inside the preview card once the focus rests on it for a moment. It is fully
+         stopped before full screen, because many subscriptions allow only one stream at a time.
+         Samsung: the TV's own player (AVPlay) is shown in the card's area. LG, Android and browsers: a small
+         <video> (HLS, which they can all play). First done for LG by Kerolosashraf7 (issue #1). */
+      var pvVideo = null, pvTimer = null, pvBox = null, pvTok = 0;
+      var pvAV = Platform.name === 'tizen' && typeof webapis !== 'undefined' && !!webapis.avplay;
+      var pvOn = !Platform.phone && (pvAV || typeof HTMLVideoElement !== 'undefined');
       function pvStop() {
-        clearTimeout(pvTimer);
-        if (!pvVideo) return;
-        try { pvVideo.pause(); } catch (e) {}
-        pvVideo.onplaying = pvVideo.onerror = null;
-        pvVideo.removeAttribute('src'); try { pvVideo.load(); } catch (e) {}
-        if (pvVideo.parentNode) { pvVideo.parentNode.classList.remove('pv-playing'); pvVideo.parentNode.classList.remove('pv-loading'); pvVideo.parentNode.removeChild(pvVideo); }
+        clearTimeout(pvTimer); pvTok++;
+        if (pvBox) { pvBox.classList.remove('pv-playing'); pvBox.classList.remove('pv-loading'); }
+        if (pvAV) {
+          if (pvBox) { try { webapis.avplay.stop(); } catch (e) {} try { webapis.avplay.close(); } catch (e) {} }
+          // the full-screen player goes back to its normal (hidden) state
+          var layer = document.getElementById('player-layer'), hole = document.getElementById('av-player');
+          if (layer && layer.classList.contains('pv-window')) {
+            layer.classList.remove('pv-window'); layer.classList.remove('pv-on'); layer.classList.add('hidden'); layer.style.cssText = '';
+            if (hole) hole.style.display = 'none';
+          }
+        } else if (pvVideo) {
+          try { pvVideo.pause(); } catch (e) {}
+          pvVideo.onplaying = pvVideo.onerror = null;
+          pvVideo.removeAttribute('src'); try { pvVideo.load(); } catch (e) {}
+          if (pvVideo.parentNode) pvVideo.parentNode.removeChild(pvVideo);
+        }
+        pvBox = null;
+      }
+      // the card's place on the TV screen, in the 1920x1080 picture AVPlay uses
+      function screenRect(el) {
+        var r = el.getBoundingClientRect(), k = 1920 / (window.innerWidth || 1920);
+        return [Math.round(r.left * k), Math.round(r.top * k), Math.round(r.width * k), Math.round(r.height * k)];
+      }
+      /* The TV shows video only through the full-screen player's window, so for the preview that player is shrunk
+         to the card's exact place (see-through, no controls) and the picture is drawn there. */
+      function pvStartAV(ch, box, my) {
+        var av = webapis.avplay, layer = document.getElementById('player-layer'), hole = document.getElementById('av-player');
+        var stage = document.getElementById('stage'), sr = stage.getBoundingClientRect(), br = box.getBoundingClientRect();
+        var sc = sr.width / (stage.offsetWidth || 1) || 1;
+        layer.style.cssText = 'left:' + (br.left - sr.left) / sc + 'px;top:' + (br.top - sr.top) / sc + 'px;width:' + br.width / sc + 'px;height:' + br.height / sc + 'px;right:auto;bottom:auto';
+        layer.classList.add('pv-window'); layer.classList.remove('hidden');
+        hole.style.display = 'block';
+        try { av.stop(); } catch (e) {} try { av.close(); } catch (e) {}
+        setTimeout(function () { if (my === pvTok && box.isConnected) pvOpenAV(ch, box, my); }, 150);
+      }
+      function pvOpenAV(ch, box, my) {
+        var av = webapis.avplay;
+        try {
+          av.open(api.liveUrl({ stream_id: ch.id }, Store.settings().liveFormat));
+          var rc = screenRect(box);
+          av.setDisplayRect(rc[0], rc[1], rc[2], rc[3]);   // the box is 16:9, like the channels
+          try { av.setBufferingParam('PLAYER_BUFFER_FOR_PLAY', 'PLAYER_BUFFER_SIZE_IN_SECOND', 2); } catch (e) {}
+          av.setListener({ onerror: function () { if (my === pvTok) box.classList.remove('pv-loading'); } });
+          av.prepareAsync(function () {
+            if (my !== pvTok) return;
+            try { av.play(); } catch (e) { box.classList.remove('pv-loading'); return; }
+            box.classList.remove('pv-loading'); box.classList.add('pv-playing');
+            document.getElementById('player-layer').classList.add('pv-on');
+          }, function () { if (my === pvTok) box.classList.remove('pv-loading'); });
+        } catch (e) { box.classList.remove('pv-loading'); }
       }
       function pvStart(ch, box) {
         pvStop();
         if (!pvOn) return;
+        var my = pvTok;
         pvTimer = setTimeout(function () {
-          if (!box.isConnected) return;
-          if (!pvVideo) { pvVideo = document.createElement('video'); pvVideo.className = 'live-pv'; }
+          if (!box.isConnected || my !== pvTok) return;
+          pvBox = box;
           box.classList.add('pv-loading');
+          if (pvAV) { pvStartAV(ch, box, my); return; }
+          if (!pvVideo) { pvVideo = document.createElement('video'); pvVideo.className = 'live-pv'; pvVideo.setAttribute('playsinline', ''); }
           pvVideo.onplaying = function () { box.classList.remove('pv-loading'); box.classList.add('pv-playing'); };
           pvVideo.onerror = function () { box.classList.remove('pv-loading'); box.classList.remove('pv-playing'); };
           box.appendChild(pvVideo);
-          pvVideo.src = api.liveUrl({ stream_id: ch.id }, Store.settings().liveFormat);
-          pvVideo.play();
-        }, 1200);
+          pvVideo.src = api.liveUrl({ stream_id: ch.id }, Platform.name === 'webos' ? Store.settings().liveFormat : 'm3u8');
+          var pr = pvVideo.play();
+          // a browser that refuses sound before a key press still plays it muted
+          if (pr && pr.catch) pr.catch(function () { if (my !== pvTok || !pvVideo) return; pvVideo.muted = true; var p2 = pvVideo.play(); if (p2 && p2.catch) p2.catch(function () {}); });
+        }, 900);
       }
       self.__pvStop = pvStop;
 
       function showPreview(ch) {
+        pvStop();   // first: the card may be holding the TV's video window, which must not be thrown away with it
         preview.innerHTML = '';
-        var logoBox = h('div', { class: 'big-logo', style: { backgroundImage: ch.icon ? 'url("' + ch.icon + '")' : grad(ch.name) } });
+        var logoBox = h('div', { class: 'big-logo' + (pvOn ? ' pv16' : ''), style: { backgroundImage: ch.icon ? 'url("' + ch.icon + '")' : grad(ch.name) } }, ch.icon ? null : [placeholder(ch.name)]);
         preview.appendChild(logoBox);
         pvStart(ch, logoBox);
         preview.appendChild(h('h3', { text: (ch.num ? ch.num + '  ' : '') + ch.name, dir: 'auto' }));
@@ -616,7 +687,7 @@
       function chRow(ch) {
         var el = h('div', { class: 'ch', data: { key: 'ch:' + ch.id } }, [
           h('div', { class: 'num', text: ch.num ? String(ch.num) : '' }),
-          h('div', { class: 'logo', style: { backgroundImage: ch.icon ? 'url("' + ch.icon + '")' : grad(ch.name) } }),
+          h('div', { class: 'logo', style: { backgroundImage: ch.icon ? 'url("' + ch.icon + '")' : grad(ch.name) } }, ch.icon ? null : [placeholder(ch.name)]),
           h('div', { class: 'name', text: ch.name, dir: 'auto' }),
           h('div', { class: 'star', text: Store.isFav('live', ch.id) ? '★' : '' })]);
         el._item = ch;

@@ -192,6 +192,15 @@ body { font-family: "SamsungOne", "Cairo", "SamsungOneArabic", "Segoe UI", Tahom
 .card .ph {
   position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: flex-end; padding: 18px; font-size: 24px; font-weight: 800; line-height: 1.15;
 }
+/* no picture: the title's initials, large, over the red gradient */
+.ini { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center;
+  font-weight: 900; color: rgba(255,255,255,.92); letter-spacing: .04em; line-height: 1; text-shadow: 0 4px 18px rgba(0,0,0,.35); pointer-events: none; }
+.card .ini { font-size: 92px; padding-bottom: 8%; }
+.card.wide .ini, .card.logo-card .ini { font-size: 72px; padding-bottom: 12%; }
+.card.poster .ph .pht { position: relative; }
+.ch .logo { position: relative; }
+.ch .logo .ini { font-size: 26px; letter-spacing: 0; text-shadow: none; }
+.preview-card .big-logo .ini { font-size: 96px; }
 .card .cap {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 14px 12px; font-size: 21px; font-weight: 600;
   background: linear-gradient(0deg, rgba(0,0,0,.92), rgba(0,0,0,0)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -505,14 +514,16 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
   font-family: "Amiri Quran"; font-style: normal; font-weight: 400; font-display: block;
   src: url(../fonts/amiri-quran.woff2) format("woff2");
 }
-/* a soft eight-pointed-star lattice, as on mushaf covers */
-.quran-list, .mushaf {
+/* a soft eight-pointed-star lattice, as on mushaf covers. On the surah list it sits on its own still layer
+   behind the scrolling list, so moving through the list never re-draws it (it was re-drawn on every step) */
+.quran-bg { position: absolute; top: 0; right: 0; bottom: 0; left: 0; will-change: transform; }
+.quran-bg, .mushaf {
   background-color: #160504;
   background-image:
     radial-gradient(ellipse at 50% 30%, rgba(110,20,15,.85) 0%, rgba(22,5,4,0) 70%),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='none' stroke='%23f0b9b1' stroke-opacity='.10' stroke-width='1.4'%3E%3Crect x='22' y='22' width='36' height='36'/%3E%3Crect x='22' y='22' width='36' height='36' transform='rotate(45 40 40)'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Cpath d='M0 40h14M66 40h14M40 0v14M40 66v14'/%3E%3C/g%3E%3C/svg%3E");
 }
-.quran-banner { text-align: center; padding: 120px 60px 26px; }
+.quran-banner { text-align: center; padding: 120px 60px 26px; will-change: transform; }   /* own layer: its blurred title shadow isn't re-drawn while scrolling */
 .quran-banner .qb-title { font-family: "Amiri Quran", serif; font-size: 96px; line-height: 1.6; padding-bottom: 10px; color: #f6d2cc; text-shadow: 0 4px 30px rgba(0,0,0,.6); }
 .quran-banner .qb-sub { font-size: 24px; line-height: 1.5; color: #d9b3ad; margin: 0 0 30px; }
 .quran-banner .btn-row { justify-content: center; }
@@ -570,7 +581,11 @@ html[dir=rtl] .no-flex-gap .yt-grid > * { margin: 0 0 26px 22px; }
 .mscroll { position: absolute; top: 30px; right: 52px; bottom: 30px; left: 52px; overflow: hidden; font-family: "Mushaf Bold", "Amiri Quran", serif; font-weight: 400; }
 .mflow { line-height: 2.15; text-align: justify; text-align-last: center; direction: rtl; padding-bottom: 40vh; }
 /* a short surah: the header and basmala stay at the top, the verses sit in the middle of the space below */
-.mtrack { will-change: transform; transition: transform .45s ease; }
+.mtrack { position: relative; will-change: transform; transition: transform .45s ease; }
+/* highlight layers under and over the text, sliding with it (see quran.js) */
+.mhl { position: absolute; top: 0; left: 0; right: 0; height: 0; will-change: transform; transition: transform .45s ease; pointer-events: none; }
+.mhl .hla { position: absolute; border-radius: 10px; background: linear-gradient(to bottom, rgba(0,0,0,0) 30%, rgba(232,150,140,.30) 30%, rgba(232,150,140,.30) 97%, rgba(0,0,0,0) 97%); }
+.mhl .hlw { position: absolute; white-space: nowrap; direction: rtl; text-align: justify; text-align-last: justify; color: #c4121a; -webkit-text-stroke: .03em #c4121a; }
 .mscroll.fits .mtrack { display: flex; flex-direction: column; height: 100%; }
 .mscroll.fits .mbody { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 .mscroll.fits .mflow { padding-bottom: 0; }
@@ -689,6 +704,13 @@ html.touch .osd-top { padding-left: 180px; }   /* room for the close button */
 .preview-card .big-logo { position: relative; overflow: hidden; }
 .preview-card .big-logo .live-pv { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; object-fit: contain; opacity: 0; transition: opacity .4s; }
 .preview-card .big-logo.pv-playing .live-pv { opacity: 1; }
+/* Samsung: the TV's player shows through this window; it appears only once the picture has started */
+/* the preview box is 16:9 where a channel can play in it */
+.preview-card .big-logo.pv16 { height: auto; padding-top: 56.25%; }
+/* Samsung: the full-screen player, shrunk to the preview box (see views.js) */
+#player-layer.pv-window { background: transparent; pointer-events: none; }
+#player-layer.pv-window #av-player { width: 100%; height: 100%; }
+#player-layer.pv-window > :not(#av-player) { display: none !important; }
 .preview-card .big-logo.pv-loading:after { content: ''; position: absolute; right: 16px; bottom: 16px; width: 34px; height: 34px; border: 4px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; -webkit-animation: pvspin 1s linear infinite; animation: pvspin 1s linear infinite; }
 @-webkit-keyframes pvspin { to { -webkit-transform: rotate(360deg); } }
 @keyframes pvspin { to { transform: rotate(360deg); } }
@@ -698,7 +720,9 @@ html.touch .osd-top { padding-left: 180px; }   /* room for the close button */
 .osd-eps .ep-btn { display: flex; align-items: center; width: 37%; padding: 16px 24px; border-radius: 12px; background: rgba(255,255,255,.08); border: 3px solid transparent; transition: background .15s, border-color .15s; }
 .osd-eps .ep-btn.list { width: 22%; margin: 0 2%; justify-content: center; }
 .osd-eps .ep-btn.next { flex-direction: row-reverse; text-align: right; }
-.osd-eps .ep-btn .ico { font-size: 40px; line-height: 1; margin: 0 20px 0 0; }
+.osd-eps .ep-btn .ico { width: 40px; height: 40px; flex: none; line-height: 0; margin: 0 20px 0 0; }
+.osd-eps .ep-btn .ico svg { width: 100%; height: 100%; display: block; }
+html[dir=rtl] .osd-eps .ep-btn.prev .ico svg, html[dir=rtl] .osd-eps .ep-btn.next .ico svg { transform: scaleX(-1); }   /* Arabic: previous points right */
 .osd-eps .ep-btn.next .ico { margin: 0 0 0 20px; }
 .osd-eps .ep-btn .txt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .osd-eps .ep-btn .lab { font-size: 20px; color: #9a9aa8; text-transform: uppercase; letter-spacing: .06em; }
@@ -712,7 +736,8 @@ html.lang-ar .osd-eps .ep-btn .lab { text-transform: none; letter-spacing: 0; }
 .ep-panel-head .series { font-size: 24px; color: #9a9aa8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ep-panel-head .season { font-size: 36px; font-weight: 800; margin-top: 6px; }
 .ep-panel-head .season span { margin-right: 18px; }
-.ep-panel-head .season .arr { color: #d11515; font-size: 28px; }
+.ep-panel-head .season .arr { color: #d11515; display: inline-block; width: 30px; height: 30px; vertical-align: -2px; }
+.ep-panel-head .season .arr svg { width: 100%; height: 100%; display: block; }
 .ep-panel-head .season .arr.off { color: #343434; }
 .ep-panel .inner { flex: 1; overflow: hidden; }
 html.touch .ep-panel .inner { overflow-y: auto; }
@@ -749,7 +774,8 @@ html[dir=rtl] .ep-row .d, html[dir=rtl] .ep-row .st { margin-left: 0; margin-rig
 html[dir=rtl] .osd-eps .ep-btn .ico { margin: 0 0 0 20px; }
 html[dir=rtl] .osd-eps .ep-btn.next .ico { margin: 0 20px 0 0; }
 html[dir=rtl] .osd-eps .ep-btn.next { text-align: left; }
-.ep-panel .ep-close { position: absolute; top: 40px; right: 34px; width: 64px; height: 64px; line-height: 64px; text-align: center; border-radius: 50%; background: rgba(255,255,255,.1); font-size: 30px; }
+.ep-panel .ep-close { position: absolute; top: 40px; right: 34px; width: 64px; height: 64px; line-height: 64px; text-align: center; border-radius: 50%; background: rgba(255,255,255,.1); font-size: 30px; display: flex; align-items: center; justify-content: center; }
+.ep-panel .ep-close svg { width: 30px; height: 30px; }
 html[dir=rtl] .ep-panel .ep-close { right: auto; left: 34px; }
 .ep-panel-head .season .arr { cursor: pointer; padding: 0 8px; }
 /* phone: bigger labels on the episode buttons and list */
@@ -758,7 +784,7 @@ html.phone .osd-eps .ep-btn .name { font-size: 30px; }
 html.phone .ep-panel { width: 820px; padding-top: 40px; }
 html.phone .ep-row { font-size: 30px; padding: 22px 20px; }
 html.phone .ep-panel-head .season { font-size: 40px; }
-html.phone .ep-panel-head .season .arr { font-size: 40px; padding: 0 22px; }
+html.phone .ep-panel-head .season .arr { width: 40px; height: 40px; padding: 0 22px; box-sizing: content-box; }
 /* phone: the 720-high canvas; windows scroll inside instead of running off the screen */
 html.phone .modal { max-height: 690px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 30px 40px; }
 html.phone .modal .menu { max-height: 520px; }

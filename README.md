@@ -156,12 +156,12 @@ The bottom of the screen always shows which buttons do what on the screen you're
 <a id="features"></a>
 ## What it can do
 - **Continue where you stopped** — movies, episodes and videos remember your spot.
-- **Live TV** with channel logos, a TV guide (what's on now and next), favourites and recently watched channels.
+- **Live TV** with channel logos, a TV guide (what's on now and next), favourites and recently watched channels. The channel you stop on plays in the preview card, with sound.
 - **Movies and series** with posters, *Recently Added*, *My List*, seasons and episodes, and the next episode
   playing by itself. In the player, press ▼ for **Previous / All episodes / Next** (or CH ▲▼): switching episodes
   resumes where you stopped, and *All episodes* lists the season beside the video.
 - **Search** across channels, movies, series and Mdluex videos.
-- **Choose audio language and subtitles**, change the picture size, and set a **sleep timer**.
+- **Choose audio language and subtitles** (remembered for each movie and series), change the picture size, and set a **sleep timer**.
 - **Parental lock** for adult categories with a PIN (the starting PIN is **0000** — change it in Settings).
 - **Arabic or English** — the app follows your TV's language automatically, and in Arabic the whole app reads
   right-to-left. Change it any time in **Settings → Language**.

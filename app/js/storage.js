@@ -2,13 +2,21 @@
 var Store = (function () {
   var P = 'mdx_';
 
+  /* Values are read from localStorage once and then kept in memory: every card on a screen asks for the watch
+     progress, favourites and active playlist, and parsing them again each time slowed the TV down. */
+  var mem = {};
   function get(k, d) {
-    try { var v = localStorage.getItem(P + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; }
+    if (Object.prototype.hasOwnProperty.call(mem, k)) return mem[k] === undefined ? d : mem[k];
+    var v;
+    try { var raw = localStorage.getItem(P + k); v = raw == null ? undefined : JSON.parse(raw); } catch (e) { v = undefined; }
+    mem[k] = v;
+    return v === undefined ? d : v;
   }
   function set(k, v) {
+    mem[k] = v;
     try { localStorage.setItem(P + k, JSON.stringify(v)); } catch (e) { console.warn('storage full', e); }
   }
-  function del(k) { try { localStorage.removeItem(P + k); } catch (e) {} }
+  function del(k) { mem[k] = undefined; try { localStorage.removeItem(P + k); } catch (e) {} }
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
   var DEFAULT_SETTINGS = {
@@ -32,7 +40,7 @@ var Store = (function () {
   }
   function removePlaylist(id) {
     set('playlists', playlists().filter(function (p) { return p.id !== id; }));
-    ['progress_', 'favs_', 'recent_', 'account_'].forEach(function (k) { del(k + id); });
+    ['progress_', 'favs_', 'recent_', 'account_', 'tracks_'].forEach(function (k) { del(k + id); });
     if (get('active') === id) del('active');
   }
   function active() {
@@ -107,6 +115,16 @@ var Store = (function () {
   }
   function clearRecent() { del('recent_' + pid()); }
 
+  /* ---- audio / subtitle / picture choice per movie or series ---- */
+  function trackPref(key) { return get('tracks_' + pid(), {})[key] || null; }
+  function setTrackPref(key, v) {
+    var all = get('tracks_' + pid(), {});
+    v.updated = Date.now(); all[key] = v;
+    var keys = Object.keys(all);
+    if (keys.length > 300) { keys.sort(function (a, b) { return all[a].updated - all[b].updated; }); keys.slice(0, keys.length - 300).forEach(function (k) { delete all[k]; }); }
+    set('tracks_' + pid(), all);
+  }
+
   /* ---- account cache (last good server answer) ---- */
   function accountCache() { return get('account_' + pid(), null); }
   function saveAccountCache(info) { set('account_' + pid(), { info: info, checkedAt: Date.now() }); }
@@ -118,6 +136,7 @@ var Store = (function () {
     lastEpisodeOf: lastEpisodeOf, isWatched: isWatched, inProgress: inProgress, clearProgress: clearProgress,
     favs: favs, isFav: isFav, toggleFav: toggleFav,
     recentChannels: recentChannels, pushRecentChannel: pushRecentChannel, clearRecent: clearRecent,
+    trackPref: trackPref, setTrackPref: setTrackPref,
     accountCache: accountCache, saveAccountCache: saveAccountCache
   };
 })();

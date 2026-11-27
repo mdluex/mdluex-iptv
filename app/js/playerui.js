@@ -47,6 +47,15 @@ var PlayerUI = (function () {
     list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>',
     fav: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>'
   };
+  /* episode buttons and panel: drawn icons (the emoji look different on every TV) */
+  var EP_ICON = {
+    prev: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2.4v14H6zM20 5v14L9.6 12z"/></svg>',
+    next: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.6 5H18v14h-2.4zM4 5l10.4 7L4 19z"/></svg>',
+    list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg>',
+    left: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg>',
+    right: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>',
+    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+  };
   function touchControls(list) {
     var box = h('div', { class: 'touch-ctl' });
     list.forEach(function (x) {
@@ -107,13 +116,13 @@ var PlayerUI = (function () {
       var epLabel = function (x) { return T('S{0}:E{1}', x.season, x.ep.episode_num || '') + (x.ep.title ? ' · ' + x.ep.title : ''); };
       var mk = function (which, x, action) {
         var b = h('div', { class: 'ep-btn ' + which + (x ? '' : ' disabled') }, [
-          h('span', { class: 'ico', text: which === 'prev' ? '⏮' : '⏭' }),
+          h('span', { class: 'ico', html: EP_ICON[which] }),
           h('span', { class: 'txt' }, [h('span', { class: 'lab', text: T(which === 'prev' ? 'Previous episode' : 'Next episode') }),
             h('span', { class: 'name', text: x ? epLabel(x) : T('None'), dir: 'auto' })])]);
         if (x) Focus.make(b, action);   // tappable on touchscreens
         return b;
       };
-      var listBtn = Focus.make(h('div', { class: 'ep-btn list' }, [h('span', { class: 'ico', text: '☰' }),
+      var listBtn = Focus.make(h('div', { class: 'ep-btn list' }, [h('span', { class: 'ico', html: EP_ICON.list }),
         h('span', { class: 'txt' }, [h('span', { class: 'lab', text: T('All episodes') }), h('span', { class: 'name', text: T('Season {0}', (S.meta && S.meta.season) || '') })])]),
         function () { openEpPanel(); });
       S.epBtns = { prev: mk('prev', S.prevEp, function () { playPrev(); }), list: listBtn, next: mk('next', S.nextEp, function () { playNext(); }) };
@@ -194,7 +203,7 @@ var PlayerUI = (function () {
   function wire() {
     Player.on({
       buffering: function (on) { $('player-spinner').classList.toggle('hidden', !on); },
-      ready: function () { $('player-spinner').classList.add('hidden'); S && (S.retried = false); },
+      ready: function () { $('player-spinner').classList.add('hidden'); if (S) { S.retried = false; applyPrefs(); } },
       time: function () { if (!S) return; updateBar(); save(false); maybeShowNextUp(); },
       end: function () { onEnded(); },
       error: function (msg) { onError(msg); },
@@ -271,13 +280,13 @@ var PlayerUI = (function () {
     var si = seasons.indexOf(String(season));
     box.appendChild(h('div', { class: 'ep-panel-head' }, [
       h('div', { class: 'series', text: S.title, dir: 'auto' }),
-      h('div', { class: 'season' }, [seasonArrow(I18N.rtl ? '▶' : '◀', si - 1), h('span', { text: T('Season {0}', season) }), seasonArrow(I18N.rtl ? '◀' : '▶', si + 1)])]));
+      h('div', { class: 'season' }, [seasonArrow(I18N.rtl ? 'right' : 'left', si - 1), h('span', { text: T('Season {0}', season) }), seasonArrow(I18N.rtl ? 'left' : 'right', si + 1)])]));
     function seasonArrow(txt, to) {   // tappable on touchscreens
-      var a = h('span', { class: 'arr' + (to >= 0 && to < seasons.length ? '' : ' off'), text: txt });
+      var a = h('span', { class: 'arr' + (to >= 0 && to < seasons.length ? '' : ' off'), html: EP_ICON[txt] });
       if (to >= 0 && to < seasons.length) a.addEventListener('click', function (ev) { ev.stopPropagation(); renderEpPanel(seasons[to]); });
       return a;
     }
-    if (Platform.touch) box.appendChild(Focus.make(h('div', { class: 'ep-close', text: '✕' }), function () { closeEpPanel(); }));
+    if (Platform.touch) box.appendChild(Focus.make(h('div', { class: 'ep-close', html: EP_ICON.close }), function () { closeEpPanel(); }));
     var inner = h('div', { class: 'inner', 'data-zone': 'eplist' }), curEl = null;
     list.forEach(function (e) {
       var p = Store.progress('episode:' + e.id), isCur = S.meta && String(S.meta.id) === String(e.id);
@@ -423,18 +432,46 @@ var PlayerUI = (function () {
   function jump(ms) { seekTo(Math.max(0, curTime() + ms)); flashCenter(ms > 0 ? 'play' : 'restart'); showOsd(); }
   function seekTo(ms) { if (S.kind === 'yt') ytSeek(ms); else Player.seek(ms); updateBar(); }
 
+  /* audio / subtitle / picture choices, remembered per movie and per series (all its episodes) */
+  function prefKey() { return !S ? null : S.meta && S.meta.seriesId ? 'series:' + S.meta.seriesId : S.key; }
+  function loadPrefs() { var k = prefKey(); S.pref = (k && Store.trackPref(k)) || {}; if (S.pref.aspect) S.aspect = S.pref.aspect; }
+  function savePref(name, v) { var k = prefKey(); S.pref[name] = v; if (k) Store.setTrackPref(k, S.pref); }
+  // the stream's track list is often filled a moment after 'ready', so try a few times
+  function applyPrefs() {
+    var p = S.pref || {}, tries = 0, sess = S;
+    if (p.aspect && p.aspect !== 'fit') Player.setAspect(p.aspect);
+    if (p.audio == null && p.text == null) return;
+    (function go() {
+      if (S !== sess) return;
+      var tr = Player.tracks(), done = true;
+      if (p.audio != null) { var a = findTrack(tr.audio, p.audio); if (a) { if (tr.audioCurrent !== a.index) Player.selectTrack('AUDIO', a.index); } else done = false; }
+      if (p.text != null) {
+        if (p.text.off) Player.selectTrack('TEXT', -1);
+        else { var t = findTrack(tr.text, p.text); if (t) { if (tr.textCurrent !== t.index) Player.selectTrack('TEXT', t.index); } else done = false; }
+      }
+      if (!done && ++tries < 6) setTimeout(go, 1500);
+    })();
+  }
+  // match by label first (indexes can differ between episodes), then by index
+  function findTrack(list, want) {
+    return list.filter(function (x) { return x.label === want.label; })[0] || list.filter(function (x) { return x.index === want.index; })[0] || null;
+  }
   function optionsMenu() {
     showOsd(0);
     if (S.kind === 'yt') { ytOptions(); return; }
-    var items = [], tr = S.kind === 'yt' ? { audio: [], text: [] } : Player.tracks();
+    var items = [], tr = S.kind === 'yt' ? { audio: [], text: [] } : Player.tracks(), p = S.pref || {};
+    // what the viewer picked wins over what the player reports (TVs often report the stream's default)
+    var aCur = tr.audioCurrent, tCur = tr.textCurrent, tOff = tr.textCurrent == null;
+    if (p.audio) { var pa = findTrack(tr.audio, p.audio); if (pa) aCur = pa.index; }
+    if (p.text) { if (p.text.off) tOff = true; else { var pt = findTrack(tr.text, p.text); if (pt) { tCur = pt.index; tOff = false; } } }
     if (tr.audio.length > 1) {
       items.push({ head: 'Audio' });
-      tr.audio.forEach(function (a) { items.push({ label: a.label, a: 'audio', index: a.index, checked: tr.audioCurrent === a.index }); });
+      tr.audio.forEach(function (a) { items.push({ label: a.label, a: 'audio', index: a.index, checked: aCur === a.index }); });
     }
     if (tr.text.length) {
       items.push({ head: 'Subtitles' });
-      items.push({ label: 'Off', a: 'text', index: -1, checked: tr.textCurrent == null });
-      tr.text.forEach(function (t) { items.push({ label: t.label, a: 'text', index: t.index, checked: tr.textCurrent === t.index }); });
+      items.push({ label: 'Off', a: 'text', index: -1, checked: tOff });
+      tr.text.forEach(function (t) { items.push({ label: t.label, a: 'text', index: t.index, checked: !tOff && tCur === t.index }); });
     }
     if (S.kind !== 'yt') {
       items.push({ head: 'Picture' });
@@ -449,9 +486,9 @@ var PlayerUI = (function () {
     App.menu(S.title, items).then(function (it) {
       if (!S) return;
         if (!it) { showOsd(); return; }   // closed with Back: let the timeline hide again
-      if (it.a === 'audio') { Player.selectTrack('AUDIO', it.index); App.toast(T('Audio: {0}', it.label)); }
-      if (it.a === 'text') { Player.selectTrack('TEXT', it.index); App.toast(T('Subtitles: {0}', T(it.label))); }
-      if (it.a === 'aspect') { S.aspect = it.mode; Player.setAspect(it.mode); }
+      if (it.a === 'audio') { Player.selectTrack('AUDIO', it.index); savePref('audio', { index: it.index, label: it.label }); App.toast(T('Audio: {0}', it.label)); }
+      if (it.a === 'text') { Player.selectTrack('TEXT', it.index); savePref('text', it.index < 0 ? { off: true } : { index: it.index, label: it.label }); App.toast(T('Subtitles: {0}', T(it.label))); }
+      if (it.a === 'aspect') { S.aspect = it.mode; Player.setAspect(it.mode); savePref('aspect', it.mode); }
       if (it.a === 'sleep') sleepMenu();
       if (it.a === 'restart') seekTo(0);
       if (it.a === 'next') playNext();
@@ -584,6 +621,7 @@ var PlayerUI = (function () {
     wire();
     begin(session);
     S.paused = function () { return S.kind === 'yt' ? ytPaused() : Player.paused(); };
+    loadPrefs();
   }
 
   /* ---------- public: live / movie / episode ---------- */

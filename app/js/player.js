@@ -9,7 +9,10 @@ var Player = (function () {
     open: function (url, startMs) {
       var av = webapis.avplay;
       try { av.stop(); } catch (e) {} try { av.close(); } catch (e) {}
-      document.getElementById('av-player').style.display = 'block';
+      var hole = document.getElementById('av-player'), layer = document.getElementById('player-layer');
+      // back to full screen from the Live TV preview (which shows this player in the card's place)
+      if (layer.classList.contains('pv-window')) { layer.classList.remove('pv-window'); layer.classList.remove('pv-on'); layer.style.cssText = ''; }
+      hole.style.display = 'block';
       try {
         av.open(url);
         av.setDisplayRect(0, 0, 1920, 1080);

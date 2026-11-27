@@ -107,15 +107,20 @@ var Quran = (function () {
   /* ---------- the mushaf font from Quran.com: the King Fahd Complex lettering, one font per mushaf page,
      each word one glyph. The plain (black) version; the name of Allah is coloured by the app. ---------- */
   var FONT_BASE = 'https://verses.quran.foundation/fonts/quran/hafs/v2/woff2/p';
-  var fontJobs = {};
-  function pageFont(page) {
+  var fontJobs = {}, fontAdded = {};
+  /* The font file is downloaded first and handed over as bytes: on a TV, a font loaded from its address blocks the
+     app for ~2 s while it is decoded, from bytes it takes a few milliseconds. fontFace() only gets it ready;
+     pageFont() also adds it to the page. */
+  function fontFace(page) {
     if (fontJobs[page]) return fontJobs[page];
-    var name = 'qpcv2p' + page;
     fontJobs[page] = typeof FontFace === 'undefined' ? Promise.reject(new Error('no FontFace')) :
-      new FontFace(name, 'url(' + FONT_BASE + page + '.woff2)', { display: 'block' }).load().then(function (f) { document.fonts.add(f); return name; })
+      fetch(FONT_BASE + page + '.woff2').then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+        .then(function (buf) { return new FontFace('qpcv2p' + page, buf).load(); })
         .catch(function (e) { delete fontJobs[page]; throw e; });
     return fontJobs[page];
   }
+  function addFont(page, f) { if (!fontAdded[page]) { document.fonts.add(f); fontAdded[page] = true; } }
+  function pageFont(page) { return fontFace(page).then(function (f) { addFont(page, f); return 'qpcv2p' + page; }); }
   /* the page's decorations, decoded once and kept, so the page appears complete instead of piece by piece */
   var ART = ['q-frame', 'q-cart', 'q-medal', 'q-end', 'q-rope', 'q-bar'];
   var artJob = null;
@@ -136,6 +141,10 @@ var Quran = (function () {
   /* the fonts for every page of a surah; resolves to 'v2', or null (then the bundled font is used) */
   /* Fonts for the pages around where reading starts (and page 1, which draws the basmala). Resolves to
      { ver: 'v2', loaded: {page: true}, rest: [pages to load later, nearest first] }, or { ver: null } if they fail. */
+  /* Fonts for the pages around where reading starts (and page 1, which draws the basmala), added before the text is
+     built. The other pages' fonts are downloaded in the background but NOT added yet: adding a font while a long
+     surah is on screen re-lays all of it (~2 s on a TV), so the reader adds them all together, once.
+     Resolves to { ver: 'v2', loaded: {page: true}, rest: [pages], ready: Promise of the rest }, or { ver: null }. */
   function mushafFonts(verses, startN) {
     var pages = {}, startPage = null;
     verses.forEach(function (v) {
@@ -151,7 +160,24 @@ var Quran = (function () {
     var wait = first.concat([1]);
     return Promise.all(wait.map(pageFont)).then(function () {
       var loaded = {}; wait.forEach(function (p) { loaded[p] = true; });
-      return { ver: 'v2', loaded: loaded, rest: rest };
+      // the rest: four downloads at a time; resolves when every one has finished (or failed)
+      var ready = new Promise(function (resolve) {
+        var queue = rest.slice(), left = queue.length;
+        if (!left) { resolve(); return; }
+        function next() {
+          var p = queue.shift();
+          if (p == null) return;
+          fontFace(p).then(null, function () {}).then(function () { if (--left === 0) resolve(); next(); });
+        }
+        for (var i = 0; i < 4; i++) next();
+      });
+      // if they all come within 2.5 s (fast internet, or already saved from an earlier visit), add them now: free
+      var waited = new Promise(function (r) { setTimeout(function () { r(false); }, 2500); });
+      return Promise.race([ready.then(function () { return true; }), waited]).then(function (all) {
+        if (!all) return { ver: 'v2', loaded: loaded, rest: rest, ready: ready };
+        return Promise.all(rest.map(function (p) { return fontFace(p).then(function (f) { addFont(p, f); loaded[p] = true; }, function () {}); }))
+          .then(function () { return { ver: 'v2', loaded: loaded, rest: [], ready: null }; });
+      });
     }).catch(function () { return { ver: null }; });
   }
 
@@ -211,7 +237,7 @@ var Quran = (function () {
   function duration() { return audio && isFinite(audio.duration) ? audio.duration * 1000 : 0; }
 
   return { RECITERS: RECITERS, BASMALA: BASMALA, arNum: arNum, prefs: prefs, setPref: setPref, reciter: reciter, reciterName: reciterName,
-    chapters: chapters, verses: verses, mushafFonts: mushafFonts, pageFont: pageFont, decorations: decorations, recitation: recitation, play: play, stop: stop, toggle: toggle, seek: seek,
+    chapters: chapters, verses: verses, mushafFonts: mushafFonts, pageFont: pageFont, fontFace: fontFace, addFont: addFont, decorations: decorations, recitation: recitation, play: play, stop: stop, toggle: toggle, seek: seek,
     paused: paused, duration: duration };
 })();
 
@@ -244,6 +270,7 @@ var Quran = (function () {
     title: '', nav: 'quran',
     render: function (main) {
       var wrap = h('div', { class: 'scroll-y quran-list' });
+      main.appendChild(h('div', { class: 'quran-bg' }));
       main.appendChild(wrap);
       wrap.appendChild(h('div', { class: 'spinner center-spin' }));
       Quran.decorations();   // decorations load while the list is open
@@ -345,8 +372,10 @@ var Quran = (function () {
         if (info.basmala) basmala = fontVer ? h('div', { class: 'mbasm g', text: '\uFC41 \uFC42 \uFC43 \uFC44', style: { fontFamily: 'qpcv2p1' } })
           : h('div', { class: 'mbasm', text: Quran.BASMALA });
         var text = h('div', { class: 'mflow', dir: 'rtl', lang: 'ar' });
-        var ayahEls = {}, wordEls = {}, pageOf = {};
-        verses.forEach(function (v) {
+        var ayahEls = {}, wordEls = {}, pageOf = {}, chunks = [], chunk = null;
+        verses.forEach(function (v, vi) {
+          // verses go in inline groups (no effect on the lines): only the groups near the screen are drawn
+          if (vi % 8 === 0) { chunk = h('span', { class: 'mchunk' }); chunks.push(chunk); text.appendChild(chunk); }
           var a = h('span', { class: 'ayah' });
           wordEls[v.n] = {};
           pageOf[v.n] = v;
@@ -371,14 +400,58 @@ var Quran = (function () {
             a.appendChild(document.createTextNode(' '));
           });
           ayahEls[v.n] = a;
-          text.appendChild(a);
-          text.appendChild(document.createTextNode(' '));
+          chunk.appendChild(a);
+          chunk.appendChild(document.createTextNode(' '));
         });
         scroller.appendChild(h('div', { class: 'mbody' }, [basmala, text]));   // basmala + verses (centred in the free space when the surah is short)
         // everything that moves sits on one layer that slides with a GPU transform (no re-drawing of the page)
         var track = h('div', { class: 'mtrack' }), curSt = 0;
         while (scroller.firstChild) track.appendChild(scroller.firstChild);
-        scroller.appendChild(track);
+        /* The highlights (verse band and recited word) are drawn on their own layers that slide with the text:
+           changing anything inside the text makes the TV re-draw all of it (2 s for Al-Baqarah), these don't. */
+        var hlBack = h('div', { class: 'mhl' }), hlFront = h('div', { class: 'mhl' });
+        scroller.appendChild(hlBack); scroller.appendChild(track); scroller.appendChild(hlFront);
+        var hlWord = h('span', { class: 'hlw' });
+        hlWord.style.display = 'none';
+        hlFront.appendChild(hlWord);
+        var hlAyahEl = null, hlWordEl = null;
+        function relRects(el) {
+          // measured from the highlight layer itself (the text's first margin can push the track a little lower)
+          var tb = hlBack.getBoundingClientRect(), sc = track.getBoundingClientRect().width / (track.offsetWidth || 1) || 1;
+          return Array.prototype.map.call(el.getClientRects(), function (r) {
+            return { x: (r.left - tb.left) / sc, y: (r.top - tb.top) / sc, w: r.width / sc, h: r.height / sc };
+          });
+        }
+        function drawAyahHL(el) {
+          hlAyahEl = el;
+          while (hlBack.firstChild) hlBack.removeChild(hlBack.firstChild);
+          if (!el) return;
+          relRects(el).forEach(function (r) {
+            if (r.w < 1) return;
+            hlBack.appendChild(h('div', { class: 'hla', style: { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' } }));
+          });
+        }
+        function drawWordHL(we) {
+          hlWordEl = we;
+          var r = we && relRects(we)[0];
+          if (!r) { hlWord.style.display = 'none'; return; }
+          hlWord.textContent = we.textContent;
+          hlWord.style.fontFamily = we.style.fontFamily || '';
+          hlWord.style.left = r.x + 'px'; hlWord.style.top = r.y + 'px'; hlWord.style.width = r.w + 'px';
+          hlWord.style.height = r.h + 'px'; hlWord.style.lineHeight = r.h + 'px'; hlWord.style.display = 'block';
+        }
+        function redrawHL() { drawAyahHL(hlAyahEl); drawWordHL(hlWordEl); }
+        /* draw only the verse groups from a screen above to two screens below what is shown */
+        var chunkPos = null;
+        function measureChunks() { chunkPos = chunks.map(function (c) { var t = c.offsetTop; return [t, t + c.offsetHeight]; }); }
+        function showWindow(st) {
+          if (!chunkPos) measureChunks();
+          var room = scroller.clientHeight || 900, lo = st - room, hi = st + room * 2;
+          chunks.forEach(function (c, i) {
+            var on = chunkPos[i][1] >= lo && chunkPos[i][0] <= hi;
+            if (c._on !== on) { c._on = on; c.style.visibility = on ? '' : 'hidden'; }
+          });
+        }
         // a short surah that doesn't fill the page sits in the middle of it, top to bottom
         function centerIfShort() {
           scroller.classList.remove('fits');
@@ -387,7 +460,7 @@ var Quran = (function () {
         }
         centerIfShort();
         showFrom(0);
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { centerIfShort(); showFrom(curSt); });
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!root.isConnected) return; centerIfShort(); chunkPos = null; showFrom(curSt); redrawHL(); });
 
         // player bar (hides itself after a few seconds, like the video player)
         var btn = h('div', { class: 'qbtn', 'data-autofocus': '1' });
@@ -444,7 +517,8 @@ var Quran = (function () {
           scroller.style.height = '';
           var room = scroller.clientHeight;
           curSt = st;
-          track.style.transform = st ? 'translateY(' + (-st) + 'px)' : '';
+          showWindow(st);
+          track.style.transform = hlBack.style.transform = hlFront.style.transform = st ? 'translateY(' + (-st) + 'px)' : '';
           if (scroller.classList.contains('fits')) return;
           var k = Math.floor((st + room - off) / L);   // lines of the text that fit completely
           if (k >= 1) scroller.style.height = Math.max(L, off + k * L - st) + 'px';
@@ -458,20 +532,21 @@ var Quran = (function () {
         }
         function markAyah(n, noSave) {
           if (n === curAyah) return;
-          if (ayahEls[curAyah]) ayahEls[curAyah].classList.remove('cur');
-          if (basmala) basmala.classList.toggle('cur', n === 0);
           curAyah = n;
-          if (ayahEls[n]) { ayahEls[n].classList.add('cur'); keepVisible(ayahEls[n]); }
-          else if (n === 0) showFrom(0);
+          if (pageOf[n] && self._needPage) self._needPage(pageOf[n].page);
+          if (ayahEls[n]) { keepVisible(ayahEls[n]); drawAyahHL(ayahEls[n]); }
+          else if (n === 0) { showFrom(0); drawAyahHL(basmala); }
+          else drawAyahHL(null);
           setWhere();
           if (n > 0 && !noSave) Quran.setPref('last', { ch: ch, ayah: n });
         }
         function markWord(p) {
           var we = (wordEls[curAyah] || {})[p] || null;
           if (we === curWord) return;
-          if (curWord) curWord.classList.remove('on');
           curWord = we;
-          if (curWord) curWord.classList.add('on');
+          // a verse that runs past the bottom line: turn the page when the recitation reaches the hidden part
+          if (we) keepVisible(we);
+          drawWordHL(we);
         }
         function verseAt(ms) {
           var vs = timing.verses;
@@ -514,21 +589,32 @@ var Quran = (function () {
 
         if (params.ayah) markAyah(params.ayah, true); else setWhere();
         requestAnimationFrame(function () { root.classList.remove('preparing'); });
-        (function loadRest(list) {
-          if (!list || !list.length || !fontVer) return;
-          var p = list.shift();
-          Quran.pageFont(p).then(function () {
+        /* the other pages' fonts, all added in one go once downloaded (one re-layout instead of one per page);
+           sooner if the recitation reaches a page that is still waiting */
+        function addReadyFonts() {
+          var pages = Object.keys(pending), jobs = pages.map(function (p) { return Quran.fontFace(+p).then(function (f) { return [+p, f]; }, function () { return null; }); });
+          return Promise.all(jobs).then(function (got) {
             if (!root.isConnected) return;
-            (pending[p] || []).forEach(function (it) {
-              it.el.style.fontFamily = 'qpc' + fontVer + 'p' + p;
-              if (it.w.end) { it.el.className = 'end g'; it.el.textContent = it.w.g; } else it.el.textContent = it.w.g;
+            var any = false;
+            got.forEach(function (x) {
+              if (!x || !pending[x[0]]) return;
+              Quran.addFont(x[0], x[1]); any = true;
+              pending[x[0]].forEach(function (it) {
+                it.el.style.fontFamily = 'qpc' + fontVer + 'p' + x[0];
+                if (it.w.end) { it.el.className = 'end g'; it.el.textContent = it.w.g; } else it.el.textContent = it.w.g;
+              });
+              delete pending[x[0]];
             });
-            delete pending[p];
+            if (!any) return;
             centerIfShort();
-            if (curAyah > 0 && ayahEls[curAyah]) { var a0 = curAyah; curAyah = -1; markAyah(a0, true); keepVisible(ayahEls[a0], true); }
-            loadRest(list);
-          }, function () { loadRest(list); });
-        })(fonts.rest && fonts.rest.slice());
+            chunkPos = null;
+            if (curAyah > 0 && ayahEls[curAyah]) keepVisible(ayahEls[curAyah], true); else showFrom(curSt);
+            redrawHL();
+          });
+        }
+        var fontsDone = !fontVer || !fonts.ready;
+        if (!fontsDone) fonts.ready.then(function () { fontsDone = true; addReadyFonts(); });
+        self._needPage = function (page) { if (!fontsDone && pending[page]) Quran.fontFace(page).then(addReadyFonts, function () {}); };
         showBar(6000);
         Quran.recitation(rec.id, ch).then(function (t) {
           timing = t;
