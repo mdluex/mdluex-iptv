@@ -38,7 +38,7 @@ Building, testing and releasing the app. For installing and using it, see the [R
 python -m http.server 8765 --directory app
 ```
 Open http://localhost:8765 — arrow keys, Enter, Esc (Back), Space (play/pause), R/G/Y/B for the colour keys,
-I for Info/Menu. Choose **Try demo** for sample content. (IPTV TS/HLS streams only play on a TV.)
+I for Info/Menu. Open it with `?demo=1` (e.g. `http://localhost:8765/?demo=1`) to get a **Try demo** button with sample content; the released app has no demo. (IPTV TS/HLS streams only play on a TV.)
 
 ## Remote keys
 Samsung and LG remotes have colour keys (Red: remove from Continue Watching, Yellow: My List / favourite,

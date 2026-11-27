@@ -298,7 +298,8 @@
       var r = h('div', { class: 'btn-row', style: { justifyContent: 'center' } });
       r.appendChild(Focus.make(h('div', { class: 'btn primary', text: T('Add IPTV playlist'), 'data-autofocus': '1' }), function () { playlistForm(); }));
       r.appendChild(Focus.make(h('div', { class: 'btn', text: T('Watch Mdluex Channel') }), function () { App.go('channel', {}, { reset: true }); }));
-      r.appendChild(Focus.make(h('div', { class: 'btn', text: T('Try demo') }), function () {
+      // the sample playlist is only for development on a PC (?demo=1), not in the released app
+      if (Platform.name === 'browser' && /[?&]demo=1/.test(location.search)) r.appendChild(Focus.make(h('div', { class: 'btn', text: T('Try demo') }), function () {
         var pl = Store.savePlaylist({ name: 'Demo', demo: true, server: 'demo', username: 'demo', password: 'demo' });
         App.usePlaylist(pl); App.go('home', {}, { reset: true });
       }));

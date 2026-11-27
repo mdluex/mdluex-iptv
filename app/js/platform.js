@@ -31,7 +31,7 @@ var Platform = (function () {
 
   return {
     name: name,
-    version: '1.5.1',
+    version: '1.5.2',
     device: device,
     fireTV: device === 'firetv',
     colorKeys: colorKeys,

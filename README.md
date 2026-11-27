@@ -135,7 +135,7 @@ LG only allows apps from outside its store through its **Developer Mode** app, p
 camera, type the login there (or paste your M3U link — it fills in the rest), and press **Send**. It appears on the TV
 and is saved by itself. It's sent encrypted, with a key that only your TV has.
 
-Just want to look around first? Choose **Try demo** for sample content, or **Watch Mdluex Channel**.
+Just want to look around first? Open the **Quran** or **Watch Mdluex Channel** — no subscription needed.
 You can add more than one subscription and switch between them in **Settings**.
 
 <a id="remote"></a>
