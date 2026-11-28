@@ -13,7 +13,8 @@ Works on Samsung Smart TVs from 2017 and newer (Tizen), with a Windows PC on the
    - Extract this whole zip to a folder.
    - Double-click  Install-MdluexIPTV.cmd
    - Follow the steps on screen. The first time it will:
-       * download Samsung's free Tizen tools (official, about 700 MB) - Windows asks permission: click Yes
+       * download Samsung's free Tizen tools (official, about 700 MB) - a progress bar shows how far it is.
+         Windows asks permission twice: click Yes
        * open Samsung's Certificate Manager so you can create a free certificate
          with YOUR Samsung account (Samsung requires this to install apps on a TV)
 

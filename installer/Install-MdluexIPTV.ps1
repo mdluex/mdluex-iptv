@@ -38,6 +38,73 @@ function Pause-Here($t) { if (-not $Unattended) { Read-Host $t | Out-Null } }
 function Fail($t) { Write-Host ''; Write-Host "X  $t" -ForegroundColor Red; Write-Host ''; Pause-Here 'Press Enter to close'; exit 1 }
 function Ask($q) { (Read-Host "$q [Y/n]") -notmatch '^(n|no)$' }
 
+# ---- progress display: one line that updates in place
+function Fmt-MB($b) { '{0:N0} MB' -f ($b / 1MB) }
+function Fmt-Time($s) { if ($s -lt 60) { '{0:N0} s' -f $s } else { '{0}:{1:00} min' -f [math]::Floor($s / 60), [math]::Floor($s % 60) } }
+function Show-Progress($label, $done, $total, $elapsed, $note) {
+  $speed = if ($elapsed -gt 0.5) { $done / $elapsed } else { 0 }
+  if ($total -gt 0) {
+    $pct = [math]::Min(100, [math]::Floor($done * 100 / $total))
+    $n = [math]::Floor($pct / 5); $bar = ('#' * $n) + ('-' * (20 - $n))
+    $left = if ($speed -gt 0 -and $done -lt $total) { '  ' + (Fmt-Time (($total - $done) / $speed)) + ' left' } else { '' }
+    $line = "  $label [$bar] {0,3}%  {1} of {2}  {3:N1} MB/s{4}" -f $pct, (Fmt-MB $done), (Fmt-MB $total), ($speed / 1MB), $left
+  } else {
+    $spin = @('|', '/', '-', '\')[[int]([math]::Floor($elapsed * 4)) % 4]
+    $line = "  $label $spin  " + (Fmt-Time $elapsed) + $(if ($done -gt 0) { '  ' + (Fmt-MB $done) + (' downloaded  {0:N1} MB/s' -f ($speed / 1MB)) } else { '' })
+  }
+  if ($note) { $line += "  $note" }
+  $w = 119; try { $w = [Console]::WindowWidth - 1 } catch {}
+  if ($line.Length -gt $w) { $line = $line.Substring(0, $w) }
+  Write-Host ("`r" + $line.PadRight($w)) -NoNewline
+}
+function End-Progress { Write-Host '' }
+
+# Downloads a file with a live progress bar (size, speed, time left).
+function Get-FileWithProgress($url, $out, $label) {
+  [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+  $req = [Net.HttpWebRequest]::Create($url); $req.Timeout = 30000; $req.ReadWriteTimeout = 60000
+  $resp = $req.GetResponse(); $total = $resp.ContentLength
+  $in = $resp.GetResponseStream(); $fs = [IO.File]::Create($out)
+  $buf = New-Object byte[] 262144; $done = 0; $sw = [Diagnostics.Stopwatch]::StartNew(); $last = -1
+  try {
+    while (($n = $in.Read($buf, 0, $buf.Length)) -gt 0) {
+      $fs.Write($buf, 0, $n); $done += $n
+      if ($sw.ElapsedMilliseconds - $last -ge 250) { $last = $sw.ElapsedMilliseconds; Show-Progress $label $done $total $sw.Elapsed.TotalSeconds }
+    }
+    Show-Progress $label $done $(if ($total -gt 0) { $total } else { $done }) $sw.Elapsed.TotalSeconds
+  } finally { $fs.Close(); $in.Close(); $resp.Close(); End-Progress }
+  if ($total -gt 0 -and $done -ne $total) { Fail 'The download was cut off. Check the internet connection and run the installer again.' }
+}
+
+# All bytes this PC has received so far (any network adapter); used to show how much a separate program downloads.
+function Get-NetReceived {
+  $sum = 0
+  foreach ($nic in [Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()) {
+    if ($nic.OperationalStatus -eq 'Up' -and $nic.NetworkInterfaceType -ne 'Loopback') { try { $sum += $nic.GetIPStatistics().BytesReceived } catch {} }
+  }
+  $sum
+}
+# Waits for a program started by Start-Process -PassThru, showing time, how much was downloaded meanwhile and,
+# when the program writes one to its log, its own percentage.
+function Wait-WithProgress($proc, $label, $expectBytes, $log) {
+  $sw = [Diagnostics.Stopwatch]::StartNew(); $rx0 = Get-NetReceived; $note = ''
+  while (-not $proc.HasExited) {
+    Start-Sleep -Milliseconds 400
+    $got = [math]::Max(0, (Get-NetReceived) - $rx0)
+    if ($log -and (Test-Path $log)) {
+      try {
+        $tail = (Get-Content $log -Tail 5 -ErrorAction Stop) -join ' '
+        $m = [regex]::Matches($tail, '(\d{1,3})\s*%')
+        if ($m.Count) { $note = '(' + $m[$m.Count - 1].Groups[1].Value + '% of the current package)' }
+      } catch {}
+    }
+    $total = if ($expectBytes -gt 0 -and $got -lt $expectBytes * 0.98) { $expectBytes } else { 0 }   # past the estimate: just count
+    Show-Progress $label $got $total $sw.Elapsed.TotalSeconds $note
+  }
+  End-Progress
+  Say ('  Done in ' + (Fmt-Time $sw.Elapsed.TotalSeconds) + '.') DarkGray
+}
+
 if (-not $Unattended) { Clear-Host }
 Say '==============================================' Red
 Say '          Mdluex IPTV  -  TV installer' White
@@ -95,17 +162,19 @@ if (-not (Test-Path $tizen) -or -not (Test-Path $sdb) -or -not (Test-Path (Join-
   $file = ((Invoke-WebRequest -UseBasicParsing ($base + $ver)).Links.href | Where-Object { $_ -match '^web-cli_.*windows-64\.exe$' } | Select-Object -First 1)
   $exe = Join-Path $dl $file
   Say "Downloading $file ..."
-  $ProgressPreference = 'SilentlyContinue'
-  Invoke-WebRequest -UseBasicParsing ($base + $ver + $file) -OutFile $exe
+  Get-FileWithProgress ($base + $ver + $file) $exe 'Tizen Studio'
   $sig = Get-AuthenticodeSignature $exe
   if ($sig.Status -ne 'Valid' -or $sig.SignerCertificate.Subject -notmatch 'Samsung Electronics') { Fail 'The downloaded installer is not signed by Samsung - stopping for safety.' }
   Say 'Installer verified (signed by Samsung Electronics). Windows will ask for permission - click Yes.' Green
-  Start-Process -FilePath $exe -ArgumentList '--accept-license', $TizenHome -Verb RunAs -Wait
+  $p = Start-Process -FilePath $exe -ArgumentList '--accept-license', $TizenHome -Verb RunAs -PassThru
+  Wait-WithProgress $p 'Installing Tizen Studio' 0 $null
   if (-not (Test-Path $pm)) { Fail 'Tizen Studio did not install.' }
-  Say 'Adding the Samsung TV certificate tools (Windows will ask again - click Yes)...'
+  Say 'Downloading and adding the Samsung TV add-ons, about 400 MB (Windows will ask again - click Yes)...'
   $log = Join-Path $env:TEMP 'mdluex-tizen-pm.log'
+  Remove-Item $log -Force -ErrorAction SilentlyContinue
   $cmd = "`"$pm`" install --accept-license cert-add-on Certificate-Manager TV-SAMSUNG-Extension-Tools TV-SAMSUNG-Extension-Resources > `"$log`" 2>&1"
-  Start-Process cmd -ArgumentList '/c', $cmd -Verb RunAs -Wait -WindowStyle Hidden
+  $p = Start-Process cmd -ArgumentList '/c', $cmd -Verb RunAs -PassThru -WindowStyle Hidden
+  Wait-WithProgress $p 'TV add-ons' 400MB $log
   if (-not (Test-Path (Join-Path $certMgr 'plugins'))) { Fail "Samsung certificate tools did not install. See $log" }
 }
 Say 'Tizen tools are ready.' Green
