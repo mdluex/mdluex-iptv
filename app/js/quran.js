@@ -31,7 +31,10 @@ var Quran = (function () {
   }
 
   /* ---------- saved settings: reciter, last position, repeat ---------- */
-  function prefs() { return Object.assign({ reciter: 7, qsize: 64, autoNext: true, repeat: false, last: null }, Store.settings().quran || {}); }
+  /* syncMs: the highlight waits this long behind the audio clock. A TV plays sound a little after the page says
+     it does (the audio path adds delay), so without it the lit word runs ahead of the voice. */
+  var DEFAULT_SYNC = typeof Platform !== 'undefined' && Platform.name !== 'browser' ? 300 : 100;
+  function prefs() { return Object.assign({ reciter: 7, qsize: 64, autoNext: true, repeat: false, last: null, syncMs: DEFAULT_SYNC }, Store.settings().quran || {}); }
   function setPref(k, v) { var p = prefs(); p[k] = v; Store.setSetting('quran', p); return p; }
   function reciter(id) { id = id || prefs().reciter; return RECITERS.filter(function (r) { return r.id === id; })[0] || RECITERS[0]; }
   function reciterName(r) { return I18N.rtl ? r.ar : r.en; }
@@ -225,7 +228,8 @@ var Quran = (function () {
     };
     if (a.readyState >= 1) go(); else a.addEventListener('loadedmetadata', function once() { a.removeEventListener('loadedmetadata', once); go(); });
     clearInterval(tick);
-    tick = setInterval(function () { if (listener && listener.time && !a.paused) listener.time(a.currentTime * 1000); }, 80);
+    var lag = prefs().syncMs || 0;
+    tick = setInterval(function () { if (listener && listener.time && !a.paused) listener.time(Math.max(0, a.currentTime * 1000 - lag)); }, 80);
   }
   function stop() {
     clearInterval(tick); tick = null; listener = null;
@@ -569,6 +573,7 @@ var Quran = (function () {
           for (var i = 0; i < vs.length; i++) if (ms < vs[i].to) return ms >= vs[i].from ? vs[i] : (i === 0 ? null : vs[i - 1]);
           return vs[vs.length - 1];
         }
+        var savedAyah = null;
         function onTime(ms) {
           if (!timing) return;
           var v = verseAt(ms);
@@ -576,6 +581,9 @@ var Quran = (function () {
           else {
             if (prefs.repeat && curAyah > 0 && v.n !== curAyah) { goAyah(curAyah); return; }   // repeat one verse
             markAyah(v.n);
+            // remember the verse being recited (also the one the surah was opened at), so a redraw (new reciter,
+            // text size) or "Continue" goes back exactly here
+            if (v.n !== savedAyah) { savedAyah = v.n; Quran.setPref('last', { ch: ch, ayah: v.n }); }
             var w = null;
             for (var i = 0; i < v.words.length; i++) if (ms >= v.words[i].from && ms < v.words[i].to) { w = v.words[i]; break; }
             markWord(w ? w.p : null);
@@ -670,6 +678,9 @@ var Quran = (function () {
     }
   };
 
+  /* how far the highlight waits behind the audio (the TV's sound delay); the reader picks what matches his TV */
+  var SYNC_STEPS = [0, 150, 300, 450, 600, 800];
+  function syncLabel(ms) { return ms <= 0 ? T('No delay') : ms < 300 ? T('Slightly later') : ms === 300 ? T('Normal (TV)') : ms <= 450 ? T('Later') : T('Much later'); }
   function options(info, view) {
     var p = Quran.prefs();
     // redraw at the verse being recited, not from the start
@@ -678,6 +689,7 @@ var Quran = (function () {
       { label: 'Reciter', value: Quran.reciterName(Quran.reciter()), a: 'rec' },
       { label: 'Text size', value: String(p.qsize), a: 'size' },
       { label: 'Repeat the current verse', value: p.repeat ? 'On' : 'Off', a: 'repeat' },
+      { label: 'Highlight timing', value: syncLabel(p.syncMs), a: 'sync' },
       { label: 'Continue to the next surah', value: p.autoNext ? 'On' : 'Off', a: 'next' },
       { label: 'All surahs', a: 'list' }
     ]).then(function (it) {
@@ -688,6 +700,9 @@ var Quran = (function () {
       })).then(function (x) { if (x) { Quran.setPref('qsize', x.s); redraw(); } });
       if (it.a === 'repeat') { Quran.setPref('repeat', !p.repeat); App.toast(!p.repeat ? 'Repeating this verse' : 'Repeat off'); redraw(); }
       if (it.a === 'next') { Quran.setPref('autoNext', !p.autoNext); redraw(); }
+      if (it.a === 'sync') App.menu('Highlight timing', SYNC_STEPS.map(function (ms) {
+        return { label: syncLabel(ms), value: ms ? T('{0} s after the voice', (ms / 1000).toFixed(2).replace(/0$/, '')) : T('With the audio clock'), ms: ms, checked: ms === p.syncMs };
+      })).then(function (x) { if (x) { Quran.setPref('syncMs', x.ms); redraw(); } });
       if (it.a === 'list') App.go('quran', {}, { reset: true });
     });
   }

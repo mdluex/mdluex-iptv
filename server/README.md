@@ -43,8 +43,17 @@ Options: `--port 8080`, `--data <folder>` (database location, default `mdluex-da
 4. **Accounts** → **New account** for each viewer.
 5. In Mdluex IPTV: *Add playlist* → server `http://<this-pc-ip>:8080`, the account's username and password.
 
-Allow the port through the Windows firewall when asked. For viewers outside your home, forward the port on
+Allow the port through the Windows firewall when asked — for **both Private and Public** networks. Started once
+as administrator, the server adds this firewall rule by itself. For viewers outside your home, forward the port on
 your router or put the server behind a reverse proxy with HTTPS.
+
+### The TV can't connect?
+- In the TV app type the **On your TV** address the server shows (like `http://192.168.1.20:8080`), not `localhost`
+  — on the TV, *localhost* means the TV itself.
+- Check the port number, and that the server window is still open.
+- Windows Firewall must allow `mdluex-server` on the network type your PC uses (Private or Public). Easiest: start
+  `mdluex-server.exe` once with *Run as administrator* — it opens its port for all network types.
+- The TV and the PC must be on the same network (not a guest Wi-Fi that keeps devices apart).
 
 ## Build from source
 Requires Rust (and ffmpeg in `PATH` for HLS→TS remuxing).

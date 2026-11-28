@@ -1261,7 +1261,16 @@
           note.className = 'note'; note.style.color = 'var(--ok)';
           note.textContent = T('✓ Connected – account {0}, {1}, connections {2}', T(ui.status || 'Active'), exp, (ui.active_cons || 0) + '/' + (ui.max_connections || '?'));
           return true;
-        }).catch(function (e) { note.style.color = ''; note.className = 'note bad'; note.textContent = '✗ ' + e.message; return false; });
+        }).catch(function (e) {
+          note.style.color = ''; note.className = 'note bad'; note.textContent = '✗ ' + e.message;
+          // can't reach it at all: the usual reasons, especially for a server on a PC at home
+          if (e.kind === 'network' || e.kind === 'timeout') {
+            note.textContent += '  ' + (/\/\/(localhost|127\.)/i.test(d.server)
+              ? T('"localhost" means this TV itself: type the address of the PC running the server, like http://192.168.1.20:8080.')
+              : T('Check the address and port, that the server is running, and that Windows Firewall on that PC allows it (Private and Public networks).'));
+          }
+          return false;
+        });
       }
       var rowEl = h('div', { class: 'btn-row' });
       var saveBtn = Focus.make(h('div', { class: 'btn primary', text: T('Save') }), function () {

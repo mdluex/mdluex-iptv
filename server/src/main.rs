@@ -108,6 +108,8 @@ async fn main() {
         println!("  First login : admin / {pw}   (change it in Settings)");
     }
     println!("==============================================");
+    println!("  In the TV app type the 'On your TV' address above (not localhost).");
+    open_firewall(port);
     if arg("--no-browser").is_none() && !std::env::args().any(|a| a == "--no-browser") {
         let _ = open::that(&local);
     }
@@ -115,6 +117,30 @@ async fn main() {
         .await
         .unwrap();
 }
+
+/// Windows: TVs and phones can only reach the server if Windows Firewall lets the port in. Windows' own prompt
+/// often allows only one network type (Public or Private), so add a rule for all of them. That needs admin rights:
+/// without them, say how to do it.
+#[cfg(windows)]
+fn open_firewall(port: u16) {
+    use std::process::Command;
+    let name = format!("Mdluex IPTV Server (TCP {port})");
+    let has = Command::new("netsh").args(["advfirewall", "firewall", "show", "rule", &format!("name={name}")]).output()
+        .map(|o| o.status.success() && String::from_utf8_lossy(&o.stdout).contains(&name)).unwrap_or(false);
+    if has { return; }
+    let ok = Command::new("netsh")
+        .args(["advfirewall", "firewall", "add", "rule", &format!("name={name}"), "dir=in", "action=allow", "protocol=TCP",
+               &format!("localport={port}"), "profile=any"])
+        .output().map(|o| o.status.success()).unwrap_or(false);
+    if ok {
+        println!("  Windows Firewall: port {port} is now open for TVs and phones on your network.");
+    } else {
+        println!("  If your TV can't connect: allow 'mdluex-server' in Windows Firewall for BOTH Private and Public");
+        println!("  networks (Settings > Windows Security > Firewall > Allow an app), or run this once as administrator.");
+    }
+}
+#[cfg(not(windows))]
+fn open_firewall(_port: u16) {}
 
 /// LAN addresses of this machine (for the "use this on your TV" hint).
 pub fn local_ips() -> Vec<String> {
