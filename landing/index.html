@@ -62,7 +62,11 @@
         </div>
         <div class="hero-art">
           <div class="tv">
-            <div class="tv-screen"><img src="screens/home.png" alt="Mdluex IPTV home screen" loading="eager"></div>
+            <div class="tv-screen">
+              <!-- the demo video, played straight from GitHub Pages; the home screen picture shows until it starts, and instead of it if it can't play -->
+              <video id="tvDemo" src="https://mdluex.github.io/mdluex-iptv/demo.mp4" poster="screens/home.png" muted loop playsinline preload="metadata" aria-label="Mdluex IPTV demo video"></video>
+              <button class="tv-play" id="tvPlay" type="button" aria-label="Play the demo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+            </div>
             <div class="tv-stand"></div>
           </div>
         </div>

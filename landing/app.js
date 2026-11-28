@@ -191,3 +191,26 @@
 
   applyLang();
 })();
+
+/* the demo video in the TV picture: plays muted and looping by itself; with "reduce motion" it waits for a click.
+   If the video can't play (no connection, old browser), the home screen picture is shown instead. */
+(function () {
+  var v = document.getElementById('tvDemo'), play = document.getElementById('tvPlay');
+  if (!v) return;
+  function fallback() {
+    if (!v.parentNode) return;
+    var img = document.createElement('img');
+    img.src = 'screens/home.png'; img.alt = 'Mdluex IPTV home screen';
+    v.parentNode.replaceChild(img, v); play.hidden = true;
+  }
+  if (typeof v.play !== 'function' || (v.canPlayType && !v.canPlayType('video/mp4'))) { fallback(); return; }
+  var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function start() { var p = v.play(); if (p && p.catch) p.catch(function () { play.hidden = false; }); }
+  v.addEventListener('error', fallback);
+  v.addEventListener('play', function () { play.hidden = true; });
+  v.addEventListener('pause', function () { play.hidden = false; });
+  v.addEventListener('click', function () { if (v.paused) start(); else v.pause(); });
+  play.addEventListener('click', start);
+  play.hidden = !calm;
+  if (!calm) start();
+})();
