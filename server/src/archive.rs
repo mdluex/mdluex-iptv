@@ -62,7 +62,7 @@ async fn record(st: State, id: i64, src: String) {
         args.extend(["-i".into(), src.clone()]);
         args.extend(["-c", "copy", "-f", "segment", "-segment_time", "300", "-segment_atclocktime", "1", "-reset_timestamps", "1", "-strftime", "1"].map(String::from));
         args.push(pattern);
-        match tokio::process::Command::new("ffmpeg").args(&args).stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null()).kill_on_drop(true).spawn() {
+        match tokio::process::Command::new(crate::thumbs::tool("ffmpeg")).args(&args).stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null()).kill_on_drop(true).spawn() {
             Ok(mut child) => {
                 st.rec_status.lock().insert(id, "Recording".into());
                 let _ = child.wait().await;

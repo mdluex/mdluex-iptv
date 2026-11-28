@@ -1218,6 +1218,88 @@
   };
 
   /* ================= Settings ================= */
+  /* ---------- Find my Mdluex IPTV Server: search the home network, or type the server's 6-letter code ----------
+     The server answers GET /mdluex.json. The search asks every address of this TV's network (on the usual port
+     8080) plus the easy name mdluex-iptv.local; the code is read from the public ntfy.sh relay, where the server
+     posts its home-network address under that code. */
+  function probe(base, ms) {
+    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var t = setTimeout(function () { if (ctl) ctl.abort(); }, ms || 1500);
+    return fetch(base.replace(/\/+$/, '') + '/mdluex.json', { signal: ctl ? ctl.signal : undefined, cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { clearTimeout(t); return j && j.app === 'mdluex-iptv-server' ? { url: base.replace(/\/+$/, ''), info: j } : null; },
+        function () { clearTimeout(t); return null; });
+  }
+  function scanNetwork(onFound, onDone) {
+    var found = {};
+    function hit(r) { var k = r && (r.info.id || r.url); if (r && !found[k]) { found[k] = 1; onFound(r); } }
+    Platform.localIp(function (ip) {
+      var nets = ip ? [ip.split('.').slice(0, 3).join('.')] : ['192.168.1', '192.168.0', '10.0.0'];
+      var queue = ['http://mdluex-iptv.local:8080'];
+      nets.forEach(function (n) { for (var i = 1; i < 255; i++) if (n + '.' + i !== ip) queue.push('http://' + n + '.' + i + ':8080'); });
+      if (ip) queue.push('http://' + ip + ':8080');   // a server on this same device (phones)
+      var running = 0, total = queue.length, doneN = 0;
+      function next() {
+        if (!queue.length) { if (!running) onDone(total); return; }
+        var u = queue.shift(); running++;
+        probe(u, 1500).then(function (r) { hit(r); running--; doneN++; next(); });
+      }
+      for (var k = 0; k < 24; k++) next();
+    });
+  }
+  function serverByCode(code) {
+    code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (code.length !== 6) return Promise.reject(new Error(T('The server code has 6 letters and numbers.')));
+    return fetch('https://ntfy.sh/mdlx-srv-' + code.toLowerCase() + '/json?poll=1&since=24h', { cache: 'no-store' })
+      .then(function (r) { return r.text(); })
+      .then(function (txt) {
+        var urls = null;
+        txt.split('\n').forEach(function (l) { try { var e = JSON.parse(l); if (e.event === 'message') { var m = JSON.parse(e.message); if (m.app === 'mdluex-iptv-server') urls = m.urls; } } catch (x) {} });
+        if (!urls || !urls.length) throw new Error(T('No server with this code. Check the code, and that the server is running and online.'));
+        return Promise.all(urls.map(function (u) { return probe(u, 4000); })).then(function (rs) {
+          var ok = rs.filter(Boolean)[0];
+          if (ok) return ok.url;
+          var e = new Error(T('Found the server at {0}, but this TV can\'t reach it. Allow it in Windows Firewall on that PC, and make sure both are on the same network.', urls[0]));
+          e.url = urls[0]; throw e;
+        });
+      });
+  }
+  function findServer(onPick) {
+    App.modal(function (box, m) {
+      box.classList.add('find-modal');
+      box.appendChild(h('h2', { text: T('Find my server') }));
+      var status = h('div', { class: 'find-status', text: T('Searching your home network…') });
+      var list = h('div', { class: 'find-list', 'data-zone': 'found' });
+      box.appendChild(status); box.appendChild(list);
+      function pick(url) { m.close(); onPick(url); }
+      scanNetwork(function (r) {
+        if (m.closed) return;
+        var row = Focus.make(h('div', { class: 'set-row' }, [h('span', { text: (r.info.name || 'Mdluex IPTV Server') + ' · ' + T('version {0}', r.info.version) }), h('span', { class: 'v on', text: r.url, dir: 'ltr' })]), function () { pick(r.url); });
+        list.appendChild(row);
+        if (list.children.length === 1) Focus.set(row);
+        status.textContent = T('Found. Choose your server:');
+      }, function () {
+        if (m.closed) return;
+        if (!list.children.length) status.textContent = T('No server found on this network. Type the server code instead (the server shows it when it starts, and on its dashboard).');
+      });
+      box.appendChild(h('h3', { text: T('Or type the server code') }));
+      var codeIn = h('input', { class: 'input code-input', type: 'text', maxlength: '6', placeholder: 'K7M2QX', dir: 'ltr', autocapitalize: 'characters' });
+      Focus.make(codeIn);
+      var codeMsg = h('div', { class: 'note' });
+      var go = Focus.make(h('div', { class: 'btn primary', text: T('Find') }), function () {
+        codeMsg.className = 'note'; codeMsg.textContent = T('Looking…');
+        serverByCode(codeIn.value).then(pick, function (e) {
+          codeMsg.className = 'note bad'; codeMsg.textContent = '✗ ' + e.message;
+          if (e.url) { var use = Focus.make(h('div', { class: 'btn small', text: T('Use it anyway') }), function () { pick(e.url); }); codeMsg.appendChild(use); }
+        });
+      });
+      codeIn._onDone = function () { go._onSelect(go); };
+      box.appendChild(h('div', { class: 'pw-row' }, [codeIn, go]));
+      box.appendChild(codeMsg);
+      box.appendChild(h('div', { class: 'btn-row' }, [Focus.make(h('div', { class: 'btn', text: T('Close') }), function () { m.close(); })]));
+    });
+  }
+
   function playlistForm(existing) {
     var pl = Object.assign({ name: '', server: '', username: '', password: '' }, existing || {});
     App.modal(function (outer, m) {
@@ -1244,6 +1326,11 @@
             eye.textContent = T(show ? 'Hide' : 'Show');
           });
           box.appendChild(h('div', { class: 'field' }, [h('label', { text: T(f[1]) }), h('div', { class: 'pw-row' }, [inp, eye])]));
+        } else if (f[0] === 'server') {
+          // a Mdluex IPTV Server at home can be found instead of typed
+          var find = h('div', { class: 'btn small pw-toggle', text: T('Find my server') });
+          Focus.make(find, function () { findServer(function (url) { inp.value = url; Focus.set(fields.username); }); });
+          box.appendChild(h('div', { class: 'field' }, [h('label', { text: T(f[1]) }), h('div', { class: 'pw-row' }, [inp, find])]));
         } else box.appendChild(h('div', { class: 'field' }, [h('label', { text: T(f[1]) }), inp]));
       });
       fields.name.setAttribute('data-autofocus', '1');

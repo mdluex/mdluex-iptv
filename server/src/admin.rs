@@ -267,6 +267,8 @@ async fn dashboard(S(st): S<State>, a: Admin, h: HeaderMap) -> ApiResult {
         "epg_programs": n("SELECT COUNT(*) FROM epg_programs"),
         "connections": st.conns.list().len(), "uptime": now - st.started,
         "server_urls": crate::local_ips().iter().map(|ip| format!("http://{ip}:{port}")).collect::<Vec<_>>(),
+        "local_name": format!("http://{}.local:{port}", crate::discover::MDNS_HOST),
+        "server_code": if crate::discover::code_enabled(&st) { crate::discover::server_code(&st) } else { String::new() },
         "scan": st.scan.lock().clone(), "recent_movies": recent
     })))
 }
@@ -751,7 +753,7 @@ async fn settings_get(S(st): S<State>, _a: Admin) -> ApiResult {
         m.insert(k.to_string(), json!(db::setting(&c, k, d)));
     }
     m.insert("data_dir".into(), json!(std::fs::canonicalize(&st.data_dir).map(|p| p.display().to_string()).unwrap_or_default()));
-    m.insert("ffmpeg".into(), json!(std::process::Command::new("ffmpeg").arg("-version").output().is_ok()));
+    m.insert("ffmpeg".into(), json!(std::process::Command::new(crate::thumbs::tool("ffmpeg")).arg("-version").output().is_ok()));
     Ok(Json(Value::Object(m)))
 }
 async fn settings_put(S(st): S<State>, _a: Admin, Json(b): Json<Value>) -> ApiResult {

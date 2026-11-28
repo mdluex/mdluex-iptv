@@ -16,6 +16,7 @@ pub struct ScanStatus {
     pub episodes: usize,
     pub removed: usize,
     pub enriched: usize,
+    pub thumbs: usize,
     pub finished: i64,
 }
 
@@ -79,14 +80,17 @@ pub fn start(st: State) -> bool {
         let st2 = st.clone();
         let _ = tokio::task::spawn_blocking(move || scan_folders(&st2)).await;
         enrich(&st).await;
+        let thumbs = crate::thumbs::fill(&st).await;   // pictures from the videos for titles still without one
         let mut s = st.scan.lock();
+        s.thumbs = thumbs;
         s.running = false;
         s.finished = db::now();
         s.message = format!(
-            "Done: {} movies, {} series, {} episodes found{}{}",
+            "Done: {} movies, {} series, {} episodes found{}{}{}",
             s.movies, s.series, s.episodes,
             if s.removed > 0 { format!(", {} missing files removed", s.removed) } else { String::new() },
-            if s.enriched > 0 { format!(", {} titles got TMDB details", s.enriched) } else { String::new() }
+            if s.enriched > 0 { format!(", {} titles got TMDB details", s.enriched) } else { String::new() },
+            if s.thumbs > 0 { format!(", {} pictures made from the videos", s.thumbs) } else { String::new() }
         );
     });
     true
@@ -298,7 +302,7 @@ pub async fn enrich(st: &State) {
             let year2: Option<i64> = d["release_date"].as_str().and_then(|s| s.get(0..4)).and_then(|y| y.parse().ok());
             let _ = st.db.lock().execute(
                 "UPDATE movies SET tmdb_id=?2, plot=?3, rating=?4, genre=?5, cast_list=?6, director=?7, duration_secs=?8, trailer=?9,
-                 poster=CASE WHEN poster='' THEN ?10 ELSE poster END, backdrop=CASE WHEN backdrop='' THEN ?11 ELSE backdrop END,
+                 poster=CASE WHEN (poster='' OR poster LIKE '%mdlxthumb-%') AND ?10<>'' THEN ?10 ELSE poster END, backdrop=CASE WHEN (backdrop='' OR backdrop LIKE '%mdlxthumb-%') AND ?11<>'' THEN ?11 ELSE backdrop END,
                  year=COALESCE(year, ?12) WHERE id=?1",
                 params![
                     id, tid, d["overview"].as_str().unwrap_or(""), d["vote_average"].as_f64().unwrap_or(0.0), names(&d["genres"], 3),
@@ -325,7 +329,7 @@ pub async fn enrich(st: &State) {
         let year2: Option<i64> = d["first_air_date"].as_str().and_then(|s| s.get(0..4)).and_then(|y| y.parse().ok());
         let _ = st.db.lock().execute(
             "UPDATE series SET tmdb_id=?2, plot=?3, rating=?4, genre=?5, cast_list=?6, trailer=?7,
-             poster=CASE WHEN poster='' THEN ?8 ELSE poster END, backdrop=CASE WHEN backdrop='' THEN ?9 ELSE backdrop END,
+             poster=CASE WHEN (poster='' OR poster LIKE '%mdlxthumb-%') AND ?8<>'' THEN ?8 ELSE poster END, backdrop=CASE WHEN (backdrop='' OR backdrop LIKE '%mdlxthumb-%') AND ?9<>'' THEN ?9 ELSE backdrop END,
              year=COALESCE(year, ?10) WHERE id=?1",
             params![
                 id, tid, d["overview"].as_str().unwrap_or(""), d["vote_average"].as_f64().unwrap_or(0.0), names(&d["genres"], 3),
@@ -343,7 +347,7 @@ pub async fn enrich(st: &State) {
                 for ep in sd["episodes"].as_array().cloned().unwrap_or_default() {
                     let _ = st.db.lock().execute(
                         "UPDATE episodes SET title=CASE WHEN title='' THEN ?4 ELSE title END, plot=?5,
-                         still=CASE WHEN still='' THEN ?6 ELSE still END, duration_secs=CASE WHEN duration_secs=0 THEN ?7 ELSE duration_secs END
+                         still=CASE WHEN (still='' OR still LIKE '%mdlxthumb-%') AND ?6<>'' THEN ?6 ELSE still END, duration_secs=CASE WHEN duration_secs=0 THEN ?7 ELSE duration_secs END
                          WHERE series_id=?1 AND season=?2 AND episode=?3",
                         params![
                             id, sn, ep["episode_number"].as_i64().unwrap_or(-1), ep["name"].as_str().unwrap_or(""),

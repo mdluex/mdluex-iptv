@@ -77,7 +77,7 @@ pub type ByteStream = Pin<Box<dyn Stream<Item = Result<Bytes, std::io::Error>> +
 pub async fn open_live(http: &reqwest::Client, src: &str, profile: Option<&Profile>) -> Result<ByteStream, String> {
     let is_hls = src.to_lowercase().contains(".m3u8");
     if profile.is_some() || is_hls || !src.starts_with("http") {
-        let mut child = tokio::process::Command::new("ffmpeg")
+        let mut child = tokio::process::Command::new(crate::thumbs::tool("ffmpeg"))
             .args(ffmpeg_args(src, profile))
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::null())

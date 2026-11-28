@@ -183,6 +183,8 @@ VIEWS.dashboard = function (main) {
       h('p', { text: 'In Mdluex IPTV (or any Xtream Codes app) add a playlist with this server address and one of your accounts:' })
     ]);
     d.server_urls.forEach(function (u) { hero.appendChild(h('span', { class: 'code', text: u, title: 'Click to copy', onclick: function () { copy(u); } })); });
+    if (d.local_name) hero.appendChild(h('p', { class: 'hint-line' }, ['Easy name (phones, PCs and many TVs): ', h('span', { class: 'code', text: d.local_name, title: 'Click to copy', onclick: function () { copy(d.local_name); } })]));
+    if (d.server_code) hero.appendChild(h('p', { class: 'hint-line' }, ['Or in Mdluex IPTV choose ', h('b', { text: 'Add playlist → Find my server' }), ' and type the server code ', h('span', { class: 'code big', text: d.server_code })]));
     main.appendChild(hero);
     var st = h('div', { class: 'stats' });
     [['Accounts', d.lines, d.lines_active + ' active' + (d.lines_expiring ? ' · ' + d.lines_expiring + ' expiring this week' : '')],

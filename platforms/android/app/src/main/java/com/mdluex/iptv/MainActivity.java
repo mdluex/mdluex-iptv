@@ -1,6 +1,10 @@
 package com.mdluex.iptv;
 
 import android.annotation.SuppressLint;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Collections;
 import android.app.Activity;
 import android.app.UiModeManager;
 import android.content.Intent;
@@ -353,6 +357,17 @@ public class MainActivity extends Activity {
         /** "firetv" on Amazon Fire TV devices, otherwise "androidtv" */
         /** "firetv", "androidtv", or "mobile" (a phone or tablet: the only kind that gets touch controls) */
         @JavascriptInterface public String device() { return isFireTV() ? "firetv" : (isTV() ? "androidtv" : "mobile"); }
+        /* this device's home-network address (the app searches that network for a Mdluex IPTV Server) */
+        @JavascriptInterface public String localIp() {
+            try {
+                for (NetworkInterface ni : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                    if (!ni.isUp() || ni.isLoopback()) continue;
+                    for (InetAddress a : Collections.list(ni.getInetAddresses()))
+                        if (a instanceof Inet4Address && a.isSiteLocalAddress()) return a.getHostAddress();
+                }
+            } catch (Exception e) {}
+            return "";
+        }
         @JavascriptInterface public void exit() { main.post(MainActivity.this::finish); }
     }
 

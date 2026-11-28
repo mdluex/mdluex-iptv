@@ -31,7 +31,7 @@ var Platform = (function () {
 
   return {
     name: name,
-    version: '1.5.5',
+    version: '1.5.6',
     device: device,
     fireTV: device === 'firetv',
     colorKeys: colorKeys,
@@ -83,6 +83,19 @@ var Platform = (function () {
       } catch (e) {}
       window.open('https://www.youtube.com/watch?v=' + id, '_blank');
       return false;
+    },
+
+    /* This TV's home-network address, or null: cb('192.168.1.20') */
+    localIp: function (cb) {
+      var done = false; function fin(ip) { if (done) return; done = true; cb(ip && /^\d+\.\d+\.\d+\.\d+$/.test(ip) && ip !== '0.0.0.0' ? ip : null); }
+      try {
+        if (name === 'tizen' && typeof webapis !== 'undefined' && webapis.network) { fin(webapis.network.getIp()); return; }
+        if (name === 'android') { fin(MdxNative.localIp()); return; }
+        if (name === 'webos' && luna('luna://com.webos.service.connectionmanager/getStatus', {}, function (r) {
+          fin((r.wired && r.wired.state === 'connected' && r.wired.ipAddress) || (r.wifi && r.wifi.ipAddress) || null);
+        })) { setTimeout(function () { fin(null); }, 3000); return; }
+      } catch (e) {}
+      fin(null);
     },
 
     /* Live TV default: webOS plays HLS most reliably; Samsung and Android (ExoPlayer) handle MPEG-TS */

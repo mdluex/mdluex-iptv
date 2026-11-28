@@ -4,10 +4,12 @@ mod admin;
 mod archive;
 mod balance;
 mod db;
+mod discover;
 mod transcode;
 mod epg;
 mod scan;
 mod stream;
+mod thumbs;
 mod xtream;
 
 use axum::{routing::get, Router};
@@ -20,6 +22,7 @@ pub struct AppState {
     pub http: reqwest::Client,
     pub data_dir: PathBuf,
     pub started: i64,
+    pub port: u16,
     pub recorders: parking_lot::Mutex<std::collections::HashMap<i64, archive::Rec>>,
     pub rec_status: parking_lot::Mutex<std::collections::HashMap<i64, String>>,
 }
@@ -62,16 +65,19 @@ async fn main() {
             .unwrap(),
         data_dir,
         started: db::now(),
+        port,
         recorders: Default::default(),
         rec_status: Default::default(),
     });
     stream::spawn_cleanup(state.clone());
+    discover::spawn(state.clone());
     archive::spawn_supervisor(state.clone());
     epg::spawn_daily_import(state.clone());
 
     // Xtream Codes compatible endpoints (what IPTV apps talk to); open to web-based players too
     let xtream_routes = Router::new()
         .route("/player_api.php", get(xtream::player_api).post(xtream::player_api))
+        .route("/mdluex.json", get(discover::info))
         .route("/get.php", get(xtream::m3u))
         .route("/xmltv.php", get(xtream::xmltv))
         .route("/live/:u/:p/:file", get(stream::live))
@@ -90,7 +96,8 @@ async fn main() {
         .merge(xtream_routes)
         // admin panel + its JSON API (same-origin only)
         .merge(admin::router())
-        .with_state(state);
+        .with_state(state.clone());
+    let code = discover::code_enabled(&state).then(|| discover::server_code(&state));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap_or_else(|e| {
@@ -104,12 +111,16 @@ async fn main() {
     for ip in local_ips() {
         println!("  On your TV  : server http://{ip}:{port}");
     }
+    println!("  Easy name   : http://{}.local:{port}", discover::MDNS_HOST);
+    if let Some(code) = &code {
+        println!("  Server code : {code}   (TV app: Add playlist > Find my server)");
+    }
     if let Some(pw) = &first_password {
         println!("  First login : admin / {pw}   (change it in Settings)");
     }
     println!("==============================================");
-    println!("  In the TV app type the 'On your TV' address above (not localhost).");
-    open_firewall(port);
+    // in the background: the Windows permission prompt may wait for the user, the server serves meanwhile
+    if !std::env::args().any(|a| a == "--no-firewall") { std::thread::spawn(move || open_firewall(port)); }
     if arg("--no-browser").is_none() && !std::env::args().any(|a| a == "--no-browser") {
         let _ = open::that(&local);
     }
@@ -119,24 +130,38 @@ async fn main() {
 }
 
 /// Windows: TVs and phones can only reach the server if Windows Firewall lets the port in. Windows' own prompt
-/// often allows only one network type (Public or Private), so add a rule for all of them. That needs admin rights:
-/// without them, say how to do it.
+/// allows only one network type, and when it is dismissed it adds a BLOCK rule for the program (blocks win over
+/// allows). So once, with the user's permission (one Windows prompt), remove those and allow the server on every
+/// network type. Without permission, explain how to do it by hand.
 #[cfg(windows)]
 fn open_firewall(port: u16) {
     use std::process::Command;
     let name = format!("Mdluex IPTV Server (TCP {port})");
-    let has = Command::new("netsh").args(["advfirewall", "firewall", "show", "rule", &format!("name={name}")]).output()
+    let has = || Command::new("netsh").args(["advfirewall", "firewall", "show", "rule", &format!("name={name}")]).output()
         .map(|o| o.status.success() && String::from_utf8_lossy(&o.stdout).contains(&name)).unwrap_or(false);
-    if has { return; }
-    let ok = Command::new("netsh")
-        .args(["advfirewall", "firewall", "add", "rule", &format!("name={name}"), "dir=in", "action=allow", "protocol=TCP",
-               &format!("localport={port}"), "profile=any"])
-        .output().map(|o| o.status.success()).unwrap_or(false);
-    if ok {
-        println!("  Windows Firewall: port {port} is now open for TVs and phones on your network.");
+    if has() { return; }
+    let exe = std::env::current_exe().map(|p| p.display().to_string()).unwrap_or_default();
+    let script = [
+        "@echo off".to_string(),
+        format!("netsh advfirewall firewall delete rule name=all program=\"{exe}\" dir=in >nul"),
+        format!("netsh advfirewall firewall add rule name=\"{name}\" dir=in action=allow protocol=TCP localport={port} profile=any >nul"),
+        format!("netsh advfirewall firewall add rule name=\"{name}\" dir=in action=allow program=\"{exe}\" profile=any >nul"),
+    ].join("\r\n") + "\r\n";
+    let file = std::env::temp_dir().join("mdluex-server-firewall.cmd");
+    if std::fs::write(&file, script).is_err() { return; }
+    // already running as administrator: just do it
+    let direct = Command::new("cmd").args(["/c", &file.display().to_string()]).output().map(|o| o.status.success()).unwrap_or(false);
+    if !(direct && has()) {
+        println!("  Windows will ask to let Mdluex IPTV Server through the firewall - click Yes.");
+        let ps = format!("Start-Process -FilePath '{}' -Verb RunAs -WindowStyle Hidden -Wait", file.display());
+        let _ = Command::new("powershell").args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &ps]).output();
+    }
+    let _ = std::fs::remove_file(&file);
+    if has() {
+        println!("  Windows Firewall: port {port} is open - TVs and phones on your network can connect.");
     } else {
-        println!("  If your TV can't connect: allow 'mdluex-server' in Windows Firewall for BOTH Private and Public");
-        println!("  networks (Settings > Windows Security > Firewall > Allow an app), or run this once as administrator.");
+        println!("  The firewall was NOT changed, so TVs may not connect. To fix it: run mdluex-server.exe once as");
+        println!("  administrator, or allow 'mdluex-server' in Windows Security > Firewall > Allow an app (Private + Public).");
     }
 }
 #[cfg(not(windows))]

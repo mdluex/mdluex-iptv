@@ -128,3 +128,7 @@ td.actions { text-align: right; white-space: nowrap; }
 .progress i { display: block; height: 100%; width: 40%; background: var(--accent); animation: slide 1.2s ease-in-out infinite; }
 @keyframes slide { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
 @media (max-width: 820px) { #side { width: 70px; } #side .nav span, #side .brand b { display: none; } #main { padding: 20px 16px; } .row2 { grid-template-columns: 1fr; } }
+
+/* dashboard: easy name and server code */
+.hero .hint-line { margin-top: 12px; }
+.code.big { font-size: 22px; letter-spacing: 3px; font-weight: 800; }
