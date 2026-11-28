@@ -81,7 +81,7 @@ Samsung TVs only accept apps from outside their store when the app is made for *
 4. Turn the TV off and on again.
 
 **Step 2 — on your phone or computer: install the app with Apps2Samsung**
-1. Download **[Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung)** (Windows, Mac, Linux, Android or iPhone).
+1. Download **[Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung/releases/latest)** (Windows, Mac, Linux, Android or iPhone).
    The phone or computer must be on the same Wi-Fi as the TV.
 2. Open Apps2Samsung and find **Mdluex IPTV** in its app list (under *Media servers & players*, or use search).
 3. Install it. The first time, it asks you to sign in with a free Samsung account — Samsung requires this to make the
@@ -244,6 +244,10 @@ Still stuck? Email **[hello@mdluex.com](mailto:hello@mdluex.com)** or [open an i
 ## Run your own IPTV server
 Have your own movies, series or channels? **[Mdluex IPTV Server](server/README.md)** is a free server program for
 Windows with an easy web admin panel. It works with this app and with other IPTV players.
+
+## Support the app
+Mdluex IPTV is free and has no ads. If you enjoy it, you can support it on **[Patreon](https://patreon.com/mdluex)** or
+**[Buy Me a Coffee](https://buymeacoffee.com/mdluex)** — the app also shows both as QR codes in *Settings → Donate*.
 
 ## For developers
 How to build, test and release the app: **[DEVELOPERS.md](DEVELOPERS.md)**.

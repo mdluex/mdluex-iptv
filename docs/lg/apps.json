@@ -12,21 +12,21 @@
       "id": "com.mdluex.iptv",
       "title": "Mdluex IPTV",
       "iconUri": "https://mdluex.github.io/mdluex-iptv/lg/icon.png",
-      "manifestUrl": "https://github.com/mdluex/mdluex-iptv/releases/download/v1.5.3/com.mdluex.iptv.manifest.json",
+      "manifestUrl": "https://github.com/mdluex/mdluex-iptv/releases/download/v1.5.4/com.mdluex.iptv.manifest.json",
       "manifest": {
         "id": "com.mdluex.iptv",
-        "version": "1.5.3",
+        "version": "1.5.4",
         "type": "web",
         "title": "Mdluex IPTV",
         "appDescription": "IPTV player for Xtream Codes servers",
         "iconUri": "https://mdluex.github.io/mdluex-iptv/lg/icon.png",
         "sourceUrl": "https://github.com/mdluex/mdluex-iptv",
         "rootRequired": false,
-        "ipkUrl": "https://github.com/mdluex/mdluex-iptv/releases/download/v1.5.3/MdluexIPTV-v1.5.3-lg-webos.ipk",
+        "ipkUrl": "https://github.com/mdluex/mdluex-iptv/releases/download/v1.5.4/MdluexIPTV-v1.5.4-lg-webos.ipk",
         "ipkHash": {
-          "sha256": "69d8e34bb967e77935d63d971e85df7e5273d39adee4fb37e2072a6ccffe2256"
+          "sha256": "58fa6a24d670545c236a301b5d5a7db23bd1b4f84c26820c9070982f0ffa063c"
         },
-        "ipkSize": 400232
+        "ipkSize": 401786
       },
       "pool": "non-free",
       "shortDescription": "Netflix-style IPTV player for your own Xtream Codes subscription, plus the Mdluex Industries YouTube channel. Contains no channels. Personal use only.",

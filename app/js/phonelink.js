@@ -102,5 +102,5 @@ var PhoneLink = (function () {
     return { url: url, canvas: function (px) { return qrCanvas(url, px); } };
   }
 
-  return { start: start, chacha20: chacha20 };
+  return { start: start, chacha20: chacha20, qr: qrCanvas };
 })();

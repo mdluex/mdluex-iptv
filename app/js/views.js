@@ -244,13 +244,59 @@
   }
 
   /* Banner contents for each kind of card. */
+  var ytCtx = null;   // the YouTube channel whose page is open ({ id, name }); null = Mdluex Industries
   function heroForYt(v) {
+    var chan = ytCtx || (!v.ch || v.ch === 'Mdluex Industries' ? { id: Channel.CHANNEL_ID, name: 'Mdluex Industries' } : null);
+    var buttons = [{ label: 'Play', icon: 'play', onSelect: function () { askResume('yt:' + v.id).then(function (s) { if (s != null) PlayerUI.playYouTube(v, s); }); } },
+      { label: 'Open in YouTube app', icon: 'yt', onSelect: function () { Channel.openInYouTubeApp(v.id); } }];
+    if (chan) buttons.push({ label: 'Subscribe', icon: 'bell', onSelect: function () { subscribe(chan, v.id); } });
     return { kicker: (v.ch || 'Mdluex Industries') + ' · ' + T('YouTube'), title: v.title, img: Channel.thumb(v.id, true), plot: v.desc,
-      meta: [v.published ? fmtDate(Date.parse(v.published)) : null],
-      buttons: [{ label: 'Play', icon: 'play', onSelect: function () { askResume('yt:' + v.id).then(function (s) { if (s != null) PlayerUI.playYouTube(v, s); }); } },
-        { label: 'Open in YouTube app', icon: 'yt', onSelect: function () { Channel.openInYouTubeApp(v.id); } }],
-      preview: { id: v.id, random: true } };
+      meta: [v.published ? fmtDate(Date.parse(v.published)) : null], buttons: buttons, preview: { id: v.id, random: true } };
   }
+
+  /* ---- links the viewer opens on a phone: a QR code to scan (TVs), or the link itself (phones) ---- */
+  function openUrl(url) {
+    if (Platform.name === 'android') { try { MdxNative.openUrl(url); return; } catch (e) {} }
+    window.open(url, '_blank');
+  }
+  function qrWindow(title, text, codes, buttons) {
+    App.modal(function (box, m) {
+      box.classList.add('qr-modal');
+      box.appendChild(h('h2', { text: title, dir: 'auto' }));
+      if (text) box.appendChild(h('p', { class: 'qr-text', text: text, dir: 'auto' }));
+      var row = h('div', { class: 'qr-row' });
+      codes.forEach(function (c) {
+        var cell = h('div', { class: 'qr-cell' }, [h('div', { class: 'qr-box' }, [PhoneLink.qr(c.url, 320)]),
+          h('div', { class: 'qr-label', text: c.label }), h('div', { class: 'qr-url', text: c.url.replace(/^https?:\/\//, '').replace(/\?.*$/, ''), dir: 'ltr' })]);
+        if (Platform.touch) Focus.make(cell, function () { openUrl(c.url); });   // phones: tap the code to open it
+        row.appendChild(cell);
+      });
+      box.appendChild(row);
+      var br = h('div', { class: 'btn-row' });
+      (buttons || []).concat([{ label: 'Close' }]).forEach(function (b, i) {
+        br.appendChild(Focus.make(h('div', { class: 'btn' + (i === 0 ? ' primary' : ''), text: T(b.label), 'data-autofocus': i === 0 ? '1' : null }), function () { m.close(); if (b.fn) b.fn(); }));
+      });
+      box.appendChild(br);
+    });
+  }
+  /* Subscribe: YouTube's own subscribe link (it asks "Subscribe?" in one tap) as a QR code, plus the TV's YouTube
+     app. The TV apps can't be sent to a channel page, so they open the video: Subscribe is right under it. */
+  function subscribe(chan, videoId) {
+    var url = 'https://www.youtube.com/channel/' + chan.id + '?sub_confirmation=1';
+    if (Platform.phone) { openUrl(url); return; }
+    qrWindow(T('Subscribe to {0}', chan.name), T('Scan with your phone camera: YouTube opens and asks you to subscribe in one tap.'),
+      [{ url: url, label: 'YouTube' }],
+      [{ label: 'Open in YouTube app', fn: function () {
+        if (Platform.name === 'android') { openUrl(url); return; }
+        Channel.openInYouTubeApp(videoId);
+        App.toast('Press Subscribe under the video');
+      } }]);
+  }
+  var DONATE = [{ url: 'https://patreon.com/mdluex', label: 'Patreon' }, { url: 'https://buymeacoffee.com/mdluex', label: 'Buy Me a Coffee' }];
+  function donate() {
+    qrWindow(T('Support Mdluex IPTV'), T('Mdluex IPTV is free. If you enjoy it, you can support it: scan a code with your phone camera.'), DONATE, []);
+  }
+  App.donate = donate;
   function heroForMovie(m) {
     return { kicker: 'Movie', title: m.name, img: m.icon, portrait: true, meta: [rating(m.rating), m.year ? String(m.year).slice(0, 4) : null],
       buttons: [{ label: 'Play', icon: 'play', onSelect: function () { playMovie(m); } }, { label: 'More info', icon: 'info', onSelect: function () { openMovie(m); } }],
@@ -1092,6 +1138,7 @@
 
   V.channel = {
     title: '', nav: function (p) { return p && p.id && p.id !== Channel.CHANNEL_ID ? 'ytchannels' : 'channel'; },
+    leave: function () { ytCtx = null; },
     render: function (main, params) {
       var wrap = h('div', { class: 'scroll-y' });
       main.appendChild(wrap);
@@ -1099,6 +1146,7 @@
       var chan = Channel.of(params.id, params.name);
       return Promise.all([chan.load(), chan.featured(), chan.tabs()]).then(function (r) {
         var d = r[0], v = r[1], t = r[2];
+        ytCtx = { id: chan.id, name: d.name || params.name || 'YouTube' };
         wrap.innerHTML = '';
         var hero = null;
         var follow = billboard(function () { return hero; });
@@ -1353,6 +1401,9 @@
           location.reload();   // every screen is drawn again in the new language and direction
         });
       }));
+      s.appendChild(h('h2', { text: T('Support Mdluex IPTV') }));
+      s.appendChild(setRow('Donate', 'Patreon · Buy Me a Coffee', donate, 'on'));
+      s.appendChild(setRow('Subscribe to Mdluex Industries on YouTube', '', function () { subscribe({ id: Channel.CHANNEL_ID, name: 'Mdluex Industries' }, null); }));
       s.appendChild(setRow('About', T('Mdluex IPTV {0} · by Mdluex Industries', Platform.version), function () {}));
       s.appendChild(setRow('Website', 'www.mdluex.com', function () {}));
       s.appendChild(setRow('Support & commercial use', 'hello@mdluex.com', function () {}));

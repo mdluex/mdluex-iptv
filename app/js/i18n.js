@@ -96,7 +96,11 @@ var I18N = (function () {
     'Continue Watching and resume points will be removed for this playlist.': 'سيتم حذف متابعة المشاهدة ونقاط الاستئناف لهذه القائمة.',
     'History cleared': 'تم مسح السجل', 'Clear recently watched channels': 'مسح القنوات التي شاهدتها مؤخرًا', 'About': 'حول التطبيق',
     'Mdluex IPTV {0} · by Mdluex Industries': 'Mdluex IPTV {0} · من Mdluex Industries',
-    'Website': 'الموقع الرسمي', 'Support & commercial use': 'الدعم والاستخدام التجاري',
+    'Website': 'الموقع الرسمي', 'Subscribe': 'اشترك', 'Subscribe to {0}': 'اشترك في {0}',
+    'Scan with your phone camera: YouTube opens and asks you to subscribe in one tap.': 'امسح الرمز بكاميرا هاتفك: سيفتح يوتيوب ويطلب منك الاشتراك بضغطة واحدة.',
+    'Press Subscribe under the video': 'اضغط «اشتراك» تحت الفيديو', 'Close': 'إغلاق', 'Support Mdluex IPTV': 'ادعم Mdluex IPTV', 'Donate': 'تبرّع',
+    'Mdluex IPTV is free. If you enjoy it, you can support it: scan a code with your phone camera.': 'تطبيق Mdluex IPTV مجاني. إن أعجبك يمكنك دعمه: امسح أحد الرمزين بكاميرا هاتفك.',
+    'Subscribe to Mdluex Industries on YouTube': 'اشترك في قناة Mdluex Industries على يوتيوب', 'Support & commercial use': 'الدعم والاستخدام التجاري',
     'Language': 'اللغة', 'Automatic (TV language)': 'تلقائي (لغة الشاشة)', 'English': 'English', 'العربية': 'العربية',
     /* player */
     'Play / Pause': 'تشغيل / إيقاف مؤقت', 'Seek': 'تقديم / ترجيع', 'Audio · Subtitles · More': 'الصوت · الترجمة · المزيد',
